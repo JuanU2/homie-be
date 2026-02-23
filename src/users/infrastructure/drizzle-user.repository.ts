@@ -11,10 +11,10 @@ import { CreateUserDtoRequest } from "../dtos/users.dto";
 export class DrizzleUserRepository implements UserRepository {
   constructor(
     @Inject("DRIZZLE_DB")
-    private readonly db: NodePgDatabase
+    private readonly db: NodePgDatabase,
   ) {}
 
-  async findById(id: string) : Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     const result = await this.db
       .select()
       .from(users)
@@ -24,7 +24,7 @@ export class DrizzleUserRepository implements UserRepository {
     return result[0] ?? null;
   }
 
-  async findByEmail(email: string) : Promise<User | null> {
+  async findByEmail(email: string): Promise<User | null> {
     const result = await this.db
       .select()
       .from(users)
@@ -34,10 +34,13 @@ export class DrizzleUserRepository implements UserRepository {
     return result[0] ?? null;
   }
 
-  async create(data: CreateUserDtoRequest, passwordHash: string) : Promise<User> {
+  async create(
+    data: CreateUserDtoRequest,
+    passwordHash: string,
+  ): Promise<User> {
     const result = await this.db
       .insert(users)
-      .values({...data, passwordHash})
+      .values({ ...data, passwordHash })
       .returning();
 
     return result[0];

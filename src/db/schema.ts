@@ -24,10 +24,7 @@ const geographyPoint = customType<{
   },
 });
 
-export const interestEnum = pgEnum("interest_enum", [
-  "FIND_HOUSING",
-  "RENT",
-]);
+export const interestEnum = pgEnum("interest_enum", ["FIND_HOUSING", "RENT"]);
 
 export const roomTypeEnum = pgEnum("room_type_enum", [
   "DORMITORY",
@@ -38,22 +35,16 @@ export const roomTypeEnum = pgEnum("room_type_enum", [
   "WARDROBE",
 ]);
 
-export const currencyEnum = pgEnum("currency_enum", [
-  "EUR",
-  "CZK",
-  "USD",
-]);
+export const currencyEnum = pgEnum("currency_enum", ["EUR", "CZK", "USD"]);
 
-export const roommateRequestStatusEnum = pgEnum("roommate_request_status_enum", [
-  "ACTIVE",
-  "RESERVED",
-  "CLOSED",
-  "EXPIRED",
-]);
+export const roommateRequestStatusEnum = pgEnum(
+  "roommate_request_status_enum",
+  ["ACTIVE", "RESERVED", "CLOSED", "EXPIRED"],
+);
 
 export const roommateApplicationStatusEnum = pgEnum(
   "roommate_application_status_enum",
-  ["PENDING", "ACCEPTED", "REJECTED"]
+  ["PENDING", "ACCEPTED", "REJECTED"],
 );
 
 /* =========================
@@ -87,7 +78,7 @@ export const users = pgTable(
   },
   (table) => ({
     emailUnique: uniqueIndex("users_email_unique").on(table.email),
-  })
+  }),
 );
 
 /* =========================
@@ -153,7 +144,7 @@ export const equipmentTypes = pgTable(
   },
   (table) => ({
     nameUnique: uniqueIndex("equipment_types_name_unique").on(table.name),
-  })
+  }),
 );
 
 /* =========================
@@ -177,7 +168,7 @@ export const roomEquipment = pgTable(
     pk: primaryKey({
       columns: [table.roomId, table.equipmentTypeId],
     }),
-  })
+  }),
 );
 
 /* =========================
@@ -205,9 +196,7 @@ export const roommateRequests = pgTable("roommate_requests", {
   maxRoommates: integer("max_roommates").notNull(),
   currentRoommates: integer("current_roommates").notNull(),
 
-  status: roommateRequestStatusEnum("status")
-    .default("ACTIVE")
-    .notNull(),
+  status: roommateRequestStatusEnum("status").default("ACTIVE").notNull(),
 
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
@@ -235,9 +224,7 @@ export const roommateApplications = pgTable("roommate_applications", {
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
 
-  status: roommateApplicationStatusEnum("status")
-    .default("PENDING")
-    .notNull(),
+  status: roommateApplicationStatusEnum("status").default("PENDING").notNull(),
 
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
@@ -275,7 +262,7 @@ export const conversationParticipants = pgTable(
     pk: primaryKey({
       columns: [table.conversationId, table.userId],
     }),
-  })
+  }),
 );
 
 /* =========================
