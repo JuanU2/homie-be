@@ -1,11 +1,11 @@
-import { Module } from '@nestjs/common';
-import { UsersController } from './users/users.controller';
-import { UsersService } from './users/users.service';
-import { DrizzleUserRepository } from './users/infrastructure/drizzle-user.repository';
-import { USER_REPOSITORY } from './users/domain/interface/user.repository';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
-import { ConfigModule } from '@nestjs/config';
+import { Module } from "@nestjs/common";
+import { UsersController } from "@/users/users.controller";
+import { UsersService } from "@/users/users.service";
+import { DrizzleUserRepository } from "@/users/infrastructure/drizzle-user.repository";
+import { USER_REPOSITORY } from "@/users/domain/interface/user.repository";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
   imports: [
@@ -14,7 +14,8 @@ import { ConfigModule } from '@nestjs/config';
     }),
   ],
   controllers: [UsersController],
-  providers: [UsersService, 
+  providers: [
+    UsersService,
     {
       provide: USER_REPOSITORY,
       useClass: DrizzleUserRepository,
@@ -28,7 +29,7 @@ import { ConfigModule } from '@nestjs/config';
 
         return drizzle(pool);
       },
-    }
+    },
   ],
 })
 export class AppModule {}

@@ -6,8 +6,6 @@ export const createUserSchema = z.object({
   password: z.string().min(6),
   firstName: z.string().min(2),
   lastName: z.string().min(2),
-  primaryInterest: z.enum(["FIND_HOUSING", "RENT"]),
-  idealLocation: z.string().optional(), // GeoJSON / WKT
   phone: z.string().optional(),
 });
 
@@ -16,8 +14,6 @@ export const createUserResponseSchema = z.object({
   email: z.email(),
   firstName: z.string(),
   lastName: z.string(),
-  primaryInterest: z.enum(["FIND_HOUSING", "RENT"]),
-  idealLocation: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),

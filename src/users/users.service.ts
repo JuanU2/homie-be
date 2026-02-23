@@ -13,10 +13,14 @@ export class UsersService {
     private readonly userRepository: UserRepository,
   ) {}
 
+  async getAllUsers(): Promise<CreateUserDtoResponse[]> {
+    return this.userRepository.getAllUsers();
+  }
+
   async createUser(
     userData: CreateUserDtoRequest,
   ): Promise<CreateUserDtoResponse> {
-    const passwordHash = await hash(userData.password, 12); // 12 = salt rounds
+    const passwordHash = await hash(userData.password, 12);
 
     return this.userRepository.create(userData, passwordHash);
   }
