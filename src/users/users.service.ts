@@ -1,10 +1,9 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { hash } from "bcrypt";
-import { CreateUserDtoRequest, CreateUserDtoResponse } from "./dtos/users.dto";
 import {
   USER_REPOSITORY,
   type UserRepository,
 } from "./domain/interface/user.repository";
+import { User } from '@/users/domain/entity/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -13,15 +12,11 @@ export class UsersService {
     private readonly userRepository: UserRepository,
   ) {}
 
-  async getAllUsers(): Promise<CreateUserDtoResponse[]> {
+  async getAllUsers(): Promise<User[]> {
     return this.userRepository.getAllUsers();
   }
 
-  async createUser(
-    userData: CreateUserDtoRequest,
-  ): Promise<CreateUserDtoResponse> {
-    const passwordHash = await hash(userData.password, 12);
-
-    return this.userRepository.create(userData, passwordHash);
+  async getUserById(id: string): Promise<User | undefined> {
+    return this.userRepository.getUserById(id);
   }
 }

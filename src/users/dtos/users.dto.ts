@@ -19,6 +19,8 @@ export const createUserResponseSchema = z.object({
   updatedAt: z.date(),
 });
 
+export const getUserReponseSchema = createUserResponseSchema;
+
 export class CreateUserDtoRequest extends createZodDto(createUserSchema) {}
 
 export class CreateUserDtoResponse extends createZodDto(
