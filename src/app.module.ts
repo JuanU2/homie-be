@@ -7,6 +7,8 @@ import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import { ConfigModule } from "@nestjs/config";
 import * as schema from "@/db/schema";
+import { AuthService } from './auth/auth.service';
+import { AUTH_REPOSITORY } from './auth/interface/auth.repository';
 
 @Module({
   imports: [
@@ -17,9 +19,14 @@ import * as schema from "@/db/schema";
   controllers: [UsersController],
   providers: [
     UsersService,
+    AuthService,
     {
       provide: USER_REPOSITORY,
       useClass: DrizzleUserRepository,
+    },
+    {
+      provide: AUTH_REPOSITORY,
+      useClass: AuthRepository,
     },
     {
       provide: "DRIZZLE_DB",
