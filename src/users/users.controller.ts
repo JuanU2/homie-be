@@ -1,6 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
 import { UsersService } from "./users.service";
-import { ApiOperation } from "@nestjs/swagger";
+import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { CreateUserDtoResponse } from "./dtos/users.dto";
 
 @Controller("users")

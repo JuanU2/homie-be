@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { OAuth2Client } from 'google-auth-library';
 
 import { AuthUserDtoRequest } from './dtos/auth.dto';
-import { USER_REPOSITORY, type UserRepository } from '@/users/domain/interface/user.repository';
+import { USER_REPOSITORY, type IUserRepository } from '@/users/domain/interface/user.repository';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +19,7 @@ export class AuthService {
   constructor(
 
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
 
     private readonly jwtService: JwtService,
 
@@ -55,10 +55,10 @@ export class AuthService {
           audience: process.env.GOOGLE_CLIENT_ID,
 
         });
-
+      
       const payload = ticket.getPayload();
 
-      if (!payload?.email) {
+      if (!payload?.email || (payload.email !== data.user.email)) {
 
         throw new UnauthorizedException(
           'Invalid Google token',
@@ -79,8 +79,9 @@ export class AuthService {
 
       return token;
 
-    } catch {
+    } catch (e) {
 
+      console.error('Google authentication error:', e);
       throw new UnauthorizedException(
         'Google authentication failed',
       );

@@ -5,7 +5,7 @@ import { DrizzleUserRepository } from "@/users/infrastructure/drizzle-user.repos
 import { USER_REPOSITORY } from "@/users/domain/interface/user.repository";
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import * as schema from "@/db/schema";
 import { AuthService } from '@/auth/auth.service';
 import { jwtConstants } from '@/auth/constants';
@@ -17,13 +17,13 @@ import { AuthController } from './auth/auth.controller';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    JwtModule.register({
-      global: true,
-      secret: jwtConstants.secret,
-      signOptions: { 
-        expiresIn: '7d' 
-      },
-    })
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '7d' },
+      }),
+    }),
   ],
   controllers: [UsersController, AuthController],
   providers: [
@@ -40,7 +40,7 @@ import { AuthController } from './auth/auth.controller';
           connectionString: process.env.DATABASE_URL,
         });
 
-        return drizzle(pool);
+        return drizzle(pool, { schema });
       },
     },
   ],
