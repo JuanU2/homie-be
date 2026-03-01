@@ -3,7 +3,7 @@ import {
   USER_REPOSITORY,
   type IUserRepository,
 } from "@/users/domain/interface/user.repository";
-import { User } from '@/users/domain/entity/user.entity';
+import { CreateUserDtoResponse } from './dtos/users.dto';
 
 @Injectable()
 export class UsersService {
@@ -12,15 +12,15 @@ export class UsersService {
     private readonly userRepository: IUserRepository,
   ) {}
 
-  async getAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<CreateUserDtoResponse[]> {
     return this.userRepository.getAllUsers();
   }
 
-  async getUserById(id: string): Promise<User | undefined> {
+  async getUserById(id: string): Promise<CreateUserDtoResponse | undefined> {
     return this.userRepository.getUserById(id);
   }
 
-  async getUserByEmail(email: string): Promise<User | undefined> {
+  async getUserByEmail(email: string): Promise<CreateUserDtoResponse | undefined> {
     return this.userRepository.getUserByEmail(email);
   }
 }

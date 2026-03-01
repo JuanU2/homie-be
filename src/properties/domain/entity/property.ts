@@ -23,6 +23,6 @@ export interface CreatePropertyModel {
   city: string;
   zipCode: string;
   street: string;
-  streetNumber: number;
+  streetNumber: string;
   location: string;
 }
