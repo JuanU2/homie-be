@@ -24,4 +24,30 @@ export class DrizzleUserRepository implements UserRepository {
       where: users => eq(users.id, id),
     });
   }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return this.db.query.users.findFirst({
+      where: users => eq(users.email, email),
+    });
+  }
+
+  async findOrCreateGoogleUser(name: string, email: string, image: string): Promise<User> {
+    return this.db.transaction(async (tx) => {
+      let user = await tx.query.users.findFirst({
+        where: users => eq(users.email, email),
+      });
+
+      if (!user) {
+        const [createdUser] = await tx.insert(users).values({
+          email,
+          fullName: name,
+          image: image
+        }).returning();
+
+        user = createdUser;
+      }
+
+      return user;
+    });
+  }
 }

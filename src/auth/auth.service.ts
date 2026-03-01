@@ -1,12 +1,15 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+
+import { JwtService } from '@nestjs/jwt';
+
 import { OAuth2Client } from 'google-auth-library';
 
-import {
-  AUTH_REPOSITORY,
-  type AuthRepository,
-} from './interface/auth.repository';
-
 import { AuthUserDtoRequest } from './dtos/auth.dto';
+import { USER_REPOSITORY, type UserRepository } from '@/users/domain/interface/user.repository';
 
 @Injectable()
 export class AuthService {
@@ -14,8 +17,12 @@ export class AuthService {
   private client: OAuth2Client;
 
   constructor(
-    @Inject(AUTH_REPOSITORY)
-    private readonly authRepository: AuthRepository,
+
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: UserRepository,
+
+    private readonly jwtService: JwtService,
+
   ) {
 
     this.client = new OAuth2Client(
@@ -24,23 +31,34 @@ export class AuthService {
 
   }
 
+  /**
+   * 
+   * This function authenticate google user and return a JWT token if the authentication is successful. 
+   * It verifies the Google ID token, retrieves the user's email from the token payload, and either finds or creates a user in the database. 
+   * Finally, it generates a JWT token containing the user's ID and email.
+   * 
+   * @param data 
+   * @returns 
+   */
+
   async authenticateUser(
     data: AuthUserDtoRequest,
   ): Promise<string> {
 
     try {
 
-      const ticket = await this.client.verifyIdToken({
+      const ticket =
+        await this.client.verifyIdToken({
 
-        idToken: data.idToken,
+          idToken: data.idToken,
 
-        audience: process.env.GOOGLE_CLIENT_ID,
+          audience: process.env.GOOGLE_CLIENT_ID,
 
-      });
+        });
 
       const payload = ticket.getPayload();
 
-      if (!payload || !payload.email) {
+      if (!payload?.email) {
 
         throw new UnauthorizedException(
           'Invalid Google token',
@@ -48,15 +66,18 @@ export class AuthService {
 
       }
 
+      const user =
+        await this.userRepository.findOrCreateGoogleUser(data.user.name,data.user.email, data.user.image);
 
-      return this.authRepository.authenticateUser({
+      const token =
+        await this.jwtService.signAsync({
 
-        googleId: payload.sub,
-        email: payload.email,
-        name: payload.name,
-        image: payload.picture,
+          userId: user.id,
+          email: user.email,
 
-      });
+        });
+
+      return token;
 
     } catch {
 

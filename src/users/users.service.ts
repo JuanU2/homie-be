@@ -19,4 +19,8 @@ export class UsersService {
   async getUserById(id: string): Promise<User | undefined> {
     return this.userRepository.getUserById(id);
   }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return this.userRepository.getUserByEmail(email);
+  }
 }
