@@ -1,6 +1,6 @@
 import { User } from "@/users/domain/entity/user.entity";
 
-export interface UserRepository {
+export interface IUserRepository {
   getAllUsers(): Promise<User[]>;
   getUserById(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;

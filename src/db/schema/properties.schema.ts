@@ -26,7 +26,7 @@ export const properties = pgTable("properties", {
   city: varchar("city", { length: 255 }).notNull(),
   zipCode: varchar("zip_code", { length: 50 }).notNull(),
 
-  street: varchar("street", { length: 255 }),
+  street: varchar("street", { length: 255 }).notNull(),
   streetNumber: varchar("street_number", { length: 50 }).notNull(),
 
   location: geographyPoint("location").notNull(),

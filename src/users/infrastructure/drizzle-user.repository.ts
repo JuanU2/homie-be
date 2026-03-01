@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { UserRepository } from "../domain/interface/user.repository";
+import { IUserRepository } from "@/users/domain/interface/user.repository";
 import { User } from '@/users/domain/entity/user.entity';
 import { eq } from 'drizzle-orm';
 import { users } from '@/db/schema';
@@ -9,7 +9,7 @@ import { users } from '@/db/schema';
 type UserSchema = { users: typeof users };
   
 @Injectable()
-export class DrizzleUserRepository implements UserRepository {
+export class DrizzleUserRepository implements IUserRepository {
   constructor(
     @Inject("DRIZZLE_DB")
     private readonly db: NodePgDatabase<UserSchema>,
