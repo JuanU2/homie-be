@@ -15,6 +15,13 @@
       "when": 1772394881395,
       "tag": "0001_wise_spyke",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772551853327,
+      "tag": "0002_eminent_the_executioner",
+      "breakpoints": true
     }
   ]
 }

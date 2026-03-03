@@ -13,6 +13,7 @@ import { AuthController } from '@/auth/auth.controller';
 import { UserSettingsService } from '@/userSettings/userSettings.service';
 import { USER_SETTINGS_REPOSITORY } from '@/userSettings/domain/interface/userSettings.repository';
 import { DrizzleUserSetttingsRepository } from '@/userSettings/infrastructure/drizzle-userSettings.repository';
+import { UserSettingsController } from '@/userSettings/userSettings.controller';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { DrizzleUserSetttingsRepository } from '@/userSettings/infrastructure/dr
       }),
     }),
   ],
-  controllers: [UsersController, AuthController],
+  controllers: [UsersController, AuthController, UserSettingsController],
   providers: [
     UsersService,
     AuthService,
