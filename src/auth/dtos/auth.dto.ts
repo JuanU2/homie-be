@@ -11,4 +11,10 @@ export const authUserRequestSchema = z.object({
   idToken: z.string(),
 });
 
+export const authUserResponseSchema = z.object({
+  token: z.string(),
+});
+
+export class AuthUserDtoResponse extends createZodDto(authUserResponseSchema) {}
+
 export class AuthUserDtoRequest extends createZodDto(authUserRequestSchema) {}
