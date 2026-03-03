@@ -24,17 +24,12 @@ export class DrizzleUserSetttingsRepository implements IUserSettingsRepository {
     if (settings.primaryInterest !== undefined) updateData.primaryInterest = settings.primaryInterest;
     if (settings.idealLocation !== undefined) updateData.idealLocation = settings.idealLocation;
 
-    try {
-      const [updatedSettings] = await this.db
-        .update(userSettings)
-        .set(updateData)
-        .where(eq(userSettings.userId, userId))
-        .returning();
+    const [updatedSettings] = await this.db
+      .update(userSettings)
+      .set(updateData)
+      .where(eq(userSettings.userId, userId))
+      .returning();
 
-      return updatedSettings;
-    } catch (error) {
-      console.error('Failed to update user settings', error);
-      throw new InternalServerErrorException('Failed to update user settings');
-    }
+    return updatedSettings;
   }
 }
