@@ -4,7 +4,7 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { IUserRepository } from "@/users/domain/interface/user.repository";
 import { User } from '@/users/domain/entity/user.entity';
 import { eq } from 'drizzle-orm';
-import { users } from '@/db/schema';
+import { users, userSettings } from '@/db/schema';
 
 type UserSchema = { users: typeof users };
   
@@ -31,6 +31,23 @@ export class DrizzleUserRepository implements IUserRepository {
     });
   }
 
+  async createUser(db: typeof this.db, name: string, email: string, image: string): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values({
+        email,
+        fullName: name,
+        image,
+      })
+      .returning();
+
+    await db.insert(userSettings).values({
+      userId: user.id,
+    });
+
+    return user;
+  }
+
   async findOrCreateGoogleUser(name: string, email: string, image: string): Promise<User> {
     return this.db.transaction(async (tx) => {
       let user = await tx.query.users.findFirst({
@@ -38,13 +55,7 @@ export class DrizzleUserRepository implements IUserRepository {
       });
 
       if (!user) {
-        const [createdUser] = await tx.insert(users).values({
-          email,
-          fullName: name,
-          image: image
-        }).returning();
-
-        user = createdUser;
+        user = await this.createUser(tx, name, email, image);
       }
 
       return user;

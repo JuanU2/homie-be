@@ -1,4 +1,4 @@
-import { customType, pgEnum, pgTable, uuid } from 'drizzle-orm/pg-core';
+import { customType, pgEnum, pgTable, uuid, varchar } from 'drizzle-orm/pg-core';
 import { users } from '@/db/schema/users.schema';
 
 export const interestEnum = pgEnum("interest_enum", ["FIND_HOUSING", "RENT"]);
@@ -16,7 +16,8 @@ export const userSettings = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-    primaryInterest: interestEnum("primary_interest").notNull(),
+    phoneNumber: varchar("phone_number", { length: 20 }).unique(),
+    primaryInterest: interestEnum("primary_interest"),
     idealLocation: geographyPoint("ideal_location"),
   },
 );

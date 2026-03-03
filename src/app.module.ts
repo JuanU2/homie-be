@@ -8,9 +8,11 @@ import { Pool } from "pg";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import * as schema from "@/db/schema";
 import { AuthService } from '@/auth/auth.service';
-import { jwtConstants } from '@/auth/constants';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthController } from './auth/auth.controller';
+import { AuthController } from '@/auth/auth.controller';
+import { UserSettingsService } from '@/userSettings/userSettings.service';
+import { USER_SETTINGS_REPOSITORY } from '@/userSettings/domain/interface/userSettings.repository';
+import { DrizzleUserSetttingsRepository } from '@/userSettings/infrastructure/drizzle-userSettings.repository';
 
 @Module({
   imports: [
@@ -29,9 +31,14 @@ import { AuthController } from './auth/auth.controller';
   providers: [
     UsersService,
     AuthService,
+    UserSettingsService,
     {
       provide: USER_REPOSITORY,
       useClass: DrizzleUserRepository,
+    },
+    {
+      provide: USER_SETTINGS_REPOSITORY,
+      useClass: DrizzleUserSetttingsRepository,
     },
     {
       provide: "DRIZZLE_DB",

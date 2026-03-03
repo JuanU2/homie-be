@@ -81,7 +81,6 @@ export class AuthService {
 
     } catch (e) {
 
-      console.error('Google authentication error:', e);
       throw new UnauthorizedException(
         'Google authentication failed',
       );
