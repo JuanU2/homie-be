@@ -8,8 +8,9 @@ import { JwtService } from '@nestjs/jwt';
 
 import { OAuth2Client } from 'google-auth-library';
 
-import { AuthUserDtoRequest } from './dtos/auth.dto';
+import { AuthUserDtoRequest, AuthUserDtoResponse } from './dtos/auth.dto';
 import { USER_REPOSITORY, type IUserRepository } from '@/users/domain/interface/user.repository';
+import { userMapper } from '@/users/userMapper';
 
 @Injectable()
 export class AuthService {
@@ -43,7 +44,7 @@ export class AuthService {
 
   async authenticateUser(
     data: AuthUserDtoRequest,
-  ): Promise<string> {
+  ): Promise<AuthUserDtoResponse> {
 
     try {
 
@@ -76,8 +77,13 @@ export class AuthService {
           email: user.email,
 
         });
+      
+      const mappedUser = userMapper(user);
 
-      return token;
+      return {
+        token,
+        user: mappedUser
+      };
 
     } catch (e) {
 

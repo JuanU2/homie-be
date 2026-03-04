@@ -9,11 +9,7 @@ export class AuthController {
 
   @Post()
   @ApiOperation({ summary: "Authenticate a user and return a JWT token" })
-    async authUser(@Body() data: AuthUserDtoRequest): Promise<any> {  
-      const tokenId =  await this.authService.authenticateUser(data);
-
-      return {
-        token: tokenId,
-      }
+    async authUser(@Body() data: AuthUserDtoRequest): Promise<AuthUserDtoResponse> {  
+      return await this.authService.authenticateUser(data);
     }
 }
