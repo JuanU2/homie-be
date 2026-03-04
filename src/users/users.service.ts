@@ -14,8 +14,7 @@ export class UsersService {
   ) {}
 
   async getUserById(id: string): Promise<GetUserDtoResponse | undefined> {
-    const user = await this.userRepository.getUserById(id);
-    console.log("User from repository:", user);
+    const user = await this.userRepository.getUserById(id);    
     
     if (!user) {
       return undefined;
