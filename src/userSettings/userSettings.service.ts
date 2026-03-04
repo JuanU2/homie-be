@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { UpdateUserSettingsDtoRequest, UpdateUserSettingsDtoResponse } from '@/userSettings/dtos/userSettings.dto';
 import { USER_SETTINGS_REPOSITORY, type IUserSettingsRepository } from '@/userSettings/domain/interface/userSettings.repository';
+import { convertDbLocation } from '@/utils/locationUtil';
 
 @Injectable()
 export class UserSettingsService {
@@ -18,7 +19,8 @@ export class UserSettingsService {
     });
 
     return {
-      userId: updatedSettings.userId,
+      ...updatedSettings,
+      idealLocation: convertDbLocation(updatedSettings.idealLocation)
     }
   }
 }

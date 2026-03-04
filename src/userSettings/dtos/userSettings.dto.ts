@@ -17,6 +17,12 @@ export const updateUserSettingsDtoRequestSchema = z.object({
 
 export const updateUserSettingsDtoResponseSchema = z.object({
   userId: z.string(),
+  phoneNumber: z.string().optional().nullable(),
+  primaryInterest: interestEnum.optional().nullable(),
+  idealLocation: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }).optional().nullable(),
 })
 
 export const getUserSettingsSchema = z.object({
