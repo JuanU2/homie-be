@@ -45,7 +45,10 @@ export class DrizzleUserRepository implements IUserRepository {
       return undefined;
     }
 
-    return user as UserWithSettings;
+    return {
+      ...user,
+      userSettings: user.userSettings,
+    };
   }
 
     async createUser(
