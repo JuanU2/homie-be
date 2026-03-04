@@ -1,5 +1,6 @@
 import z from "zod";
 import { createZodDto } from "nestjs-zod";
+import { getUserResponseSchema } from '@/users/dtos/users.dto';
 
 export const authUserRequestSchema = z.object({
   user: z.object({
@@ -13,6 +14,7 @@ export const authUserRequestSchema = z.object({
 
 export const authUserResponseSchema = z.object({
   token: z.string(),
+  user: getUserResponseSchema,
 });
 
 export class AuthUserDtoResponse extends createZodDto(authUserResponseSchema) {}

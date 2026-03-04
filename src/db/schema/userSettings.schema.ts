@@ -1,5 +1,6 @@
 import { customType, pgEnum, pgTable, uuid, varchar } from 'drizzle-orm/pg-core';
 import { users } from '@/db/schema/users.schema';
+import { relations } from 'drizzle-orm/relations';
 
 export const interestEnum = pgEnum("interest_enum", ["FIND_HOUSING", "RENT"]);
 
@@ -21,3 +22,10 @@ export const userSettings = pgTable(
     idealLocation: geographyPoint("ideal_location"),
   },
 );
+
+export const userSettingsRelations = relations(userSettings, ({ one }) => ({
+  user: one(users, {
+    fields: [userSettings.userId],
+    references: [users.id],
+  }),
+}));

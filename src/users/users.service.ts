@@ -3,7 +3,8 @@ import {
   USER_REPOSITORY,
   type IUserRepository,
 } from "@/users/domain/interface/user.repository";
-import { CreateUserDtoResponse } from './dtos/users.dto';
+import { GetUserDtoResponse } from './dtos/users.dto';
+import { userMapper } from './userMapper';
 
 @Injectable()
 export class UsersService {
@@ -12,15 +13,24 @@ export class UsersService {
     private readonly userRepository: IUserRepository,
   ) {}
 
-  async getAllUsers(): Promise<CreateUserDtoResponse[]> {
-    return this.userRepository.getAllUsers();
+  async getUserById(id: string): Promise<GetUserDtoResponse | undefined> {
+    const user = await this.userRepository.getUserById(id);
+    console.log("User from repository:", user);
+    
+    if (!user) {
+      return undefined;
+    }
+
+    return userMapper(user);
   }
 
-  async getUserById(id: string): Promise<CreateUserDtoResponse | undefined> {
-    return this.userRepository.getUserById(id);
-  }
+  async getUserByEmail(email: string): Promise<GetUserDtoResponse | undefined> {
+    const user = await this.userRepository.getUserByEmail(email);
+    
+    if (!user) {
+      return undefined;
+    }
 
-  async getUserByEmail(email: string): Promise<CreateUserDtoResponse | undefined> {
-    return this.userRepository.getUserByEmail(email);
+    return userMapper(user);
   }
 }

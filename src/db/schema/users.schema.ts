@@ -1,4 +1,6 @@
+import { InferModel, relations } from 'drizzle-orm';
 import { pgTable, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
+import { userSettings } from './userSettings.schema';
 
 export const users = pgTable(
   "users",
@@ -18,3 +20,7 @@ export const users = pgTable(
     uniqueIndex("users_email_unique").on(table.email),
   ],
 );
+
+export const usersRelations = relations(users, ({ one }) => ({
+  userSettings: one(userSettings),
+}));

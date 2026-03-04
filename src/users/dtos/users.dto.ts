@@ -1,26 +1,15 @@
 import z from "zod";
-import { createZodDto } from "nestjs-zod";
+import { getUserSettingsSchema } from '@/userSettings/dtos/userSettings.dto';
+import { createZodDto } from 'nestjs-zod';
 
-export const createUserRequestSchema = z.object({
-  email: z.email(),
-  password: z.string().min(6),
-  fullName: z.string().min(2),
-  phone: z.string().optional(),
-});
-
-export const createUserResponseSchema = z.object({
+export const getUserResponseSchema = z.object({
   id: z.string(),
-  email: z.email(),
+  email: z.string(),
   fullName: z.string(),
-  phone: z.string().optional().nullable(),
+  image: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
+  userSettings: getUserSettingsSchema
 });
 
-export const getUserReponseSchema = createUserResponseSchema;
-
-export class CreateUserDtoRequest extends createZodDto(createUserRequestSchema) {}
-
-export class CreateUserDtoResponse extends createZodDto(
-  createUserResponseSchema,
-) {}
+export class GetUserDtoResponse extends createZodDto(getUserResponseSchema) {}

@@ -14,6 +14,7 @@ import { UserSettingsService } from '@/userSettings/userSettings.service';
 import { USER_SETTINGS_REPOSITORY } from '@/userSettings/domain/interface/userSettings.repository';
 import { DrizzleUserSetttingsRepository } from '@/userSettings/infrastructure/drizzle-userSettings.repository';
 import { UserSettingsController } from '@/userSettings/userSettings.controller';
+import { JwtStrategy } from '@/auth/jwt.strategy';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { UserSettingsController } from '@/userSettings/userSettings.controller';
     UsersService,
     AuthService,
     UserSettingsService,
+    JwtStrategy,
     {
       provide: USER_REPOSITORY,
       useClass: DrizzleUserRepository,
