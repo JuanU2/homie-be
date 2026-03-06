@@ -1,12 +1,12 @@
 import { integer, pgTable, primaryKey, uuid } from 'drizzle-orm/pg-core';
-import { rooms } from '@/db/schema/rooms.schema';
 import { equipmentTypes } from './equipment.schema';
+import { properties } from './properties.schema';
 
 export const roomEquipment = pgTable(
-  "room_equipment",
+  "property_equipment",
   {
-    roomId: uuid("room_id")
-      .references(() => rooms.id, { onDelete: "cascade" })
+    propertyId: uuid("property_id")
+      .references(() => properties.id, { onDelete: "cascade" })
       .notNull(),
 
     equipmentTypeId: uuid("equipment_type_id")
@@ -17,7 +17,7 @@ export const roomEquipment = pgTable(
   },
   (table) => [{ 
     pk: primaryKey({
-      columns: [table.roomId, table.equipmentTypeId],
+      columns: [table.propertyId, table.equipmentTypeId],
     }),
   }],
 );
