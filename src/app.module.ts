@@ -1,0 +1,92 @@
+import { Module } from "@nestjs/common";
+import { UsersController } from "@/api/users/users.controller";
+import { UsersService } from "@/api/users/users.service";
+import { DrizzleUserRepository } from "@/api/users/infrastructure/drizzle-user.repository";
+import { USER_REPOSITORY } from "@/api/users/domain/interface/user.repository";
+import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import * as schema from "@/db/schema";
+import { AuthService } from '@/api/auth/auth.service';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthController } from '@/api/auth/auth.controller';
+import { UserSettingsService } from '@/api/userSettings/userSettings.service';
+import { USER_SETTINGS_REPOSITORY } from '@/api/userSettings/domain/interface/userSettings.repository';
+import { DrizzleUserSetttingsRepository } from '@/api/userSettings/infrastructure/drizzle-userSettings.repository';
+import { UserSettingsController } from '@/api/userSettings/userSettings.controller';
+import { JwtStrategy } from '@/api/auth/jwt.strategy';
+import { PropertiesController } from '@/api/properties/properties.controller';
+import { PropertiesService } from '@/api/properties/properties.service';
+import { PROPERTIES_REPOSITORY } from '@/api/properties/domain/interface/properties.repository';
+import { PropertiesRepository } from '@/api/properties/infrastructure/drizzle-properties.repository';
+import { RoomsController } from '@/api/rooms/rooms.controller';
+import { RoomsService } from '@/api/rooms/rooms.service';
+import { ROOMS_REPOSITORY } from '@/api/rooms/domain/interface/rooms.repository';
+import { DrizzleRoomsRepository } from '@/api/rooms/infrastructure/drizzle-rooms.repository';
+import { EquipmentController } from '@/api/equipment/equipment.controller';
+import { EquipmentService } from '@/api/equipment/equipment.service';
+import { EQUIPMENT_REPOSITORY } from '@/api/equipment/domain/interface/equipment.repository';
+import { DrizzleEquipmentRepository } from '@/api/equipment/infrastructure/drizzle-equipment.repository';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '7d' },
+      }),
+    }),
+  ],
+  controllers: [
+    UsersController,
+    AuthController,
+    UserSettingsController,
+    PropertiesController,
+    RoomsController,
+    EquipmentController,
+  ],
+  providers: [
+    UsersService,
+    AuthService,
+    UserSettingsService,
+    PropertiesService,
+    RoomsService,
+    EquipmentService,
+    JwtStrategy,
+    {
+      provide: USER_REPOSITORY,
+      useClass: DrizzleUserRepository,
+    },
+    {
+      provide: USER_SETTINGS_REPOSITORY,
+      useClass: DrizzleUserSetttingsRepository,
+    },
+    {
+      provide: PROPERTIES_REPOSITORY,
+      useClass: PropertiesRepository,
+    },
+    {
+      provide: ROOMS_REPOSITORY,
+      useClass: DrizzleRoomsRepository,
+    },
+    {
+      provide: EQUIPMENT_REPOSITORY,
+      useClass: DrizzleEquipmentRepository,
+    },
+    {
+      provide: "DRIZZLE_DB",
+      useFactory: async (): Promise<NodePgDatabase<typeof schema>> => {
+        const pool = new Pool({
+          connectionString: process.env.DATABASE_URL,
+        });
+
+        return drizzle(pool, { schema });
+      },
+    },
+  ],
+})
+export class AppModule {}
