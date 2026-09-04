@@ -8,7 +8,7 @@ export const authUserRequestSchema = z.object({
     email: z.email(),
     image: z.string(),
   }),
-  expires: z.string(),
+  expires: z.string().optional(),
   idToken: z.string(),
 });
 

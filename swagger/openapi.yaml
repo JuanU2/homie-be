@@ -5,46 +5,37 @@ info:
   description: API description
 
 servers:
-  - url: http://localhost:3000
+  - url: http://localhost:3001
     description: Development server
-  - url: https://api.example.com
-    description: Production server
+
+security:
+  - bearerAuth: []
 
 paths:
-  /users:
+  /auth:
     post:
-      summary: Create a new user
+      summary: Authenticate a user and return a JWT token
       tags:
-        - Users
+        - Auth
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserCreateRequest'
+              $ref: '#/components/schemas/AuthUserDtoRequest'
       responses:
         '201':
-          description: User created
+          description: User authenticated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserCreatedResponse'
-    get:
-      summary: Get all users
-      tags:
-        - Users
-      responses:
-        '200':
-          description: List of users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/AuthUserDtoResponse'
+        '401':
+          description: Authentication failed
+
   /users/{id}:
     get:
-      summary: Get user by ID
+      summary: Get user by id
       tags:
         - Users
       parameters:
@@ -63,10 +54,12 @@ paths:
                 $ref: '#/components/schemas/UserResponse'
         '404':
           description: User not found
+
+  /user-settings/{id}:
     patch:
-      summary: Update user
+      summary: Update user settings
       tags:
-        - Users
+        - User Settings
       parameters:
         - name: id
           in: path
@@ -79,32 +72,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserUpdateRequest'
+              $ref: '#/components/schemas/UpdateUserSettingsRequest'
       responses:
         '200':
-          description: User updated
+          description: Settings updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
-        '404':
-          description: User not found
-    delete:
-      summary: Delete user
-      tags:
-        - Users
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: User deleted
-        '404':
-          description: User not found
+                $ref: '#/components/schemas/UpdateUserSettingsResponse'
+        '401':
+          description: Unauthorized
 
   /properties:
     post:
@@ -116,7 +93,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PropertyCreateRequest'
+              $ref: '#/components/schemas/CreatePropertyRequest'
       responses:
         '201':
           description: Property created
@@ -124,118 +101,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PropertyResponse'
-    get:
-      summary: Get all properties
-      tags:
-        - Properties
-      parameters:
-        - name: latitude
-          in: query
-          schema:
-            type: number
-            format: float
-        - name: longitude
-          in: query
-          schema:
-            type: number
-            format: float
-        - name: radius
-          in: query
-          description: Radius in kilometers
-          schema:
-            type: number
-            format: float
-      responses:
-        '200':
-          description: List of properties
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PropertyResponse'
-  /properties/{id}:
-    get:
-      summary: Get property by ID
-      tags:
-        - Properties
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Property found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PropertyResponse'
-        '404':
-          description: Property not found
-    patch:
-      summary: Update property
-      tags:
-        - Properties
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PropertyUpdateRequest'
-      responses:
-        '200':
-          description: Property updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PropertyResponse'
-        '404':
-          description: Property not found
-    delete:
-      summary: Delete property
-      tags:
-        - Properties
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: Property deleted
-        '404':
-          description: Property not found
 
-  /properties/{id}/rooms:
+  /rooms:
     post:
-      summary: Create a room in a property
+      summary: Create a room
       tags:
         - Rooms
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RoomCreateRequest'
+              $ref: '#/components/schemas/CreateRoomRequest'
       responses:
         '201':
           description: Room created
@@ -243,50 +120,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RoomResponse'
-    get:
-      summary: Get all rooms in a property
-      tags:
-        - Rooms
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: List of rooms
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RoomResponse'
 
   /rooms/{id}:
-    get:
-      summary: Get room by ID
-      tags:
-        - Rooms
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Room found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RoomResponse'
-        '404':
-          description: Room not found
     patch:
-      summary: Update room
+      summary: Update a room
       tags:
         - Rooms
       parameters:
@@ -301,7 +138,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RoomUpdateRequest'
+              $ref: '#/components/schemas/UpdateRoomRequest'
       responses:
         '200':
           description: Room updated
@@ -311,72 +148,31 @@ paths:
                 $ref: '#/components/schemas/RoomResponse'
         '404':
           description: Room not found
-    delete:
-      summary: Delete room
-      tags:
-        - Rooms
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: Room deleted
-        '404':
-          description: Room not found
 
-  /properties/{id}/equipment:
+  /equipment:
     post:
-      summary: Add equipment to property
+      summary: Create property equipment
       tags:
-        - Property Equipment
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - Equipment
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PropertyEquipmentCreateRequest'
+              $ref: '#/components/schemas/CreateEquipmentRequest'
       responses:
         '201':
-          description: Equipment added
+          description: Equipment created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PropertyEquipmentResponse'
-    get:
-      summary: Get all equipment in property
+                $ref: '#/components/schemas/EquipmentResponse'
+
+  /equipment/{propertyId}/{equipmentType}:
+    patch:
+      summary: Update property equipment quantity
       tags:
-        - Property Equipment
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: List of equipment
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PropertyEquipmentResponse'
-    delete:
-      summary: Remove equipment from property
-      tags:
-        - Property Equipment
+        - Equipment
       parameters:
         - name: propertyId
           in: path
@@ -384,91 +180,26 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: equipmentTypeId
-          in: query
+        - name: equipmentType
+          in: path
+          required: true
           schema:
             type: string
-            format: uuid
-        - name: customEquipmentType
-          in: query
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Equipment removed
-        '404':
-          description: Equipment not found
-
-
-  /equipment-types:
-    post:
-      summary: Create equipment type
-      tags:
-        - Equipment Types
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EquipmentTypeCreateRequest'
-      responses:
-        '201':
-          description: Equipment type created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EquipmentTypeResponse'
-    get:
-      summary: Get all equipment types
-      tags:
-        - Equipment Types
+              $ref: '#/components/schemas/UpdateEquipmentRequest'
       responses:
         '200':
-          description: List of equipment types
+          description: Equipment updated
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/EquipmentTypeResponse'
-
-  /equipment-types/{id}:
-    get:
-      summary: Get equipment type by ID
-      tags:
-        - Equipment Types
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Equipment type found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EquipmentTypeResponse'
+                $ref: '#/components/schemas/EquipmentResponse'
         '404':
-          description: Equipment type not found
-    delete:
-      summary: Delete equipment type
-      tags:
-        - Equipment Types
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: Equipment type deleted
-        '404':
-          description: Equipment type not found
+          description: Equipment not found for property
 
   /roommate-requests:
     post:
@@ -480,7 +211,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RoommateRequestCreateRequest'
+              $ref: '#/components/schemas/CreateRoommateRequestRequest'
       responses:
         '201':
           description: Roommate request created
@@ -488,31 +219,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RoommateRequestResponse'
+        '401':
+          description: Unauthorized
     get:
       summary: Get all roommate requests
       tags:
         - Roommate Requests
-      parameters:
-        - name: status
-          in: query
-          schema:
-            $ref: '#/components/schemas/RoommateRequestStatus'
-        - name: latitude
-          in: query
-          schema:
-            type: number
-            format: float
-        - name: longitude
-          in: query
-          schema:
-            type: number
-            format: float
-        - name: radius
-          in: query
-          description: Radius in kilometers
-          schema:
-            type: number
-            format: float
       responses:
         '200':
           description: List of roommate requests
@@ -525,7 +237,7 @@ paths:
 
   /roommate-requests/{id}:
     get:
-      summary: Get roommate request by ID
+      summary: Get roommate request by id
       tags:
         - Roommate Requests
       parameters:
@@ -544,183 +256,22 @@ paths:
                 $ref: '#/components/schemas/RoommateRequestResponse'
         '404':
           description: Roommate request not found
-    patch:
-      summary: Update roommate request
-      tags:
-        - Roommate Requests
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RoommateRequestUpdateRequest'
-      responses:
-        '200':
-          description: Roommate request updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RoommateRequestResponse'
-        '404':
-          description: Roommate request not found
-    delete:
-      summary: Delete roommate request
-      tags:
-        - Roommate Requests
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: Roommate request deleted
-        '404':
-          description: Roommate request not found
-
-  /roommate-requests/{id}/close:
-    post:
-      summary: Close roommate request
-      tags:
-        - Roommate Requests
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Roommate request closed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RoommateRequestResponse'
-        '404':
-          description: Roommate request not found
-
-  /roommate-applications:
-    post:
-      summary: Apply for roommate request
-      tags:
-        - Roommate Applications
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RoommateApplicationCreateRequest'
-      responses:
-        '201':
-          description: Application created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RoommateApplicationResponse'
-    get:
-      summary: Get all roommate applications
-      tags:
-        - Roommate Applications
-      parameters:
-        - name: status
-          in: query
-          schema:
-            $ref: '#/components/schemas/RoommateApplicationStatus'
-      responses:
-        '200':
-          description: List of applications
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RoommateApplicationResponse'
-
-  /roommate-applications/{id}:
-    get:
-      summary: Get roommate application by ID
-      tags:
-        - Roommate Applications
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Application found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RoommateApplicationResponse'
-        '404':
-          description: Application not found
-
-  /roommate-applications/{id}/accept:
-    post:
-      summary: Accept roommate application
-      tags:
-        - Roommate Applications
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Application accepted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RoommateApplicationResponse'
-        '404':
-          description: Application not found
-
-  /roommate-applications/{id}/reject:
-    post:
-      summary: Reject roommate application
-      tags:
-        - Roommate Applications
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Application rejected
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RoommateApplicationResponse'
-        '404':
-          description: Application not found
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     # Enums
-    UserInterestEnum:
+    InterestEnum:
       type: string
       enum:
         - FIND_HOUSING
         - RENT
-    
+
     RoomTypeEnum:
       type: string
       enum:
@@ -730,14 +281,16 @@ components:
         - LIVING_ROOM
         - TOILET
         - WARDROBE
-    
-    PriceCurrencyEnum:
+        - BALCONY
+        - OTHER
+
+    CurrencyEnum:
       type: string
       enum:
         - EUR
         - CZK
         - USD
-    
+
     RoommateRequestStatus:
       type: string
       enum:
@@ -745,61 +298,64 @@ components:
         - RESERVED
         - CLOSED
         - EXPIRED
-    
-    RoommateApplicationStatus:
-      type: string
-      enum:
-        - PENDING
-        - ACCEPTED
-        - REJECTED
 
-    # User Schemas
-    UserCreateRequest:
+    # Shared
+    IdealLocation:
       type: object
       properties:
-        firstName:
-          type: string
-        lastName:
-          type: string
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          minLength: 8
-        primaryInterest:
-          $ref: '#/components/schemas/UserInterestEnum'
-        idealLocationLatitude:
+        lat:
           type: number
-          format: float
-        idealLocationLongitude:
+        lng:
           type: number
-          format: float
-        phoneNumber:
+      required:
+        - lat
+        - lng
+
+    # Auth / User Schemas
+    AuthUserDtoRequest:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+              format: email
+            image:
+              type: string
+          required:
+            - name
+            - email
+            - image
+        expires:
+          type: string
+        idToken:
           type: string
       required:
-        - firstName
-        - lastName
-        - email
-        - password
+        - user
+        - idToken
 
-    UserUpdateRequest:
+    UserSettings:
       type: object
       properties:
-        firstName:
+        id:
           type: string
-        lastName:
+          format: uuid
+        userId:
           type: string
-        primaryInterest:
-          $ref: '#/components/schemas/UserInterestEnum'
-        idealLocationLatitude:
-          type: number
-          format: float
-        idealLocationLongitude:
-          type: number
-          format: float
+          format: uuid
         phoneNumber:
           type: string
+          nullable: true
+        primaryInterest:
+          $ref: '#/components/schemas/InterestEnum'
+        idealLocation:
+          $ref: '#/components/schemas/IdealLocation'
+      required:
+        - id
+        - userId
 
     UserResponse:
       type: object
@@ -807,75 +363,105 @@ components:
         id:
           type: string
           format: uuid
-        firstName:
-          type: string
-        lastName:
-          type: string
         email:
           type: string
-        primaryInterest:
-          $ref: '#/components/schemas/UserInterestEnum'
-        idealLocationLatitude:
-          type: number
-          format: float
-        idealLocationLongitude:
-          type: number
-          format: float
-        phoneNumber:
+        fullName:
           type: string
+        image:
+          type: string
+          nullable: true
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
+        userSettings:
+          $ref: '#/components/schemas/UserSettings'
       required:
         - id
-        - firstName
-        - lastName
         - email
+        - fullName
         - createdAt
         - updatedAt
+        - userSettings
 
-    UserCreatedResponse:
+    AuthUserDtoResponse:
       type: object
       properties:
-        id:
+        token:
           type: string
-          format: uuid
+        user:
+          $ref: '#/components/schemas/UserResponse'
       required:
-        - id
+        - token
+        - user
 
-    UserByIdResponse:
+    # User Settings Schemas
+    UpdateUserSettingsRequest:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        firstName:
-          type: string
-        lastName: 
-          type: string
-        email:
-          type: string
         phoneNumber:
           type: string
-      required:
-        - id
-        - firstName
-        - lastName
-        - email
+        primaryInterest:
+          $ref: '#/components/schemas/InterestEnum'
+        idealLocation:
+          $ref: '#/components/schemas/IdealLocation'
 
-    # Property Schemas
-    PropertyCreateRequest:
+    UpdateUserSettingsResponse:
       type: object
       properties:
+        userId:
+          type: string
+          format: uuid
+        phoneNumber:
+          type: string
+          nullable: true
+        primaryInterest:
+          $ref: '#/components/schemas/InterestEnum'
+        idealLocation:
+          $ref: '#/components/schemas/IdealLocation'
+      required:
+        - userId
+
+    # Property Schemas
+    RoomDto:
+      type: object
+      properties:
+        roomType:
+          $ref: '#/components/schemas/RoomTypeEnum'
+        count:
+          type: integer
+          minimum: 1
+      required:
+        - roomType
+        - count
+
+    EquipmentDto:
+      type: object
+      properties:
+        equipmentType:
+          type: string
+        count:
+          type: integer
+          minimum: 1
+      required:
+        - equipmentType
+        - count
+
+    CreatePropertyRequest:
+      type: object
+      properties:
+        ownerId:
+          type: string
+          format: uuid
         description:
           type: string
-        sizeSqm:
-          type: integer
+        sizeM2:
+          type: number
         roomCount:
           type: integer
+          minimum: 1
         country:
           type: string
         city:
@@ -886,33 +472,35 @@ components:
           type: string
         streetNumber:
           type: string
-        locationLatitude:
+        lat:
           type: number
-          format: float
-        locationLongitude:
+          minimum: -90
+          maximum: 90
+        lng:
           type: number
-          format: float
+          minimum: -180
+          maximum: 180
+        rooms:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoomDto'
+        equipment:
+          type: array
+          items:
+            $ref: '#/components/schemas/EquipmentDto'
       required:
+        - ownerId
         - description
         - roomCount
         - country
         - city
         - zipCode
+        - street
         - streetNumber
-        - locationLatitude
-        - locationLongitude
-
-    PropertyUpdateRequest:
-      type: object
-      properties:
-        description:
-          type: string
-        sizeSqm:
-          type: integer
-        roomCount:
-          type: integer
-        street:
-          type: string
+        - lat
+        - lng
+        - rooms
+        - equipment
 
     PropertyResponse:
       type: object
@@ -925,8 +513,8 @@ components:
           format: uuid
         description:
           type: string
-        sizeSqm:
-          type: integer
+        sizeM2:
+          type: number
         roomCount:
           type: integer
         country:
@@ -939,18 +527,24 @@ components:
           type: string
         streetNumber:
           type: string
-        locationLatitude:
+        lat:
           type: number
-          format: float
-        locationLongitude:
+        lng:
           type: number
-          format: float
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
+        rooms:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoomDto'
+        equipment:
+          type: array
+          items:
+            $ref: '#/components/schemas/EquipmentDto'
       required:
         - id
         - ownerId
@@ -959,28 +553,40 @@ components:
         - country
         - city
         - zipCode
+        - street
         - streetNumber
+        - lat
+        - lng
         - createdAt
         - updatedAt
+        - rooms
+        - equipment
 
     # Room Schemas
-    RoomCreateRequest:
+    CreateRoomRequest:
       type: object
       properties:
+        propertyId:
+          type: string
+          format: uuid
         roomType:
           $ref: '#/components/schemas/RoomTypeEnum'
-        sizeSqm:
+        count:
           type: integer
+          minimum: 1
       required:
+        - propertyId
         - roomType
+        - count
 
-    RoomUpdateRequest:
+    UpdateRoomRequest:
       type: object
       properties:
         roomType:
           $ref: '#/components/schemas/RoomTypeEnum'
-        sizeSqm:
+        count:
           type: integer
+          minimum: 1
 
     RoomResponse:
       type: object
@@ -993,80 +599,57 @@ components:
           format: uuid
         roomType:
           $ref: '#/components/schemas/RoomTypeEnum'
-        sizeSqm:
+        count:
           type: integer
       required:
         - id
         - propertyId
         - roomType
+        - count
 
-    # Equipment Type Schemas
-    EquipmentTypeCreateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-      required:
-        - name
-
-    EquipmentTypeResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-      required:
-        - id
-        - name
-
-    # Property Equipment Schemas
-    PropertyEquipmentCreateRequest:
-      oneOf:
-        - type: object
-          properties:
-            equipmentTypeId:
-              type: string
-              format: uuid
-            quantity:
-              type: integer
-              minimum: 1
-          required:
-            - equipmentTypeId
-            - quantity
-          additionalProperties: false
-        - type: object
-          properties:
-            customEquipmentType:
-              type: string
-            quantity:
-              type: integer
-              minimum: 1
-          required:
-            - customEquipmentType
-            - quantity
-          additionalProperties: false
-
-    PropertyEquipmentResponse:
+    # Equipment Schemas
+    CreateEquipmentRequest:
       type: object
       properties:
         propertyId:
           type: string
           format: uuid
-        equipmentTypeId:
+        equipmentType:
+          type: string
+        count:
+          type: integer
+          minimum: 1
+      required:
+        - propertyId
+        - equipmentType
+        - count
+
+    UpdateEquipmentRequest:
+      type: object
+      properties:
+        count:
+          type: integer
+          minimum: 1
+      required:
+        - count
+
+    EquipmentResponse:
+      type: object
+      properties:
+        propertyId:
           type: string
           format: uuid
-        equipmentName:
+        equipmentType:
           type: string
-        quantity:
+        count:
           type: integer
       required:
         - propertyId
-        - quantity
+        - equipmentType
+        - count
 
     # Roommate Request Schemas
-    RoommateRequestCreateRequest:
+    CreateRoommateRequestRequest:
       type: object
       properties:
         propertyId:
@@ -1076,15 +659,18 @@ components:
           type: string
         priceAmount:
           type: integer
+          minimum: 1
         priceCurrency:
-          $ref: '#/components/schemas/PriceCurrencyEnum'
+          $ref: '#/components/schemas/CurrencyEnum'
         idealMoveInDate:
           type: string
           format: date
         maxRoommates:
           type: integer
+          minimum: 1
         currentRoommates:
           type: integer
+          minimum: 0
       required:
         - propertyId
         - description
@@ -1092,25 +678,6 @@ components:
         - priceCurrency
         - maxRoommates
         - currentRoommates
-
-    RoommateRequestUpdateRequest:
-      type: object
-      properties:
-        description:
-          type: string
-        priceAmount:
-          type: integer
-        priceCurrency:
-          $ref: '#/components/schemas/PriceCurrencyEnum'
-        idealMoveInDate:
-          type: string
-          format: date
-        maxRoommates:
-          type: integer
-        currentRoommates:
-          type: integer
-        status:
-          $ref: '#/components/schemas/RoommateRequestStatus'
 
     RoommateRequestResponse:
       type: object
@@ -1121,7 +688,7 @@ components:
         propertyId:
           type: string
           format: uuid
-        createdById:
+        createdBy:
           type: string
           format: uuid
         description:
@@ -1129,10 +696,11 @@ components:
         priceAmount:
           type: integer
         priceCurrency:
-          $ref: '#/components/schemas/PriceCurrencyEnum'
+          $ref: '#/components/schemas/CurrencyEnum'
         idealMoveInDate:
           type: string
           format: date
+          nullable: true
         maxRoommates:
           type: integer
         currentRoommates:
@@ -1148,10 +716,11 @@ components:
         closedAt:
           type: string
           format: date-time
+          nullable: true
       required:
         - id
         - propertyId
-        - createdById
+        - createdBy
         - description
         - priceAmount
         - priceCurrency
@@ -1160,37 +729,3 @@ components:
         - status
         - createdAt
         - updatedAt
-
-    # Roommate Application Schemas
-    RoommateApplicationCreateRequest:
-      type: object
-      properties:
-        roommateRequestId:
-          type: string
-          format: uuid
-      required:
-        - roommateRequestId
-
-    RoommateApplicationResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        roommateRequestId:
-          type: string
-          format: uuid
-        applicantId:
-          type: string
-          format: uuid
-        status:
-          $ref: '#/components/schemas/RoommateApplicationStatus'
-        createdAt:
-          type: string
-          format: date-time
-      required:
-        - id
-        - roommateRequestId
-        - applicantId
-        - status
-        - createdAt

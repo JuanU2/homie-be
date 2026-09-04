@@ -6,7 +6,7 @@ export const equipmentTypes = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     name: varchar("name", { length: 255 }).notNull(),
   },
-  (table) => [{
-    nameUnique: uniqueIndex("equipment_types_name_unique").on(table.name),
-  }],
+  (table) => [
+    uniqueIndex("equipment_types_name_unique").on(table.name),
+  ],
 );

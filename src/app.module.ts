@@ -27,6 +27,10 @@ import { EquipmentController } from '@/api/equipment/equipment.controller';
 import { EquipmentService } from '@/api/equipment/equipment.service';
 import { EQUIPMENT_REPOSITORY } from '@/api/equipment/domain/interface/equipment.repository';
 import { DrizzleEquipmentRepository } from '@/api/equipment/infrastructure/drizzle-equipment.repository';
+import { RoommateRequestsController } from '@/api/roommateRequests/roommateRequests.controller';
+import { RoommateRequestsService } from '@/api/roommateRequests/roommateRequests.service';
+import { ROOMMATE_REQUESTS_REPOSITORY } from '@/api/roommateRequests/domain/interface/roommateRequests.repository';
+import { DrizzleRoommateRequestsRepository } from '@/api/roommateRequests/infrastructure/drizzle-roommateRequests.repository';
 
 @Module({
   imports: [
@@ -48,6 +52,7 @@ import { DrizzleEquipmentRepository } from '@/api/equipment/infrastructure/drizz
     PropertiesController,
     RoomsController,
     EquipmentController,
+    RoommateRequestsController,
   ],
   providers: [
     UsersService,
@@ -56,6 +61,7 @@ import { DrizzleEquipmentRepository } from '@/api/equipment/infrastructure/drizz
     PropertiesService,
     RoomsService,
     EquipmentService,
+    RoommateRequestsService,
     JwtStrategy,
     {
       provide: USER_REPOSITORY,
@@ -76,6 +82,10 @@ import { DrizzleEquipmentRepository } from '@/api/equipment/infrastructure/drizz
     {
       provide: EQUIPMENT_REPOSITORY,
       useClass: DrizzleEquipmentRepository,
+    },
+    {
+      provide: ROOMMATE_REQUESTS_REPOSITORY,
+      useClass: DrizzleRoommateRequestsRepository,
     },
     {
       provide: "DRIZZLE_DB",

@@ -16,11 +16,11 @@ export const propertyEquipment = pgTable(
 
     quantity: integer("quantity").notNull(),
   },
-  (table) => [{ 
-    pk: primaryKey({
+  (table) => [
+    primaryKey({
       columns: [table.propertyId, table.equipmentTypeId],
     }),
-  }],
+  ],
 );
 
 export const propertyEquipmentRelations = relations(propertyEquipment, ({ one }) => ({

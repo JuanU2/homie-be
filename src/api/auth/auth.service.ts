@@ -1,6 +1,7 @@
 import {
   Inject,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 
@@ -16,6 +17,7 @@ import { userMapper } from '@/api/users/userMapper';
 export class AuthService {
 
   private client: OAuth2Client;
+  private readonly logger = new Logger(AuthService.name);
 
   constructor(
 
@@ -33,66 +35,70 @@ export class AuthService {
   }
 
   /**
-   * 
-   * This function authenticate google user and return a JWT token if the authentication is successful. 
-   * It verifies the Google ID token, retrieves the user's email from the token payload, and either finds or creates a user in the database. 
+   *
+   * This function authenticate google user and return a JWT token if the authentication is successful.
+   * It verifies the Google ID token, retrieves the user's email from the token payload, and either finds or creates a user in the database.
    * Finally, it generates a JWT token containing the user's ID and email.
-   * 
-   * @param data 
-   * @returns 
+   *
+   * @param data
+   * @returns
    */
 
   async authenticateUser(
     data: AuthUserDtoRequest,
   ): Promise<AuthUserDtoResponse> {
+    this.logger.log(
+      `Authenticating user: email=${data.user.email}, name=${data.user.name}`,
+    );
 
     try {
+      this.logger.log(
+        `Verifying Google ID token (audience=${process.env.GOOGLE_CLIENT_ID})`,
+      );
 
-      const ticket =
-        await this.client.verifyIdToken({
+      const ticket = await this.client.verifyIdToken({
+        idToken: data.idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
 
-          idToken: data.idToken,
-
-          audience: process.env.GOOGLE_CLIENT_ID,
-
-        });
-      
       const payload = ticket.getPayload();
+      this.logger.log(
+        `ID token verified: email=${payload?.email}, sub=${payload?.sub}, aud=${payload?.aud}, exp=${payload?.exp}`,
+      );
 
-      if (!payload?.email || (payload.email !== data.user.email)) {
-
-        throw new UnauthorizedException(
-          'Invalid Google token',
+      if (!payload?.email || payload.email !== data.user.email) {
+        this.logger.warn(
+          `Email mismatch: token=${payload?.email}, body=${data.user.email}`,
         );
-
+        throw new UnauthorizedException('Invalid Google token');
       }
 
-      const user =
-        await this.userRepository.findOrCreateGoogleUser(data.user.name,data.user.email, data.user.image);
+      const user = await this.userRepository.findOrCreateGoogleUser(
+        data.user.name,
+        data.user.email,
+        data.user.image,
+      );
+      this.logger.log(`User resolved: id=${user.id}, email=${user.email}`);
 
-      const token =
-        await this.jwtService.signAsync({
+      const token = await this.jwtService.signAsync({
+        userId: user.id,
+        email: user.email,
+      });
+      this.logger.log(`JWT issued for userId=${user.id}`);
 
-          userId: user.id,
-          email: user.email,
-
-        });
-      
       const mappedUser = userMapper(user);
 
       return {
         token,
-        user: mappedUser
+        user: mappedUser,
       };
-
     } catch (e) {
-
-      throw new UnauthorizedException(
+      this.logger.error(
         'Google authentication failed',
+        e instanceof Error ? e.stack : String(e),
       );
-
+      throw new UnauthorizedException('Google authentication failed');
     }
-
   }
 
 }
