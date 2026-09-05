@@ -57,6 +57,16 @@ export class PropertiesRepository implements IPropertiesRepository {
     return resolvedType.id;
   }
 
+  async getOwnerId(propertyId: string): Promise<string | undefined> {
+    const [property] = await this.db
+      .select({ ownerId: properties.ownerId })
+      .from(properties)
+      .where(eq(properties.id, propertyId))
+      .limit(1);
+
+    return property?.ownerId;
+  }
+
   async createProperty(property: CreatePropertyModel): Promise<CreatedPropertyAggregate> {
     return this.db.transaction(async transaction => {
       const [createdProperty] = await transaction

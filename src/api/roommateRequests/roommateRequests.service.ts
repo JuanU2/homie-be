@@ -1,4 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   type IRoommateRequestsRepository,
   ROOMMATE_REQUESTS_REPOSITORY,
@@ -7,18 +12,34 @@ import {
   CreateRoommateRequestDtoRequest,
   RoommateRequestDtoResponse,
 } from '@/api/roommateRequests/dtos/roommateRequests.dto';
+import {
+  type IPropertiesRepository,
+  PROPERTIES_REPOSITORY,
+} from '@/api/properties/domain/interface/properties.repository';
 
 @Injectable()
 export class RoommateRequestsService {
   constructor(
     @Inject(ROOMMATE_REQUESTS_REPOSITORY)
     private readonly roommateRequestsRepository: IRoommateRequestsRepository,
+    @Inject(PROPERTIES_REPOSITORY)
+    private readonly propertiesRepository: IPropertiesRepository,
   ) {}
 
   async createRoommateRequest(
     userId: string,
     data: CreateRoommateRequestDtoRequest,
   ): Promise<RoommateRequestDtoResponse> {
+    const ownerId = await this.propertiesRepository.getOwnerId(data.propertyId);
+    if (!ownerId) {
+      throw new NotFoundException('Property not found');
+    }
+    if (ownerId !== userId) {
+      throw new ForbiddenException(
+        'You can only create a roommate request for your own property',
+      );
+    }
+
     const request = await this.roommateRequestsRepository.createRoommateRequest({
       propertyId: data.propertyId,
       createdBy: userId,
