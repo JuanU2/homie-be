@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { and, eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { propertyImages } from "@/db/schema";
 import * as schema from "@/db/schema";
@@ -16,24 +17,69 @@ export class DrizzlePropertyImagesRepository implements IPropertyImagesRepositor
   ) {}
 
   async createImage(image: CreatePropertyImageModel): Promise<PropertyImage> {
-    const [created] = await this.db
-      .insert(propertyImages)
-      .values({
-        propertyId: image.propertyId,
-        imageUrl: image.imageUrl,
-      })
-      .returning();
+    return this.db.transaction(async tx => {
+      if (image.title) {
+        await tx
+          .update(propertyImages)
+          .set({ title: false })
+          .where(
+            and(
+              eq(propertyImages.propertyId, image.propertyId),
+              eq(propertyImages.title, true),
+            ),
+          );
+      }
 
-    if (!created) {
-      throw new Error("Failed to create property image");
+      const [created] = await tx
+        .insert(propertyImages)
+        .values({
+          propertyId: image.propertyId,
+          imageUrl: image.imageUrl,
+          title: image.title,
+        })
+        .returning();
+
+      if (!created) {
+        throw new Error("Failed to create property image");
+      }
+
+      return {
+        id: created.id,
+        propertyId: created.propertyId,
+        imageUrl: created.imageUrl ?? image.imageUrl,
+        title: created.title,
+        createdAt: created.createdAt,
+        updatedAt: created.updatedAt,
+      };
+    });
+  }
+
+  async getImageById(
+    propertyId: string,
+    imageId: string,
+  ): Promise<PropertyImage | undefined> {
+    const [image] = await this.db
+      .select()
+      .from(propertyImages)
+      .where(
+        and(
+          eq(propertyImages.id, imageId),
+          eq(propertyImages.propertyId, propertyId),
+        ),
+      )
+      .limit(1);
+
+    if (!image) {
+      return undefined;
     }
 
     return {
-      id: created.id,
-      propertyId: created.propertyId,
-      imageUrl: created.imageUrl ?? image.imageUrl,
-      createdAt: created.createdAt,
-      updatedAt: created.updatedAt,
+      id: image.id,
+      propertyId: image.propertyId,
+      imageUrl: image.imageUrl ?? "",
+      title: image.title,
+      createdAt: image.createdAt,
+      updatedAt: image.updatedAt,
     };
   }
 }

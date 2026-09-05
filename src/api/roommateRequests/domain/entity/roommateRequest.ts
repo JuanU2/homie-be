@@ -32,3 +32,37 @@ export interface CreateRoommateRequestModel {
   maxRoommates: number;
   currentRoommates: number;
 }
+
+export interface RoommateRequestPropertySummary {
+  id: string;
+  description: string;
+  country: string;
+  city: string;
+  zipCode: string;
+  street: string;
+  streetNumber: string;
+  lat: number;
+  lng: number;
+  titleImageId: string | null;
+}
+
+export interface RoommateRequestListItem {
+  id: string;
+  maxRoommates: number;
+  currentRoommates: number;
+  priceAmount: number;
+  priceCurrency: RoommateRequestCurrency;
+  property: RoommateRequestPropertySummary;
+}
+
+export interface RoommateRequestsPage {
+  items: RoommateRequestListItem[];
+  nextCursor: string | null;
+}
+
+export interface GetRoommateRequestsParams {
+  limit: number;
+  cursor?: string;
+  lat?: number;
+  lng?: number;
+}

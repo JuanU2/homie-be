@@ -1,6 +1,8 @@
 import {
   CreateRoommateRequestModel,
+  GetRoommateRequestsParams,
   RoommateRequest,
+  RoommateRequestsPage,
 } from '@/api/roommateRequests/domain/entity/roommateRequest';
 
 export interface IRoommateRequestsRepository {
@@ -8,7 +10,9 @@ export interface IRoommateRequestsRepository {
     request: CreateRoommateRequestModel,
   ): Promise<RoommateRequest>;
   getRoommateRequestById(id: string): Promise<RoommateRequest | undefined>;
-  getAllRoommateRequests(): Promise<RoommateRequest[]>;
+  getRoommateRequestsPage(
+    params: GetRoommateRequestsParams,
+  ): Promise<RoommateRequestsPage>;
 }
 
 export const ROOMMATE_REQUESTS_REPOSITORY = Symbol(

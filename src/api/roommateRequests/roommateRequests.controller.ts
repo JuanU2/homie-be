@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/api/auth/jwt-auth.guard';
 import { type Request } from 'express';
@@ -6,6 +15,7 @@ import {
   CreateRoommateRequestDtoRequest,
   RoommateRequestDtoResponse,
 } from '@/api/roommateRequests/dtos/roommateRequests.dto';
+import { RoommateRequestsPage } from '@/api/roommateRequests/domain/entity/roommateRequest';
 import { RoommateRequestsService } from '@/api/roommateRequests/roommateRequests.service';
 
 @Controller('roommate-requests')
@@ -36,8 +46,22 @@ export class RoommateRequestsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all roommate requests' })
-  async getAllRoommateRequests(): Promise<RoommateRequestDtoResponse[]> {
-    return this.roommateRequestsService.getAllRoommateRequests();
+  @ApiOperation({ summary: 'Get paginated roommate requests' })
+  async getAllRoommateRequests(
+    @Query('limit') limit?: string,
+    @Query('cursor') cursor?: string,
+    @Query('lat') lat?: string,
+    @Query('lng') lng?: string,
+  ): Promise<RoommateRequestsPage> {
+    const resolvedLimit = limit
+      ? Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100)
+      : 20;
+
+    return this.roommateRequestsService.getRoommateRequests({
+      limit: resolvedLimit,
+      cursor,
+      lat: lat !== undefined && !Number.isNaN(Number(lat)) ? Number(lat) : undefined,
+      lng: lng !== undefined && !Number.isNaN(Number(lng)) ? Number(lng) : undefined,
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { customType, integer, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { boolean, customType, integer, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { properties } from './properties.schema';
 
 export const propertyImages = pgTable("property_images", {
@@ -7,6 +7,7 @@ export const propertyImages = pgTable("property_images", {
     .references(() => properties.id, { onDelete: "cascade" })
     .notNull(),
   imageUrl: varchar("image_url", { length: 255 }),
+  title: boolean("title").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

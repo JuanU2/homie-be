@@ -4,6 +4,7 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
 } from "@aws-sdk/client-s3";
 
 @Injectable()
@@ -49,5 +50,24 @@ export class StorageService {
         Key: key,
       }),
     );
+  }
+
+  async get(key: string): Promise<{ body: Buffer; contentType: string }> {
+    const response = await this.s3.send(
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      }),
+    );
+
+    const bytes = await response.Body?.transformToByteArray();
+    if (!bytes) {
+      throw new Error(`Failed to read object "${key}"`);
+    }
+
+    return {
+      body: Buffer.from(bytes),
+      contentType: response.ContentType ?? "application/octet-stream",
+    };
   }
 }

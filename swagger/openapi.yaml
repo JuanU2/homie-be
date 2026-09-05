@@ -124,6 +124,8 @@ paths:
                 file:
                   type: string
                   format: binary
+                title:
+                  type: boolean
               required:
                 - file
       responses:
@@ -141,6 +143,35 @@ paths:
           description: Forbidden
         '404':
           description: Property not found
+
+  /properties/{propertyId}/images/{imageId}:
+    get:
+      summary: Get a property image
+      tags:
+        - Properties
+      parameters:
+        - name: propertyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The image file
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Image not found
 
   /rooms:
     post:
@@ -277,18 +308,44 @@ paths:
         '401':
           description: Unauthorized
     get:
-      summary: Get all roommate requests
+      summary: Get paginated roommate requests
       tags:
         - Roommate Requests
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: lat
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+        - name: lng
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
       responses:
         '200':
-          description: List of roommate requests
+          description: Paginated list of roommate requests
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RoommateRequestResponse'
+                $ref: '#/components/schemas/RoommateRequestListResponse'
 
   /roommate-requests/{id}:
     get:
@@ -628,6 +685,8 @@ components:
           format: uuid
         imageUrl:
           type: string
+        title:
+          type: boolean
         createdAt:
           type: string
           format: date-time
@@ -638,6 +697,7 @@ components:
         - id
         - propertyId
         - imageUrl
+        - title
         - createdAt
         - updatedAt
 
@@ -820,3 +880,79 @@ components:
         - status
         - createdAt
         - updatedAt
+
+    RoommateRequestListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoommateRequestListItem'
+        nextCursor:
+          type: string
+          nullable: true
+      required:
+        - items
+        - nextCursor
+
+    RoommateRequestListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        maxRoommates:
+          type: integer
+        currentRoommates:
+          type: integer
+        priceAmount:
+          type: integer
+        priceCurrency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        property:
+          $ref: '#/components/schemas/RoommateRequestPropertySummary'
+      required:
+        - id
+        - maxRoommates
+        - currentRoommates
+        - priceAmount
+        - priceCurrency
+        - property
+
+    RoommateRequestPropertySummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        description:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        zipCode:
+          type: string
+        street:
+          type: string
+        streetNumber:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        titleImageId:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+        - id
+        - description
+        - country
+        - city
+        - zipCode
+        - street
+        - streetNumber
+        - lat
+        - lng
+        - titleImageId

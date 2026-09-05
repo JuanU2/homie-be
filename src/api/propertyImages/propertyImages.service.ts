@@ -39,7 +39,8 @@ export class PropertyImagesService {
   async uploadImage(
     userId: string,
     propertyId: string,
-    file?: Express.Multer.File,
+    file: Express.Multer.File | undefined,
+    title: boolean,
   ): Promise<PropertyImage> {
     if (!file) {
       throw new BadRequestException("Image file is required");
@@ -66,6 +67,23 @@ export class PropertyImagesService {
     return this.propertyImagesRepository.createImage({
       propertyId,
       imageUrl: key,
+      title,
     });
+  }
+
+  async getImage(
+    propertyId: string,
+    imageId: string,
+  ): Promise<{ body: Buffer; contentType: string }> {
+    const image = await this.propertyImagesRepository.getImageById(
+      propertyId,
+      imageId,
+    );
+
+    if (!image || !image.imageUrl) {
+      throw new NotFoundException("Image not found");
+    }
+
+    return this.storageService.get(image.imageUrl);
   }
 }

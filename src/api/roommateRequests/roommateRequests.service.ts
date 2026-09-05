@@ -13,6 +13,10 @@ import {
   RoommateRequestDtoResponse,
 } from '@/api/roommateRequests/dtos/roommateRequests.dto';
 import {
+  GetRoommateRequestsParams,
+  RoommateRequestsPage,
+} from '@/api/roommateRequests/domain/entity/roommateRequest';
+import {
   type IPropertiesRepository,
   PROPERTIES_REPOSITORY,
 } from '@/api/properties/domain/interface/properties.repository';
@@ -74,13 +78,9 @@ export class RoommateRequestsService {
     };
   }
 
-  async getAllRoommateRequests(): Promise<RoommateRequestDtoResponse[]> {
-    const requests = await this.roommateRequestsRepository.getAllRoommateRequests();
-
-    return requests.map(request => ({
-      ...request,
-      idealMoveInDate: request.idealMoveInDate ?? null,
-      closedAt: request.closedAt ?? null,
-    }));
+  async getRoommateRequests(
+    params: GetRoommateRequestsParams,
+  ): Promise<RoommateRequestsPage> {
+    return this.roommateRequestsRepository.getRoommateRequestsPage(params);
   }
 }
