@@ -102,6 +102,46 @@ paths:
               schema:
                 $ref: '#/components/schemas/PropertyResponse'
 
+  /properties/{propertyId}/images:
+    post:
+      summary: Upload a property image
+      tags:
+        - Properties
+      parameters:
+        - name: propertyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        '201':
+          description: Image uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyImageResponse'
+        '400':
+          description: Invalid file
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Property not found
+
   /rooms:
     post:
       summary: Create a room
@@ -200,6 +240,21 @@ paths:
                 $ref: '#/components/schemas/EquipmentResponse'
         '404':
           description: Equipment not found for property
+
+  /equipment-types:
+    get:
+      summary: Get all equipment types
+      tags:
+        - Equipment Types
+      responses:
+        '200':
+          description: List of equipment types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EquipmentTypeResponse'
 
   /roommate-requests:
     post:
@@ -562,6 +617,30 @@ components:
         - rooms
         - equipment
 
+    PropertyImageResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        propertyId:
+          type: string
+          format: uuid
+        imageUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - propertyId
+        - imageUrl
+        - createdAt
+        - updatedAt
+
     # Room Schemas
     CreateRoomRequest:
       type: object
@@ -647,6 +726,18 @@ components:
         - propertyId
         - equipmentType
         - count
+
+    EquipmentTypeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+        - id
+        - name
 
     # Roommate Request Schemas
     CreateRoommateRequestRequest:

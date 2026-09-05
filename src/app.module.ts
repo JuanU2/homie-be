@@ -35,6 +35,11 @@ import { EquipmentTypesController } from '@/api/equipmentTypes/equipmentTypes.co
 import { EquipmentTypesService } from '@/api/equipmentTypes/equipmentTypes.service';
 import { EQUIPMENT_TYPES_REPOSITORY } from '@/api/equipmentTypes/domain/interface/equipmentTypes.repository';
 import { DrizzleEquipmentTypesRepository } from '@/api/equipmentTypes/infrastructure/drizzle-equipmentTypes.repository';
+import { PropertyImagesController } from '@/api/propertyImages/propertyImages.controller';
+import { PropertyImagesService } from '@/api/propertyImages/propertyImages.service';
+import { PROPERTY_IMAGES_REPOSITORY } from '@/api/propertyImages/domain/interface/propertyImages.repository';
+import { DrizzlePropertyImagesRepository } from '@/api/propertyImages/infrastructure/drizzle-propertyImages.repository';
+import { StorageService } from '@/storage/storage.service';
 
 @Module({
   imports: [
@@ -58,6 +63,7 @@ import { DrizzleEquipmentTypesRepository } from '@/api/equipmentTypes/infrastruc
     EquipmentController,
     RoommateRequestsController,
     EquipmentTypesController,
+    PropertyImagesController,
   ],
   providers: [
     UsersService,
@@ -68,6 +74,8 @@ import { DrizzleEquipmentTypesRepository } from '@/api/equipmentTypes/infrastruc
     EquipmentService,
     RoommateRequestsService,
     EquipmentTypesService,
+    PropertyImagesService,
+    StorageService,
     JwtStrategy,
     {
       provide: USER_REPOSITORY,
@@ -96,6 +104,10 @@ import { DrizzleEquipmentTypesRepository } from '@/api/equipmentTypes/infrastruc
     {
       provide: EQUIPMENT_TYPES_REPOSITORY,
       useClass: DrizzleEquipmentTypesRepository,
+    },
+    {
+      provide: PROPERTY_IMAGES_REPOSITORY,
+      useClass: DrizzlePropertyImagesRepository,
     },
     {
       provide: "DRIZZLE_DB",
