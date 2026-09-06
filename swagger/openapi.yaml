@@ -347,13 +347,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/RoommateRequestListResponse'
 
-  /roommate-requests/{id}:
+  /roommate-requests/{roommateRequestId}:
     get:
-      summary: Get roommate request by id
+      summary: Get roommate request detail by id
+      description: Returns a single roommate request together with its owner's contact details and the full property.
       tags:
         - Roommate Requests
       parameters:
-        - name: id
+        - name: roommateRequestId
           in: path
           required: true
           schema:
@@ -365,7 +366,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoommateRequestResponse'
+                $ref: '#/components/schemas/RoommateRequestDetailResponse'
         '404':
           description: Roommate request not found
 
@@ -674,6 +675,72 @@ components:
         - rooms
         - equipment
 
+    PropertyDetailResponse:
+      description: Full property details including photos, rooms and equipment.
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        description:
+          type: string
+        sizeM2:
+          type: number
+          nullable: true
+        roomCount:
+          type: integer
+        country:
+          type: string
+        city:
+          type: string
+        zipCode:
+          type: string
+        street:
+          type: string
+        streetNumber:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        rooms:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoomDto'
+        equipment:
+          type: array
+          items:
+            $ref: '#/components/schemas/EquipmentDto'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertyImageResponse'
+      required:
+        - id
+        - ownerId
+        - description
+        - roomCount
+        - country
+        - city
+        - zipCode
+        - street
+        - streetNumber
+        - lat
+        - lng
+        - createdAt
+        - updatedAt
+        - rooms
+        - equipment
+
     PropertyImageResponse:
       type: object
       properties:
@@ -886,6 +953,82 @@ components:
         - status
         - createdAt
         - updatedAt
+
+    RoommateRequestOwner:
+      description: Owner (creator) of the roommate request and its property.
+      type: object
+      properties:
+        fullName:
+          type: string
+        phoneNumber:
+          type: string
+          nullable: true
+        profileUrl:
+          type: string
+          nullable: true
+      required:
+        - fullName
+
+    RoommateRequestDetailResponse:
+      description: A roommate request together with its owner's contact details and the full property.
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        propertyId:
+          type: string
+          format: uuid
+        createdBy:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        priceAmount:
+          type: integer
+        priceCurrency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        idealMoveInDate:
+          type: string
+          format: date
+          nullable: true
+        maxRoommates:
+          type: integer
+        currentRoommates:
+          type: integer
+        status:
+          $ref: '#/components/schemas/RoommateRequestStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        closedAt:
+          type: string
+          format: date-time
+          nullable: true
+        owner:
+          $ref: '#/components/schemas/RoommateRequestOwner'
+        property:
+          $ref: '#/components/schemas/PropertyDetailResponse'
+      required:
+        - id
+        - propertyId
+        - createdBy
+        - title
+        - description
+        - priceAmount
+        - priceCurrency
+        - maxRoommates
+        - currentRoommates
+        - status
+        - createdAt
+        - updatedAt
+        - owner
+        - property
 
     RoommateRequestListResponse:
       type: object
