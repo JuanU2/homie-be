@@ -5,7 +5,7 @@ import { roomTypeEnum } from '@/api/properties/dtos/properties.dto';
 export { roomTypeEnum };
 
 export const createRoomDtoRequestSchema = z.object({
-  propertyId: z.string(),
+  propertyId: z.uuid(),
   roomType: z.nativeEnum(roomTypeEnum),
   count: z.number().int().positive(),
 });
@@ -35,3 +35,9 @@ export class PatchRoomDtoRequest extends createZodDto(
 export class RoomDtoResponse extends createZodDto(
   roomDtoResponseSchema,
 ) {}
+
+export const roomParamsSchema = z.object({
+  id: z.uuid(),
+});
+
+export class RoomParamsDto extends createZodDto(roomParamsSchema) {}

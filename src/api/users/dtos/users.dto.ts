@@ -13,3 +13,9 @@ export const getUserResponseSchema = z.object({
 });
 
 export class GetUserDtoResponse extends createZodDto(getUserResponseSchema) {}
+
+export const getUserParamsSchema = z.object({
+  id: z.uuid(),
+});
+
+export class GetUserParamsDto extends createZodDto(getUserParamsSchema) {}

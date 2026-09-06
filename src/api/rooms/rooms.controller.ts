@@ -4,6 +4,7 @@ import {
   CreateRoomDtoRequest,
   PatchRoomDtoRequest,
   RoomDtoResponse,
+  RoomParamsDto,
 } from '@/api/rooms/dtos/rooms.dto';
 import { RoomsService } from '@/api/rooms/rooms.service';
 
@@ -20,9 +21,9 @@ export class RoomsController {
   @Patch(':id')
   @ApiOperation({ summary: 'Patch room' })
   async patchRoom(
-    @Param('id') id: string,
+    @Param() params: RoomParamsDto,
     @Body() data: PatchRoomDtoRequest,
   ): Promise<RoomDtoResponse> {
-    return this.roomsService.patchRoom(id, data);
+    return this.roomsService.patchRoom(params.id, data);
   }
 }

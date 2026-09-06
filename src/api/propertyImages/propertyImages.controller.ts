@@ -15,7 +15,11 @@ import { ApiBody, ApiConsumes, ApiOperation, ApiParam } from "@nestjs/swagger";
 import { type Request, type Response } from "express";
 import { JwtAuthGuard } from "@/api/auth/jwt-auth.guard";
 import { PropertyImagesService } from "./propertyImages.service";
-import { PropertyImageResponse } from "./dtos/propertyImages.dto";
+import {
+  PropertyImageParamsDto,
+  PropertyImageResponse,
+  PropertyImagesParamsDto,
+} from "./dtos/propertyImages.dto";
 
 @Controller("properties/:propertyId/images")
 export class PropertyImagesController {
@@ -44,7 +48,7 @@ export class PropertyImagesController {
   })
   async uploadImage(
     @Req() request: Request,
-    @Param("propertyId") propertyId: string,
+    @Param() params: PropertyImagesParamsDto,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<PropertyImageResponse> {
     const userId = request.user?.userId;
@@ -54,7 +58,7 @@ export class PropertyImagesController {
 
     return this.propertyImagesService.uploadImage(
       userId,
-      propertyId,
+      params.propertyId,
       file,
       this.parseTitle(request.body?.title),
     );
@@ -71,13 +75,12 @@ export class PropertyImagesController {
   @ApiParam({ name: "propertyId", type: String, description: "Property id" })
   @ApiParam({ name: "imageId", type: String, description: "Image id" })
   async getImage(
-    @Param("propertyId") propertyId: string,
-    @Param("imageId") imageId: string,
+    @Param() params: PropertyImageParamsDto,
     @Res() res: Response,
   ): Promise<void> {
     const { body, contentType } = await this.propertyImagesService.getImage(
-      propertyId,
-      imageId,
+      params.propertyId,
+      params.imageId,
     );
 
     res.setHeader("Content-Type", contentType);

@@ -1,4 +1,6 @@
 import { Module } from "@nestjs/common";
+import { APP_PIPE } from "@nestjs/core";
+import { ZodValidationPipe } from "nestjs-zod";
 import { UsersController } from "@/api/users/users.controller";
 import { UsersService } from "@/api/users/users.service";
 import { DrizzleUserRepository } from "@/api/users/infrastructure/drizzle-user.repository";
@@ -77,6 +79,10 @@ import { StorageService } from '@/storage/storage.service';
     PropertyImagesService,
     StorageService,
     JwtStrategy,
+    {
+      provide: APP_PIPE,
+      useClass: ZodValidationPipe,
+    },
     {
       provide: USER_REPOSITORY,
       useClass: DrizzleUserRepository,

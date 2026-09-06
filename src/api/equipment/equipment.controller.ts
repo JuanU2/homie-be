@@ -4,6 +4,7 @@ import {
   CreateEquipmentDtoRequest,
   EquipmentDtoResponse,
   PatchEquipmentDtoRequest,
+  PatchEquipmentParamsDto,
 } from '@/api/equipment/dtos/equipment.dto';
 import { EquipmentService } from '@/api/equipment/equipment.service';
 
@@ -22,10 +23,13 @@ export class EquipmentController {
   @Patch(':propertyId/:equipmentType')
   @ApiOperation({ summary: 'Patch property equipment quantity' })
   async patchEquipment(
-    @Param('propertyId') propertyId: string,
-    @Param('equipmentType') equipmentType: string,
+    @Param() params: PatchEquipmentParamsDto,
     @Body() data: PatchEquipmentDtoRequest,
   ): Promise<EquipmentDtoResponse> {
-    return this.equipmentService.patchEquipment(propertyId, equipmentType, data);
+    return this.equipmentService.patchEquipment(
+      params.propertyId,
+      params.equipmentType,
+      data,
+    );
   }
 }

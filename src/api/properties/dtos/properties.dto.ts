@@ -23,8 +23,8 @@ export const equipmentSchema = z.object({
 });
 
 export const createPropertyRequestSchema = z.object({
-  ownerId: z.string(),
-  description: z.string(),
+  ownerId: z.uuid(),
+  description: z.string().min(1),
   sizeM2: z.number().positive().optional(),
   roomCount: z.number().positive(),
   country: z.string().max(100),

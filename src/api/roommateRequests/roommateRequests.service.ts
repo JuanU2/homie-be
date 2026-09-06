@@ -10,6 +10,8 @@ import {
 } from '@/api/roommateRequests/domain/interface/roommateRequests.repository';
 import {
   CreateRoommateRequestDtoRequest,
+  RoommateRequestDetailDtoResponse,
+  roommateRequestDetailDtoResponseSchema,
   RoommateRequestDtoResponse,
 } from '@/api/roommateRequests/dtos/roommateRequests.dto';
 import {
@@ -63,20 +65,18 @@ export class RoommateRequestsService {
     };
   }
 
-  async getRoommateRequestById(
+  async getRoommateRequestDetail(
     id: string,
-  ): Promise<RoommateRequestDtoResponse | undefined> {
-    const request = await this.roommateRequestsRepository.getRoommateRequestById(id);
+  ): Promise<RoommateRequestDetailDtoResponse> {
+    const detail = await this.roommateRequestsRepository.getRoommateRequestDetail(
+      id,
+    );
 
-    if (!request) {
-      return undefined;
+    if (!detail) {
+      throw new NotFoundException('Roommate request not found');
     }
 
-    return {
-      ...request,
-      idealMoveInDate: request.idealMoveInDate ?? null,
-      closedAt: request.closedAt ?? null,
-    };
+    return roommateRequestDetailDtoResponseSchema.parse(detail);
   }
 
   async getRoommateRequests(

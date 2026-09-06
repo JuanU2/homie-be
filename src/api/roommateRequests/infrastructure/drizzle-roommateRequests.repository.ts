@@ -1,21 +1,30 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq, sql } from 'drizzle-orm';
+import { asc, desc, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { roommateRequests } from '@/db/schema';
+import {
+  equipmentTypes,
+  properties,
+  propertyEquipment,
+  propertyImages,
+  propertyRooms,
+  roommateRequests,
+  userSettings,
+  users,
+} from '@/db/schema';
+import * as schema from '@/db/schema';
 import {
   CreateRoommateRequestModel,
   GetRoommateRequestsParams,
   RoommateRequest,
   type RoommateRequestCurrency,
+  RoommateRequestDetail,
   RoommateRequestListItem,
+  RoommateRequestOwnerProfile,
+  RoommateRequestPropertyDetail,
   RoommateRequestsPage,
 } from '@/api/roommateRequests/domain/entity/roommateRequest';
 import { IRoommateRequestsRepository } from '@/api/roommateRequests/domain/interface/roommateRequests.repository';
 import { convertDbLocation } from '@/utils/locationUtil';
-
-type RoommateRequestsSchema = {
-  roommateRequests: typeof roommateRequests;
-};
 
 interface RawPageRow {
   rrId: string;
@@ -53,7 +62,7 @@ export class DrizzleRoommateRequestsRepository
 {
   constructor(
     @Inject('DRIZZLE_DB')
-    private readonly db: NodePgDatabase<RoommateRequestsSchema>,
+    private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
   async createRoommateRequest(
@@ -85,6 +94,152 @@ export class DrizzleRoommateRequestsRepository
     return this.db.query.roommateRequests.findFirst({
       where: requests => eq(requests.id, id),
     });
+  }
+
+  async getRoommateRequestDetail(
+    id: string,
+  ): Promise<RoommateRequestDetail | undefined> {
+    const request = await this.getRoommateRequestById(id);
+
+    if (!request) {
+      return undefined;
+    }
+
+    const owner = await this.getOwnerProfile(request.createdBy);
+    const property = await this.getPropertyDetail(request.propertyId);
+
+    if (!owner || !property) {
+      return undefined;
+    }
+
+    return {
+      ...request,
+      idealMoveInDate: request.idealMoveInDate ?? null,
+      closedAt: request.closedAt ?? null,
+      owner,
+      property,
+    };
+  }
+
+  private async getOwnerProfile(
+    userId: string,
+  ): Promise<RoommateRequestOwnerProfile | undefined> {
+    const rows = await this.db
+      .select({
+        fullName: users.fullName,
+        profileUrl: users.image,
+        phoneNumber: userSettings.phoneNumber,
+      })
+      .from(users)
+      .leftJoin(userSettings, eq(userSettings.userId, users.id))
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    const row = rows[0];
+
+    if (!row) {
+      return undefined;
+    }
+
+    return {
+      fullName: row.fullName,
+      profileUrl: row.profileUrl,
+      phoneNumber: row.phoneNumber,
+    };
+  }
+
+  private async getPropertyDetail(
+    propertyId: string,
+  ): Promise<RoommateRequestPropertyDetail | undefined> {
+    const propertyRows = await this.db
+      .select({
+        id: properties.id,
+        ownerId: properties.ownerId,
+        description: properties.description,
+        sizeM2: properties.sizeM2,
+        roomCount: properties.roomCount,
+        country: properties.country,
+        city: properties.city,
+        zipCode: properties.zipCode,
+        street: properties.street,
+        streetNumber: properties.streetNumber,
+        location: properties.location,
+        createdAt: properties.createdAt,
+        updatedAt: properties.updatedAt,
+      })
+      .from(properties)
+      .where(eq(properties.id, propertyId))
+      .limit(1);
+
+    const property = propertyRows[0];
+
+    if (!property) {
+      return undefined;
+    }
+
+    const location = convertDbLocation(property.location);
+
+    const roomRows = await this.db
+      .select({
+        roomType: propertyRooms.roomType,
+        count: propertyRooms.count,
+      })
+      .from(propertyRooms)
+      .where(eq(propertyRooms.propertyId, propertyId))
+      .orderBy(desc(propertyRooms.count));
+
+    const equipmentRows = await this.db
+      .select({
+        equipmentType: equipmentTypes.name,
+        count: propertyEquipment.quantity,
+      })
+      .from(propertyEquipment)
+      .innerJoin(
+        equipmentTypes,
+        eq(propertyEquipment.equipmentTypeId, equipmentTypes.id),
+      )
+      .where(eq(propertyEquipment.propertyId, propertyId))
+      .orderBy(asc(equipmentTypes.name));
+
+    const imageRows = await this.db
+      .select({
+        id: propertyImages.id,
+        propertyId: propertyImages.propertyId,
+        imageUrl: propertyImages.imageUrl,
+        title: propertyImages.title,
+        createdAt: propertyImages.createdAt,
+        updatedAt: propertyImages.updatedAt,
+      })
+      .from(propertyImages)
+      .where(eq(propertyImages.propertyId, propertyId))
+      .orderBy(desc(propertyImages.title), asc(propertyImages.createdAt));
+
+    return {
+      id: property.id,
+      ownerId: property.ownerId,
+      description: property.description,
+      sizeM2: property.sizeM2,
+      roomCount: property.roomCount,
+      country: property.country,
+      city: property.city,
+      zipCode: property.zipCode,
+      street: property.street,
+      streetNumber: property.streetNumber,
+      lat: location?.lat ?? 0,
+      lng: location?.lng ?? 0,
+      createdAt: property.createdAt,
+      updatedAt: property.updatedAt,
+      rooms: roomRows,
+      equipment: equipmentRows,
+      images: imageRows.map(image => ({
+        id: image.id,
+        propertyId: image.propertyId,
+        imageUrl: image.imageUrl ?? '',
+        title: image.title,
+        createdAt: image.createdAt,
+        updatedAt: image.updatedAt,
+      })),
+    };
   }
 
   async getRoommateRequestsPage(

@@ -6,14 +6,26 @@ export const interestEnum = z.enum(["FIND_HOUSING", "RENT"]);
 
 export type Interest = z.infer<typeof interestEnum>;
 
-export const updateUserSettingsDtoRequestSchema = z.object({
-  phoneNumber: z.string().optional(),
-  primaryInterest: interestEnum.optional(),
-  idealLocation: z.object({
-    lat: z.number(),
-    lng: z.number(),
-  }).optional(),
-})
+export const idealLocationSchema = z.object({
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+});
+
+export const updateUserSettingsDtoRequestSchema = z
+  .object({
+    phoneNumber: z.string().optional(),
+    primaryInterest: interestEnum.optional(),
+    idealLocation: idealLocationSchema.optional(),
+  })
+  .refine(
+    data =>
+      data.phoneNumber !== undefined ||
+      data.primaryInterest !== undefined ||
+      data.idealLocation !== undefined,
+    {
+      message: 'At least one field must be provided',
+    },
+  )
 
 export const updateUserSettingsDtoResponseSchema = z.object({
   userId: z.string(),
@@ -39,3 +51,9 @@ export const getUserSettingsSchema = z.object({
 export class UpdateUserSettingsDtoRequest extends createZodDto(updateUserSettingsDtoRequestSchema) {}
 
 export class UpdateUserSettingsDtoResponse extends createZodDto(updateUserSettingsDtoResponseSchema) {}
+
+export const userSettingsParamsSchema = z.object({
+  id: z.uuid(),
+});
+
+export class UserSettingsParamsDto extends createZodDto(userSettingsParamsSchema) {}

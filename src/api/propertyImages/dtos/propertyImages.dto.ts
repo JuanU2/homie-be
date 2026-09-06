@@ -13,3 +13,20 @@ export const propertyImageResponseSchema = z.object({
 export class PropertyImageResponse extends createZodDto(
   propertyImageResponseSchema,
 ) {}
+
+export const propertyImagesParamsSchema = z.object({
+  propertyId: z.uuid(),
+});
+
+export class PropertyImagesParamsDto extends createZodDto(
+  propertyImagesParamsSchema,
+) {}
+
+export const propertyImageParamsSchema = z.object({
+  propertyId: z.uuid(),
+  imageId: z.uuid(),
+});
+
+export class PropertyImageParamsDto extends createZodDto(
+  propertyImageParamsSchema,
+) {}

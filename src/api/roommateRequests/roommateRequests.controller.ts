@@ -13,7 +13,10 @@ import { JwtAuthGuard } from '@/api/auth/jwt-auth.guard';
 import { type Request } from 'express';
 import {
   CreateRoommateRequestDtoRequest,
+  GetRoommateRequestsQueryDto,
+  RoommateRequestDetailDtoResponse,
   RoommateRequestDtoResponse,
+  RoommateRequestParamsDto,
 } from '@/api/roommateRequests/dtos/roommateRequests.dto';
 import { RoommateRequestsPage } from '@/api/roommateRequests/domain/entity/roommateRequest';
 import { RoommateRequestsService } from '@/api/roommateRequests/roommateRequests.service';
@@ -37,31 +40,26 @@ export class RoommateRequestsController {
     );
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get roommate request by id' })
-  async getRoommateRequestById(
-    @Param('id') id: string,
-  ): Promise<RoommateRequestDtoResponse | undefined> {
-    return this.roommateRequestsService.getRoommateRequestById(id);
+  @Get(':roommateRequestId')
+  @ApiOperation({ summary: 'Get roommate request detail by id' })
+  async getRoommateRequestDetail(
+    @Param() params: RoommateRequestParamsDto,
+  ): Promise<RoommateRequestDetailDtoResponse> {
+    return this.roommateRequestsService.getRoommateRequestDetail(
+      params.roommateRequestId,
+    );
   }
 
   @Get()
   @ApiOperation({ summary: 'Get paginated roommate requests' })
   async getAllRoommateRequests(
-    @Query('limit') limit?: string,
-    @Query('cursor') cursor?: string,
-    @Query('lat') lat?: string,
-    @Query('lng') lng?: string,
+    @Query() query: GetRoommateRequestsQueryDto,
   ): Promise<RoommateRequestsPage> {
-    const resolvedLimit = limit
-      ? Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100)
-      : 20;
-
     return this.roommateRequestsService.getRoommateRequests({
-      limit: resolvedLimit,
-      cursor,
-      lat: lat !== undefined && !Number.isNaN(Number(lat)) ? Number(lat) : undefined,
-      lng: lng !== undefined && !Number.isNaN(Number(lng)) ? Number(lng) : undefined,
+      limit: query.limit,
+      cursor: query.cursor,
+      lat: query.lat,
+      lng: query.lng,
     });
   }
 }

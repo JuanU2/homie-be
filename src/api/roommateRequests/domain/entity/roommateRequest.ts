@@ -68,3 +68,53 @@ export interface GetRoommateRequestsParams {
   lat?: number;
   lng?: number;
 }
+
+export interface RoommateRequestOwnerProfile {
+  fullName: string;
+  phoneNumber: string | null;
+  profileUrl: string | null;
+}
+
+export interface RoommateRequestPropertyRoom {
+  roomType: string;
+  count: number;
+}
+
+export interface RoommateRequestPropertyEquipment {
+  equipmentType: string;
+  count: number;
+}
+
+export interface RoommateRequestPropertyImage {
+  id: string;
+  propertyId: string;
+  imageUrl: string;
+  title: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface RoommateRequestPropertyDetail {
+  id: string;
+  ownerId: string;
+  description: string;
+  sizeM2: number | null;
+  roomCount: number;
+  country: string;
+  city: string;
+  zipCode: string;
+  street: string;
+  streetNumber: string;
+  lat: number;
+  lng: number;
+  createdAt: Date;
+  updatedAt: Date;
+  rooms: RoommateRequestPropertyRoom[];
+  equipment: RoommateRequestPropertyEquipment[];
+  images: RoommateRequestPropertyImage[];
+}
+
+export interface RoommateRequestDetail extends RoommateRequest {
+  owner: RoommateRequestOwnerProfile;
+  property: RoommateRequestPropertyDetail;
+}
