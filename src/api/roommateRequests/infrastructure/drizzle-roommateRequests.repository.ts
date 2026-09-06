@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { propertyImages, roommateRequests } from '@/db/schema';
+import { roommateRequests } from '@/db/schema';
 import {
   CreateRoommateRequestModel,
   GetRoommateRequestsParams,
@@ -15,7 +15,6 @@ import { convertDbLocation } from '@/utils/locationUtil';
 
 type RoommateRequestsSchema = {
   roommateRequests: typeof roommateRequests;
-  propertyImages: typeof propertyImages;
 };
 
 interface RawPageRow {
@@ -33,6 +32,7 @@ interface RawPageRow {
   street: string;
   streetNumber: string;
   location: string;
+  titleImageId: string | null;
   distance: number | null;
 }
 
@@ -96,11 +96,7 @@ export class DrizzleRoommateRequestsRepository
       ? await this.queryByDistance(limit, cursor, lat, lng)
       : await this.queryByRecency(limit, cursor);
 
-    const propertyIds = rows.map(row => row.propertyId);
-    const titleImageIdByProperty =
-      await this.getTitleImageIdByProperty(propertyIds);
-
-    const items = rows.map(row => this.toListItem(row, titleImageIdByProperty));
+    const items = rows.map(row => this.toListItem(row));
 
     const hasNext = rows.length > limit;
     const pageItems = hasNext ? items.slice(0, limit) : items;
@@ -144,9 +140,11 @@ export class DrizzleRoommateRequestsRepository
         p.street AS "street",
         p.street_number AS "streetNumber",
         p.location AS "location",
+        ti.id AS "titleImageId",
         NULL::float8 AS "distance"
       FROM roommate_requests rr
       JOIN properties p ON p.id = rr.property_id
+      LEFT JOIN property_images ti ON ti.property_id = p.id AND ti.title = true
       ${where}
       ORDER BY rr.created_at DESC, rr.id DESC
       LIMIT ${limit + 1}
@@ -164,7 +162,7 @@ export class DrizzleRoommateRequestsRepository
     let where = sql``;
     if (cursor) {
       const { key, id } = decodeCursor(cursor);
-      where = sql`WHERE (sub.distance, sub.rrId) > (${Number(key)}, ${id})`;
+      where = sql`WHERE (sub.distance, sub."rrId") > (${Number(key)}, ${id})`;
     }
 
     const result = await this.db.execute(sql`
@@ -185,47 +183,24 @@ export class DrizzleRoommateRequestsRepository
           p.street AS "street",
           p.street_number AS "streetNumber",
           p.location AS "location",
+          ti.id AS "titleImageId",
           ST_Distance(
             p.location,
             ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography
           ) AS distance
         FROM roommate_requests rr
         JOIN properties p ON p.id = rr.property_id
+        LEFT JOIN property_images ti ON ti.property_id = p.id AND ti.title = true
       ) sub
       ${where}
-      ORDER BY sub.distance ASC, sub.rrId ASC
+      ORDER BY sub.distance ASC, sub."rrId" ASC
       LIMIT ${limit + 1}
     `);
 
     return result.rows as unknown as RawPageRow[];
   }
 
-  private async getTitleImageIdByProperty(
-    propertyIds: string[],
-  ): Promise<Record<string, string>> {
-    if (propertyIds.length === 0) return {};
-
-    const rows = await this.db
-      .select({ propertyId: propertyImages.propertyId, id: propertyImages.id })
-      .from(propertyImages)
-      .where(
-        and(
-          inArray(propertyImages.propertyId, propertyIds),
-          eq(propertyImages.title, true),
-        ),
-      );
-
-    const result: Record<string, string> = {};
-    for (const row of rows) {
-      result[row.propertyId] = row.id;
-    }
-    return result;
-  }
-
-  private toListItem(
-    row: RawPageRow,
-    titleImageIdByProperty: Record<string, string>,
-  ): RoommateRequestListItem {
+  private toListItem(row: RawPageRow): RoommateRequestListItem {
     const location = convertDbLocation(row.location);
     return {
       id: row.rrId,
@@ -243,7 +218,7 @@ export class DrizzleRoommateRequestsRepository
         streetNumber: row.streetNumber,
         lat: location?.lat ?? 0,
         lng: location?.lng ?? 0,
-        titleImageId: titleImageIdByProperty[row.propertyId] ?? null,
+        titleImageId: row.titleImageId,
       },
     };
   }
