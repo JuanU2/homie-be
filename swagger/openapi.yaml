@@ -806,6 +806,8 @@ components:
         propertyId:
           type: string
           format: uuid
+        title:
+          type: string
         description:
           type: string
         priceAmount:
@@ -824,6 +826,7 @@ components:
           minimum: 0
       required:
         - propertyId
+        - title
         - description
         - priceAmount
         - priceCurrency
@@ -842,6 +845,8 @@ components:
         createdBy:
           type: string
           format: uuid
+        title:
+          type: string
         description:
           type: string
         priceAmount:
@@ -872,6 +877,7 @@ components:
         - id
         - propertyId
         - createdBy
+        - title
         - description
         - priceAmount
         - priceCurrency
@@ -901,6 +907,8 @@ components:
         id:
           type: string
           format: uuid
+        title:
+          type: string
         maxRoommates:
           type: integer
         currentRoommates:
@@ -913,6 +921,7 @@ components:
           $ref: '#/components/schemas/RoommateRequestPropertySummary'
       required:
         - id
+        - title
         - maxRoommates
         - currentRoommates
         - priceAmount
@@ -925,8 +934,6 @@ components:
         id:
           type: string
           format: uuid
-        description:
-          type: string
         country:
           type: string
         city:
@@ -947,7 +954,6 @@ components:
           nullable: true
       required:
         - id
-        - description
         - country
         - city
         - zipCode

@@ -47,6 +47,7 @@ export class RoommateRequestsService {
     const request = await this.roommateRequestsRepository.createRoommateRequest({
       propertyId: data.propertyId,
       createdBy: userId,
+      title: data.title,
       description: data.description,
       priceAmount: data.priceAmount,
       priceCurrency: data.priceCurrency,

@@ -10,6 +10,7 @@ export interface RoommateRequest {
   id: string;
   propertyId: string;
   createdBy: string;
+  title: string;
   description: string;
   priceAmount: number;
   priceCurrency: RoommateRequestCurrency;
@@ -25,6 +26,7 @@ export interface RoommateRequest {
 export interface CreateRoommateRequestModel {
   propertyId: string;
   createdBy: string;
+  title: string;
   description: string;
   priceAmount: number;
   priceCurrency: RoommateRequestCurrency;
@@ -35,7 +37,6 @@ export interface CreateRoommateRequestModel {
 
 export interface RoommateRequestPropertySummary {
   id: string;
-  description: string;
   country: string;
   city: string;
   zipCode: string;
@@ -48,6 +49,7 @@ export interface RoommateRequestPropertySummary {
 
 export interface RoommateRequestListItem {
   id: string;
+  title: string;
   maxRoommates: number;
   currentRoommates: number;
   priceAmount: number;

@@ -18,6 +18,7 @@ export const roommateRequests = pgTable("roommate_requests", {
   createdBy: uuid("created_by")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
+  title: text("title").notNull(),
   description: text("description").notNull(),
   priceAmount: integer("price_amount").notNull(),
   priceCurrency: currencyEnum("price_currency").notNull(),

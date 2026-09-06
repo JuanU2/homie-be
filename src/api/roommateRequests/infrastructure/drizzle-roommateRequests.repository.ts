@@ -25,7 +25,7 @@ interface RawPageRow {
   priceCurrency: string;
   createdAt: string;
   propertyId: string;
-  description: string;
+  title: string;
   country: string;
   city: string;
   zipCode: string;
@@ -64,6 +64,7 @@ export class DrizzleRoommateRequestsRepository
       .values({
         propertyId: request.propertyId,
         createdBy: request.createdBy,
+        title: request.title,
         description: request.description,
         priceAmount: request.priceAmount,
         priceCurrency: request.priceCurrency,
@@ -132,8 +133,8 @@ export class DrizzleRoommateRequestsRepository
         rr.price_amount AS "priceAmount",
         rr.price_currency AS "priceCurrency",
         rr.created_at AS "createdAt",
+        rr.title AS "title",
         p.id AS "propertyId",
-        p.description AS "description",
         p.country AS "country",
         p.city AS "city",
         p.zip_code AS "zipCode",
@@ -175,8 +176,8 @@ export class DrizzleRoommateRequestsRepository
           rr.price_amount AS "priceAmount",
           rr.price_currency AS "priceCurrency",
           rr.created_at AS "createdAt",
+          rr.title AS "title",
           p.id AS "propertyId",
-          p.description AS "description",
           p.country AS "country",
           p.city AS "city",
           p.zip_code AS "zipCode",
@@ -204,13 +205,13 @@ export class DrizzleRoommateRequestsRepository
     const location = convertDbLocation(row.location);
     return {
       id: row.rrId,
+      title: row.title,
       maxRoommates: row.maxRoommates,
       currentRoommates: row.currentRoommates,
       priceAmount: row.priceAmount,
       priceCurrency: row.priceCurrency as RoommateRequestCurrency,
       property: {
         id: row.propertyId,
-        description: row.description,
         country: row.country,
         city: row.city,
         zipCode: row.zipCode,

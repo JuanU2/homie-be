@@ -11,6 +11,7 @@ export const roommateRequestStatusSchema = z.enum([
 
 export const createRoommateRequestDtoRequestSchema = z.object({
   propertyId: z.string(),
+  title: z.string(),
   description: z.string(),
   priceAmount: z.number().int().positive(),
   priceCurrency: roommateRequestCurrencySchema,
@@ -23,6 +24,7 @@ export const roommateRequestDtoResponseSchema = z.object({
   id: z.string(),
   propertyId: z.string(),
   createdBy: z.string(),
+  title: z.string(),
   description: z.string(),
   priceAmount: z.number().int(),
   priceCurrency: roommateRequestCurrencySchema,
