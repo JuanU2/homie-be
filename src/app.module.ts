@@ -33,6 +33,10 @@ import { RoommateRequestsController } from '@/api/roommateRequests/roommateReque
 import { RoommateRequestsService } from '@/api/roommateRequests/roommateRequests.service';
 import { ROOMMATE_REQUESTS_REPOSITORY } from '@/api/roommateRequests/domain/interface/roommateRequests.repository';
 import { DrizzleRoommateRequestsRepository } from '@/api/roommateRequests/infrastructure/drizzle-roommateRequests.repository';
+import { RoommateApplicationsController } from '@/api/roommateApplications/roommateApplications.controller';
+import { RoommateApplicationsService } from '@/api/roommateApplications/roommateApplications.service';
+import { ROOMMATE_APPLICATIONS_REPOSITORY } from '@/api/roommateApplications/domain/interface/roommateApplications.repository';
+import { DrizzleRoommateApplicationsRepository } from '@/api/roommateApplications/infrastructure/drizzle-roommateApplications.repository';
 import { EquipmentTypesController } from '@/api/equipmentTypes/equipmentTypes.controller';
 import { EquipmentTypesService } from '@/api/equipmentTypes/equipmentTypes.service';
 import { EQUIPMENT_TYPES_REPOSITORY } from '@/api/equipmentTypes/domain/interface/equipmentTypes.repository';
@@ -64,6 +68,7 @@ import { StorageService } from '@/storage/storage.service';
     RoomsController,
     EquipmentController,
     RoommateRequestsController,
+    RoommateApplicationsController,
     EquipmentTypesController,
     PropertyImagesController,
   ],
@@ -75,6 +80,7 @@ import { StorageService } from '@/storage/storage.service';
     RoomsService,
     EquipmentService,
     RoommateRequestsService,
+    RoommateApplicationsService,
     EquipmentTypesService,
     PropertyImagesService,
     StorageService,
@@ -106,6 +112,10 @@ import { StorageService } from '@/storage/storage.service';
     {
       provide: ROOMMATE_REQUESTS_REPOSITORY,
       useClass: DrizzleRoommateRequestsRepository,
+    },
+    {
+      provide: ROOMMATE_APPLICATIONS_REPOSITORY,
+      useClass: DrizzleRoommateApplicationsRepository,
     },
     {
       provide: EQUIPMENT_TYPES_REPOSITORY,

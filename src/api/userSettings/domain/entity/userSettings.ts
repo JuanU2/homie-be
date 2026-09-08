@@ -4,4 +4,6 @@ export interface UserSettings {
   phoneNumber: string | null;
   primaryInterest: "FIND_HOUSING" | "RENT" | null;
   idealLocation: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }

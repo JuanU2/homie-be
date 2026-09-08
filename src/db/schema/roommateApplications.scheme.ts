@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { roommateRequests } from '@/db/schema/roommateRequests.schema';
 import { users } from '@/db/schema/users.schema';
 
@@ -20,7 +20,13 @@ export const roommateApplications = pgTable("roommate_applications", {
 
   status: roommateApplicationStatusEnum("status").default("PENDING").notNull(),
 
+  note: text("note"),
+
   createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });

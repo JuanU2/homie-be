@@ -28,6 +28,7 @@ CREATE TABLE "property_images" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"property_id" uuid NOT NULL,
 	"image_url" varchar(255),
+	"title" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -51,6 +52,7 @@ CREATE TABLE "roommate_requests" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"property_id" uuid NOT NULL,
 	"created_by" uuid NOT NULL,
+	"title" text NOT NULL,
 	"description" text NOT NULL,
 	"price_amount" integer NOT NULL,
 	"price_currency" "currency_enum" NOT NULL,
@@ -99,4 +101,22 @@ ALTER TABLE "roommate_requests" ADD CONSTRAINT "roommate_requests_created_by_use
 ALTER TABLE "property_rooms" ADD CONSTRAINT "property_rooms_property_id_properties_id_fk" FOREIGN KEY ("property_id") REFERENCES "public"."properties"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_settings" ADD CONSTRAINT "user_settings_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "equipment_types_name_unique" ON "equipment_types" USING btree ("name");--> statement-breakpoint
-CREATE UNIQUE INDEX "users_email_unique" ON "users" USING btree ("email");
+CREATE UNIQUE INDEX "users_email_unique" ON "users" USING btree ("email");--> statement-breakpoint
+INSERT INTO "equipment_types" ("name") VALUES
+  ('fridge'),
+  ('oven'),
+  ('wifi'),
+  ('tv'),
+  ('sofa'),
+  ('bed'),
+  ('microwave'),
+  ('dishwasher'),
+  ('washing-machine'),
+  ('dryer'),
+  ('shower'),
+  ('parking'),
+  ('bike-storage'),
+  ('gym'),
+  ('pet-friendly'),
+  ('garden')
+ON CONFLICT ("name") DO NOTHING;

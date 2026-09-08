@@ -1,4 +1,4 @@
-import { customType, pgEnum, pgTable, uuid, varchar } from 'drizzle-orm/pg-core';
+import { customType, pgEnum, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { users } from '@/db/schema/users.schema';
 import { relations } from 'drizzle-orm/relations';
 
@@ -20,6 +20,12 @@ export const userSettings = pgTable(
     phoneNumber: varchar("phone_number", { length: 20 }).unique(),
     primaryInterest: interestEnum("primary_interest"),
     idealLocation: geographyPoint("ideal_location"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
 );
 

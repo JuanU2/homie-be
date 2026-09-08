@@ -1,4 +1,4 @@
-import { integer, pgTable, primaryKey, uuid } from 'drizzle-orm/pg-core';
+import { integer, pgTable, primaryKey, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { equipmentTypes } from './equipment.schema';
 import { properties } from './properties.schema';
 import { relations } from 'drizzle-orm/relations';
@@ -15,6 +15,12 @@ export const propertyEquipment = pgTable(
       .notNull(),
 
     quantity: integer("quantity").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     primaryKey({

@@ -370,6 +370,57 @@ paths:
         '404':
           description: Roommate request not found
 
+  /roommate-applications:
+    post:
+      summary: Apply for a roommate request
+      tags:
+        - Roommate Applications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoommateApplicationRequest'
+      responses:
+        '201':
+          description: Roommate application created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoommateApplicationResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Roommate request not found
+
+    get:
+      summary: Get the owner's roommate applications
+      tags:
+        - Roommate Applications
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated list of the owner's roommate applications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoommateApplicationListResponse'
+        '401':
+          description: Unauthorized
+
 components:
   securitySchemes:
     bearerAuth:
@@ -411,6 +462,13 @@ components:
         - RESERVED
         - CLOSED
         - EXPIRED
+
+    RoommateApplicationStatus:
+      type: string
+      enum:
+        - PENDING
+        - ACCEPTED
+        - REJECTED
 
     # Shared
     IdealLocation:
@@ -1105,3 +1163,86 @@ components:
         - lat
         - lng
         - titleImageId
+
+    # Roommate Application Schemas
+    CreateRoommateApplicationRequest:
+      type: object
+      properties:
+        roommateRequestId:
+          type: string
+          format: uuid
+        note:
+          type: string
+      required:
+        - roommateRequestId
+
+    RoommateApplicationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        roommateRequestId:
+          type: string
+          format: uuid
+        applicantId:
+          type: string
+          format: uuid
+        note:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/RoommateApplicationStatus'
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - roommateRequestId
+        - applicantId
+        - status
+        - createdAt
+
+    RoommateApplicationListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        roommateRequestId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/RoommateApplicationStatus'
+        note:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        title:
+          type: string
+        titleImageId:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+        - id
+        - roommateRequestId
+        - status
+        - createdAt
+        - title
+
+    RoommateApplicationListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoommateApplicationListItem'
+        nextCursor:
+          type: string
+          nullable: true
+      required:
+        - items
+        - nextCursor

@@ -1,4 +1,4 @@
-import { integer, pgTable, uuid } from 'drizzle-orm/pg-core';
+import { integer, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { properties } from '@/db/schema/properties.schema';
 import { pgEnum } from 'drizzle-orm/pg-core/columns/enum';
 import { relations } from 'drizzle-orm/relations';
@@ -21,6 +21,12 @@ export const propertyRooms = pgTable("property_rooms", {
     .notNull(),
   roomType: roomTypeEnum("room_type").notNull(),
   count: integer("count").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 
