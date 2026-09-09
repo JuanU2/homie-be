@@ -19,6 +19,7 @@ interface RawApplicationPageRow {
   note: string | null;
   createdAt: string;
   roommateRequestId: string;
+  propertyId: string;
   title: string;
   titleImageId: string | null;
 }
@@ -66,13 +67,17 @@ export class DrizzleRoommateApplicationsRepository
     ownerId: string,
     params: GetRoommateApplicationsParams,
   ): Promise<RoommateApplicationsPage> {
-    const { limit, cursor } = params;
+    const { limit, cursor, status } = params;
 
-    let where = sql`WHERE rr.created_by = ${ownerId}`;
+    const conditions = [sql`rr.created_by = ${ownerId}`];
     if (cursor) {
       const { key, id } = decodeCursor(cursor);
-      where = sql`WHERE rr.created_by = ${ownerId} AND (ra.created_at, ra.id) < (${key}, ${id})`;
+      conditions.push(sql`(ra.created_at, ra.id) < (${key}, ${id})`);
     }
+    if (status) {
+      conditions.push(sql`ra.status = ${status}`);
+    }
+    const where = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
 
     const result = await this.db.execute(sql`
       SELECT
@@ -81,6 +86,7 @@ export class DrizzleRoommateApplicationsRepository
         ra.note AS "note",
         ra.created_at AS "createdAt",
         ra.roommate_request_id AS "roommateRequestId",
+        rr.property_id AS "propertyId",
         rr.title AS "title",
         ti.id AS "titleImageId"
       FROM roommate_applications ra
@@ -108,6 +114,7 @@ export class DrizzleRoommateApplicationsRepository
     return {
       id: row.id,
       roommateRequestId: row.roommateRequestId,
+      propertyId: row.propertyId,
       status: row.status as RoommateApplicationStatus,
       note: row.note,
       createdAt: new Date(row.createdAt),

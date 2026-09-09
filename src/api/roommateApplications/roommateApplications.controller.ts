@@ -46,7 +46,7 @@ export class RoommateApplicationsController {
   ): Promise<RoommateApplicationsPage> {
     return this.roommateApplicationsService.getRoommateApplications(
       request.user!.userId,
-      { limit: query.limit, cursor: query.cursor },
+      { limit: query.limit, cursor: query.cursor, status: query.status },
     );
   }
 }

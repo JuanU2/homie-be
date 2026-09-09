@@ -32,6 +32,7 @@ export class RoommateApplicationDtoResponse extends createZodDto(
 export const getRoommateApplicationsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   cursor: z.string().min(1).optional(),
+  status: roommateApplicationStatusSchema.optional(),
 });
 
 export class GetRoommateApplicationsQueryDto extends createZodDto(

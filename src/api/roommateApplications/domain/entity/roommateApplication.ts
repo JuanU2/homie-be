@@ -18,6 +18,7 @@ export interface CreateRoommateApplicationModel {
 export interface RoommateApplicationListItem {
   id: string;
   roommateRequestId: string;
+  propertyId: string;
   status: RoommateApplicationStatus;
   note: string | null;
   createdAt: Date;
@@ -33,4 +34,5 @@ export interface RoommateApplicationsPage {
 export interface GetRoommateApplicationsParams {
   limit: number;
   cursor?: string;
+  status?: RoommateApplicationStatus;
 }
