@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
   Req,
@@ -14,6 +15,8 @@ import {
   CreateRoommateApplicationDtoRequest,
   GetRoommateApplicationsQueryDto,
   RoommateApplicationDtoResponse,
+  RoommateApplicationParamsDto,
+  RoommateApplicationWithApplicantDtoResponse,
 } from '@/api/roommateApplications/dtos/roommateApplications.dto';
 import { RoommateApplicationsPage } from '@/api/roommateApplications/domain/entity/roommateApplication';
 import { RoommateApplicationsService } from '@/api/roommateApplications/roommateApplications.service';
@@ -47,6 +50,21 @@ export class RoommateApplicationsController {
     return this.roommateApplicationsService.getRoommateApplications(
       request.user!.userId,
       { limit: query.limit, cursor: query.cursor, status: query.status },
+    );
+  }
+
+  @Get(':roommateRequestId')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Get all roommate applications for a roommate request',
+  })
+  async getRoommateApplicationsForRequest(
+    @Req() request: Request,
+    @Param() params: RoommateApplicationParamsDto,
+  ): Promise<RoommateApplicationWithApplicantDtoResponse[]> {
+    return this.roommateApplicationsService.getRoommateApplicationsForRequest(
+      request.user!.userId,
+      params.roommateRequestId,
     );
   }
 }

@@ -24,11 +24,11 @@ import {
   RoommateRequestOwnerProfile,
   RoommateRequestPropertyDetail,
   RoommateRequestsPage,
-  RoommateApplicationWithApplicant,
   UserRoommateRequestDetail,
   UserRoommateRequestListItem,
   UserRoommateRequestsPage,
 } from '@/api/roommateRequests/domain/entity/roommateRequest';
+import type { RoommateApplicationWithApplicant } from '@/api/roommateApplications/domain/entity/roommateApplication';
 import { IRoommateRequestsRepository } from '@/api/roommateRequests/domain/interface/roommateRequests.repository';
 import { convertDbLocation } from '@/utils/locationUtil';
 

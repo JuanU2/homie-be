@@ -1,13 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { sql } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { roommateApplications } from '@/db/schema';
+import { roommateApplications, userSettings, users } from '@/db/schema';
 import * as schema from '@/db/schema';
 import {
   CreateRoommateApplicationModel,
   GetRoommateApplicationsParams,
   RoommateApplication,
   RoommateApplicationListItem,
+  RoommateApplicationWithApplicant,
   RoommateApplicationsPage,
   type RoommateApplicationStatus,
 } from '@/api/roommateApplications/domain/entity/roommateApplication';
@@ -121,5 +122,47 @@ export class DrizzleRoommateApplicationsRepository
       title: row.title,
       titleImageId: row.titleImageId,
     };
+  }
+
+  async getRoommateApplicationsForRequest(
+    roommateRequestId: string,
+  ): Promise<RoommateApplicationWithApplicant[]> {
+    const rows = await this.db
+      .select({
+        id: roommateApplications.id,
+        roommateRequestId: roommateApplications.roommateRequestId,
+        applicantId: roommateApplications.applicantId,
+        note: roommateApplications.note,
+        status: roommateApplications.status,
+        createdAt: roommateApplications.createdAt,
+        fullName: users.fullName,
+        email: users.email,
+        profileUrl: users.image,
+        phoneNumber: userSettings.phoneNumber,
+      })
+      .from(roommateApplications)
+      .innerJoin(users, eq(users.id, roommateApplications.applicantId))
+      .leftJoin(userSettings, eq(userSettings.userId, users.id))
+      .where(eq(roommateApplications.roommateRequestId, roommateRequestId))
+      .orderBy(
+        desc(roommateApplications.createdAt),
+        desc(roommateApplications.id),
+      );
+
+    return rows.map(row => ({
+      id: row.id,
+      roommateRequestId: row.roommateRequestId,
+      applicantId: row.applicantId,
+      note: row.note,
+      status: row.status,
+      createdAt: row.createdAt,
+      applicant: {
+        id: row.applicantId,
+        fullName: row.fullName,
+        email: row.email,
+        phoneNumber: row.phoneNumber,
+        profileUrl: row.profileUrl,
+      },
+    }));
   }
 }

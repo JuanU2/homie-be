@@ -1,4 +1,4 @@
-import type { RoommateApplicationStatus } from '@/api/roommateApplications/domain/entity/roommateApplication';
+import type { RoommateApplicationWithApplicant } from '@/api/roommateApplications/domain/entity/roommateApplication';
 
 export type RoommateRequestCurrency = 'EUR' | 'CZK' | 'USD';
 
@@ -134,24 +134,6 @@ export interface RoommateRequestPropertyDetail {
 export interface RoommateRequestDetail extends RoommateRequest {
   owner: RoommateRequestOwnerProfile;
   property: RoommateRequestPropertyDetail;
-}
-
-export interface RoommateApplicationApplicant {
-  id: string;
-  fullName: string;
-  email: string;
-  phoneNumber: string | null;
-  profileUrl: string | null;
-}
-
-export interface RoommateApplicationWithApplicant {
-  id: string;
-  roommateRequestId: string;
-  applicantId: string;
-  note: string | null;
-  status: RoommateApplicationStatus;
-  createdAt: Date;
-  applicant: RoommateApplicationApplicant;
 }
 
 export interface UserRoommateRequestDetail extends RoommateRequestDetail {

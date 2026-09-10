@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { roomTypeEnum } from '@/api/properties/dtos/properties.dto';
-import { roommateApplicationStatusSchema } from '@/api/roommateApplications/dtos/roommateApplications.dto';
+import { roommateApplicationWithApplicantResponseSchema } from '@/api/roommateApplications/dtos/roommateApplications.dto';
 import z from 'zod';
 
 export const roommateRequestCurrencySchema = z.enum(['EUR', 'CZK', 'USD']);
@@ -106,24 +106,6 @@ export const roommateRequestDetailDtoResponseSchema =
 export class RoommateRequestDetailDtoResponse extends createZodDto(
   roommateRequestDetailDtoResponseSchema,
 ) {}
-
-export const roommateApplicationApplicantResponseSchema = z.object({
-  id: z.string(),
-  fullName: z.string(),
-  email: z.string(),
-  phoneNumber: z.string().nullable().optional(),
-  profileUrl: z.string().nullable().optional(),
-});
-
-export const roommateApplicationWithApplicantResponseSchema = z.object({
-  id: z.string(),
-  roommateRequestId: z.string(),
-  applicantId: z.string(),
-  note: z.string().nullable(),
-  status: roommateApplicationStatusSchema,
-  createdAt: z.date(),
-  applicant: roommateApplicationApplicantResponseSchema,
-});
 
 export const userRoommateRequestDetailDtoResponseSchema =
   roommateRequestDetailDtoResponseSchema.extend({

@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   type IRoommateApplicationsRepository,
   ROOMMATE_APPLICATIONS_REPOSITORY,
@@ -10,11 +15,14 @@ import {
 import {
   CreateRoommateApplicationDtoRequest,
   RoommateApplicationDtoResponse,
+  RoommateApplicationWithApplicantDtoResponse,
+  roommateApplicationWithApplicantResponseSchema,
 } from '@/api/roommateApplications/dtos/roommateApplications.dto';
 import {
   GetRoommateApplicationsParams,
   RoommateApplicationsPage,
 } from '@/api/roommateApplications/domain/entity/roommateApplication';
+import z from 'zod';
 
 @Injectable()
 export class RoommateApplicationsService {
@@ -58,5 +66,34 @@ export class RoommateApplicationsService {
       ownerId,
       params,
     );
+  }
+
+  async getRoommateApplicationsForRequest(
+    userId: string,
+    roommateRequestId: string,
+  ): Promise<RoommateApplicationWithApplicantDtoResponse[]> {
+    const roommateRequest =
+      await this.roommateRequestsRepository.getRoommateRequestById(
+        roommateRequestId,
+      );
+
+    if (!roommateRequest) {
+      throw new NotFoundException('Roommate request not found');
+    }
+
+    if (roommateRequest.createdBy !== userId) {
+      throw new ForbiddenException(
+        'You can only view applications for your own roommate request',
+      );
+    }
+
+    const applications =
+      await this.roommateApplicationsRepository.getRoommateApplicationsForRequest(
+        roommateRequestId,
+      );
+
+    return z
+      .array(roommateApplicationWithApplicantResponseSchema)
+      .parse(applications);
   }
 }

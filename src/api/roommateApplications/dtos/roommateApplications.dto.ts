@@ -38,3 +38,33 @@ export const getRoommateApplicationsQuerySchema = z.object({
 export class GetRoommateApplicationsQueryDto extends createZodDto(
   getRoommateApplicationsQuerySchema,
 ) {}
+
+export const roommateApplicationApplicantResponseSchema = z.object({
+  id: z.string(),
+  fullName: z.string(),
+  email: z.string(),
+  phoneNumber: z.string().nullable().optional(),
+  profileUrl: z.string().nullable().optional(),
+});
+
+export const roommateApplicationWithApplicantResponseSchema = z.object({
+  id: z.string(),
+  roommateRequestId: z.string(),
+  applicantId: z.string(),
+  note: z.string().nullable(),
+  status: roommateApplicationStatusSchema,
+  createdAt: z.date(),
+  applicant: roommateApplicationApplicantResponseSchema,
+});
+
+export class RoommateApplicationWithApplicantDtoResponse extends createZodDto(
+  roommateApplicationWithApplicantResponseSchema,
+) {}
+
+export const roommateApplicationParamsSchema = z.object({
+  roommateRequestId: z.uuid(),
+});
+
+export class RoommateApplicationParamsDto extends createZodDto(
+  roommateApplicationParamsSchema,
+) {}

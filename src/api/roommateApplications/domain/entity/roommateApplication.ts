@@ -36,3 +36,21 @@ export interface GetRoommateApplicationsParams {
   cursor?: string;
   status?: RoommateApplicationStatus;
 }
+
+export interface RoommateApplicationApplicant {
+  id: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string | null;
+  profileUrl: string | null;
+}
+
+export interface RoommateApplicationWithApplicant {
+  id: string;
+  roommateRequestId: string;
+  applicantId: string;
+  note: string | null;
+  status: RoommateApplicationStatus;
+  createdAt: Date;
+  applicant: RoommateApplicationApplicant;
+}
