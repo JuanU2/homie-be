@@ -370,6 +370,39 @@ paths:
         '404':
           description: Roommate request not found
 
+  /users/{userId}/roommate-requests/{roommateRequestId}:
+    get:
+      summary: Get the user's own roommate request detail with applications
+      description: Returns the roommate request (with owner and property) together with all of its roommate applications and each applicant's contact details. Only the request owner can view it.
+      tags:
+        - Roommate Requests
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roommateRequestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Roommate request found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRoommateRequestDetailResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Roommate request not found
+
   /roommate-applications:
     post:
       summary: Apply for a roommate request
@@ -1246,3 +1279,122 @@ components:
       required:
         - items
         - nextCursor
+
+    # User Roommate Request Detail Schemas
+    RoommateApplicationApplicant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        phoneNumber:
+          type: string
+          nullable: true
+        profileUrl:
+          type: string
+          nullable: true
+      required:
+        - id
+        - fullName
+        - email
+
+    RoommateApplicationWithApplicant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        roommateRequestId:
+          type: string
+          format: uuid
+        applicantId:
+          type: string
+          format: uuid
+        note:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/RoommateApplicationStatus'
+        createdAt:
+          type: string
+          format: date-time
+        applicant:
+          $ref: '#/components/schemas/RoommateApplicationApplicant'
+      required:
+        - id
+        - roommateRequestId
+        - applicantId
+        - status
+        - createdAt
+        - applicant
+
+    UserRoommateRequestDetailResponse:
+      description: A roommate request (with owner and property) together with its roommate applications and each applicant's contact details.
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        propertyId:
+          type: string
+          format: uuid
+        createdBy:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        priceAmount:
+          type: integer
+        priceCurrency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        idealMoveInDate:
+          type: string
+          format: date
+          nullable: true
+        maxRoommates:
+          type: integer
+        currentRoommates:
+          type: integer
+        status:
+          $ref: '#/components/schemas/RoommateRequestStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        closedAt:
+          type: string
+          format: date-time
+          nullable: true
+        owner:
+          $ref: '#/components/schemas/RoommateRequestOwner'
+        property:
+          $ref: '#/components/schemas/PropertyDetailResponse'
+        applications:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoommateApplicationWithApplicant'
+      required:
+        - id
+        - propertyId
+        - createdBy
+        - title
+        - description
+        - priceAmount
+        - priceCurrency
+        - maxRoommates
+        - currentRoommates
+        - status
+        - createdAt
+        - updatedAt
+        - owner
+        - property
+        - applications

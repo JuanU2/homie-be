@@ -1,9 +1,12 @@
 import {
   CreateRoommateRequestModel,
   GetRoommateRequestsParams,
+  GetUserRoommateRequestsParams,
   RoommateRequest,
   RoommateRequestDetail,
   RoommateRequestsPage,
+  UserRoommateRequestDetail,
+  UserRoommateRequestsPage,
 } from '@/api/roommateRequests/domain/entity/roommateRequest';
 
 export interface IRoommateRequestsRepository {
@@ -14,9 +17,17 @@ export interface IRoommateRequestsRepository {
   getRoommateRequestDetail(
     id: string,
   ): Promise<RoommateRequestDetail | undefined>;
+  getUserRoommateRequestDetail(
+    userId: string,
+    roommateRequestId: string,
+  ): Promise<UserRoommateRequestDetail | undefined>;
   getRoommateRequestsPage(
     params: GetRoommateRequestsParams,
   ): Promise<RoommateRequestsPage>;
+  getRoommateRequestsPageByOwner(
+    ownerId: string,
+    params: GetUserRoommateRequestsParams,
+  ): Promise<UserRoommateRequestsPage>;
 }
 
 export const ROOMMATE_REQUESTS_REPOSITORY = Symbol(

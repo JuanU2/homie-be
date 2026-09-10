@@ -1,5 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { roomTypeEnum } from '@/api/properties/dtos/properties.dto';
+import { roommateApplicationStatusSchema } from '@/api/roommateApplications/dtos/roommateApplications.dto';
 import z from 'zod';
 
 export const roommateRequestCurrencySchema = z.enum(['EUR', 'CZK', 'USD']);
@@ -106,6 +107,42 @@ export class RoommateRequestDetailDtoResponse extends createZodDto(
   roommateRequestDetailDtoResponseSchema,
 ) {}
 
+export const roommateApplicationApplicantResponseSchema = z.object({
+  id: z.string(),
+  fullName: z.string(),
+  email: z.string(),
+  phoneNumber: z.string().nullable().optional(),
+  profileUrl: z.string().nullable().optional(),
+});
+
+export const roommateApplicationWithApplicantResponseSchema = z.object({
+  id: z.string(),
+  roommateRequestId: z.string(),
+  applicantId: z.string(),
+  note: z.string().nullable(),
+  status: roommateApplicationStatusSchema,
+  createdAt: z.date(),
+  applicant: roommateApplicationApplicantResponseSchema,
+});
+
+export const userRoommateRequestDetailDtoResponseSchema =
+  roommateRequestDetailDtoResponseSchema.extend({
+    applications: z.array(roommateApplicationWithApplicantResponseSchema),
+  });
+
+export class UserRoommateRequestDetailDtoResponse extends createZodDto(
+  userRoommateRequestDetailDtoResponseSchema,
+) {}
+
+export const userRoommateRequestDetailParamsSchema = z.object({
+  userId: z.uuid(),
+  roommateRequestId: z.uuid(),
+});
+
+export class UserRoommateRequestDetailParamsDto extends createZodDto(
+  userRoommateRequestDetailParamsSchema,
+) {}
+
 export const roommateRequestParamsSchema = z.object({
   roommateRequestId: z.uuid(),
 });
@@ -123,4 +160,21 @@ export const getRoommateRequestsQuerySchema = z.object({
 
 export class GetRoommateRequestsQueryDto extends createZodDto(
   getRoommateRequestsQuerySchema,
+) {}
+
+export const userRoommateRequestParamsSchema = z.object({
+  userId: z.uuid(),
+});
+
+export class UserRoommateRequestParamsDto extends createZodDto(
+  userRoommateRequestParamsSchema,
+) {}
+
+export const getUserRoommateRequestsQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  cursor: z.string().min(1).optional(),
+});
+
+export class GetUserRoommateRequestsQueryDto extends createZodDto(
+  getUserRoommateRequestsQuerySchema,
 ) {}

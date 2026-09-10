@@ -7,6 +7,7 @@ import {
   propertyEquipment,
   propertyImages,
   propertyRooms,
+  roommateApplications,
   roommateRequests,
   userSettings,
   users,
@@ -15,6 +16,7 @@ import * as schema from '@/db/schema';
 import {
   CreateRoommateRequestModel,
   GetRoommateRequestsParams,
+  GetUserRoommateRequestsParams,
   RoommateRequest,
   type RoommateRequestCurrency,
   RoommateRequestDetail,
@@ -22,6 +24,10 @@ import {
   RoommateRequestOwnerProfile,
   RoommateRequestPropertyDetail,
   RoommateRequestsPage,
+  RoommateApplicationWithApplicant,
+  UserRoommateRequestDetail,
+  UserRoommateRequestListItem,
+  UserRoommateRequestsPage,
 } from '@/api/roommateRequests/domain/entity/roommateRequest';
 import { IRoommateRequestsRepository } from '@/api/roommateRequests/domain/interface/roommateRequests.repository';
 import { convertDbLocation } from '@/utils/locationUtil';
@@ -43,6 +49,10 @@ interface RawPageRow {
   location: string;
   titleImageId: string | null;
   distance: number | null;
+}
+
+interface RawUserPageRow extends RawPageRow {
+  pendingApplicationsCount: number;
 }
 
 function encodeCursor(key: string, id: string): string {
@@ -119,6 +129,79 @@ export class DrizzleRoommateRequestsRepository
       owner,
       property,
     };
+  }
+
+  async getUserRoommateRequestDetail(
+    userId: string,
+    roommateRequestId: string,
+  ): Promise<UserRoommateRequestDetail | undefined> {
+    const request = await this.getRoommateRequestById(roommateRequestId);
+
+    if (!request || request.createdBy !== userId) {
+      return undefined;
+    }
+
+    const owner = await this.getOwnerProfile(request.createdBy);
+    const property = await this.getPropertyDetail(request.propertyId);
+
+    if (!owner || !property) {
+      return undefined;
+    }
+
+    const applications = await this.getApplicationsWithApplicants(
+      roommateRequestId,
+    );
+
+    return {
+      ...request,
+      idealMoveInDate: request.idealMoveInDate ?? null,
+      closedAt: request.closedAt ?? null,
+      owner,
+      property,
+      applications,
+    };
+  }
+
+  private async getApplicationsWithApplicants(
+    roommateRequestId: string,
+  ): Promise<RoommateApplicationWithApplicant[]> {
+    const rows = await this.db
+      .select({
+        id: roommateApplications.id,
+        roommateRequestId: roommateApplications.roommateRequestId,
+        applicantId: roommateApplications.applicantId,
+        note: roommateApplications.note,
+        status: roommateApplications.status,
+        createdAt: roommateApplications.createdAt,
+        fullName: users.fullName,
+        email: users.email,
+        profileUrl: users.image,
+        phoneNumber: userSettings.phoneNumber,
+      })
+      .from(roommateApplications)
+      .innerJoin(users, eq(users.id, roommateApplications.applicantId))
+      .leftJoin(userSettings, eq(userSettings.userId, users.id))
+      .where(eq(roommateApplications.roommateRequestId, roommateRequestId))
+      .orderBy(
+        desc(roommateApplications.createdAt),
+        desc(roommateApplications.id),
+      );
+
+    return rows.map(row => ({
+      id: row.id,
+      roommateRequestId: row.roommateRequestId,
+      applicantId: row.applicantId,
+      note: row.note,
+      status: row.status,
+      createdAt: row.createdAt,
+      applicant: {
+        id: row.applicantId,
+        fullName: row.fullName,
+        email: row.email,
+        phoneNumber: row.phoneNumber,
+        profileUrl: row.profileUrl,
+      },
+    }));
   }
 
   private async getOwnerProfile(
@@ -270,6 +353,62 @@ export class DrizzleRoommateRequestsRepository
     return { items: pageItems, nextCursor };
   }
 
+  async getRoommateRequestsPageByOwner(
+    ownerId: string,
+    params: GetUserRoommateRequestsParams,
+  ): Promise<UserRoommateRequestsPage> {
+    const { limit, cursor } = params;
+
+    const conditions = [sql`rr.created_by = ${ownerId}`];
+    if (cursor) {
+      const { key, id } = decodeCursor(cursor);
+      conditions.push(sql`(rr.created_at, rr.id) < (${key}, ${id})`);
+    }
+    const where = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
+
+    const result = await this.db.execute(sql`
+      SELECT
+        rr.id AS "rrId",
+        rr.max_roommates AS "maxRoommates",
+        rr.current_roommates AS "currentRoommates",
+        rr.price_amount AS "priceAmount",
+        rr.price_currency AS "priceCurrency",
+        rr.created_at AS "createdAt",
+        rr.title AS "title",
+        p.id AS "propertyId",
+        p.country AS "country",
+        p.city AS "city",
+        p.zip_code AS "zipCode",
+        p.street AS "street",
+        p.street_number AS "streetNumber",
+        p.location AS "location",
+        ti.id AS "titleImageId",
+        (
+          SELECT COUNT(*)::int
+          FROM roommate_applications ra
+          WHERE ra.roommate_request_id = rr.id AND ra.status = 'PENDING'
+        ) AS "pendingApplicationsCount"
+      FROM roommate_requests rr
+      JOIN properties p ON p.id = rr.property_id
+      LEFT JOIN property_images ti ON ti.property_id = p.id AND ti.title = true
+      ${where}
+      ORDER BY rr.created_at DESC, rr.id DESC
+      LIMIT ${limit + 1}
+    `);
+
+    const rows = result.rows as unknown as RawUserPageRow[];
+
+    const items = rows.map(row => this.toUserListItem(row));
+
+    const hasNext = rows.length > limit;
+    const pageItems = hasNext ? items.slice(0, limit) : items;
+    const lastRow = hasNext ? rows[limit - 1] : undefined;
+    const nextCursor =
+      hasNext && lastRow ? encodeCursor(lastRow.createdAt, lastRow.rrId) : null;
+
+    return { items: pageItems, nextCursor };
+  }
+
   private async queryByRecency(
     limit: number,
     cursor?: string,
@@ -376,6 +515,13 @@ export class DrizzleRoommateRequestsRepository
         lng: location?.lng ?? 0,
         titleImageId: row.titleImageId,
       },
+    };
+  }
+
+  private toUserListItem(row: RawUserPageRow): UserRoommateRequestListItem {
+    return {
+      ...this.toListItem(row),
+      pendingApplicationsCount: row.pendingApplicationsCount,
     };
   }
 }

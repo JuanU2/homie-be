@@ -13,10 +13,14 @@ import {
   RoommateRequestDetailDtoResponse,
   roommateRequestDetailDtoResponseSchema,
   RoommateRequestDtoResponse,
+  UserRoommateRequestDetailDtoResponse,
+  userRoommateRequestDetailDtoResponseSchema,
 } from '@/api/roommateRequests/dtos/roommateRequests.dto';
 import {
   GetRoommateRequestsParams,
+  GetUserRoommateRequestsParams,
   RoommateRequestsPage,
+  UserRoommateRequestsPage,
 } from '@/api/roommateRequests/domain/entity/roommateRequest';
 import {
   type IPropertiesRepository,
@@ -79,9 +83,36 @@ export class RoommateRequestsService {
     return roommateRequestDetailDtoResponseSchema.parse(detail);
   }
 
+  async getUserRoommateRequestDetail(
+    userId: string,
+    roommateRequestId: string,
+  ): Promise<UserRoommateRequestDetailDtoResponse> {
+    const detail =
+      await this.roommateRequestsRepository.getUserRoommateRequestDetail(
+        userId,
+        roommateRequestId,
+      );
+
+    if (!detail) {
+      throw new NotFoundException('Roommate request not found');
+    }
+
+    return userRoommateRequestDetailDtoResponseSchema.parse(detail);
+  }
+
   async getRoommateRequests(
     params: GetRoommateRequestsParams,
   ): Promise<RoommateRequestsPage> {
     return this.roommateRequestsRepository.getRoommateRequestsPage(params);
+  }
+
+  async getUserRoommateRequests(
+    userId: string,
+    params: GetUserRoommateRequestsParams,
+  ): Promise<UserRoommateRequestsPage> {
+    return this.roommateRequestsRepository.getRoommateRequestsPageByOwner(
+      userId,
+      params,
+    );
   }
 }
