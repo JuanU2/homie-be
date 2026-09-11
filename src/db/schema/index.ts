@@ -7,3 +7,4 @@ export * from "./roommateRequests.schema";
 export * from "./propertyRooms.schema";
 export * from "./userSettings.schema";
 export * from "./users.schema";
+export * from "./deviceTokens.schema";

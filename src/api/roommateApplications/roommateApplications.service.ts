@@ -22,6 +22,8 @@ import {
   GetRoommateApplicationsParams,
   RoommateApplicationsPage,
 } from '@/api/roommateApplications/domain/entity/roommateApplication';
+import { DeviceTokensService } from '@/api/deviceTokens/deviceTokens.service';
+import { PushService } from '@/push/push.service';
 import z from 'zod';
 
 @Injectable()
@@ -31,6 +33,8 @@ export class RoommateApplicationsService {
     private readonly roommateApplicationsRepository: IRoommateApplicationsRepository,
     @Inject(ROOMMATE_REQUESTS_REPOSITORY)
     private readonly roommateRequestsRepository: IRoommateRequestsRepository,
+    private readonly deviceTokensService: DeviceTokensService,
+    private readonly pushService: PushService,
   ) {}
 
   async createRoommateApplication(
@@ -53,7 +57,18 @@ export class RoommateApplicationsService {
         note: data.note,
       });
 
-    // TODO: send a push notification to the property owner (roommateRequest.createdBy) via Firebase.
+    const tokens = await this.deviceTokensService.getTokens(
+      roommateRequest.createdBy,
+    );
+    await this.pushService.send(tokens, {
+      title: 'New roommate application',
+      body: `Someone applied to "${roommateRequest.title}"`,
+      data: {
+        type: 'new_application',
+        roommateRequestId: roommateRequest.id,
+        applicationId: application.id,
+      },
+    });
 
     return application;
   }

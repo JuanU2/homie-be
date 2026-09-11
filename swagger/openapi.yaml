@@ -525,6 +525,27 @@ paths:
         '404':
           description: Roommate request not found
 
+  /device-tokens:
+    post:
+      summary: Register a device token for push notifications
+      tags:
+        - Device Tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeviceTokenRequest'
+      responses:
+        '201':
+          description: Device token registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceTokenResponse'
+        '401':
+          description: Unauthorized
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1517,3 +1538,35 @@ components:
         - owner
         - property
         - applications
+
+    CreateDeviceTokenRequest:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
+
+    DeviceTokenResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        token:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - token
+        - createdAt
+        - updatedAt

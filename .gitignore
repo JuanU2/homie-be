@@ -12,6 +12,9 @@ node_modules
 .env.test.local
 .env.production.local
 
+# Firebase service account (backend FCM credentials)
+firebase-service-account.json
+
 # Testing
 coverage
 

@@ -47,6 +47,11 @@ import { PropertyImagesService } from '@/api/propertyImages/propertyImages.servi
 import { PROPERTY_IMAGES_REPOSITORY } from '@/api/propertyImages/domain/interface/propertyImages.repository';
 import { DrizzlePropertyImagesRepository } from '@/api/propertyImages/infrastructure/drizzle-propertyImages.repository';
 import { StorageService } from '@/storage/storage.service';
+import { DeviceTokensController } from '@/api/deviceTokens/deviceTokens.controller';
+import { DeviceTokensService } from '@/api/deviceTokens/deviceTokens.service';
+import { DEVICE_TOKENS_REPOSITORY } from '@/api/deviceTokens/domain/interface/deviceTokens.repository';
+import { DrizzleDeviceTokensRepository } from '@/api/deviceTokens/infrastructure/drizzle-deviceTokens.repository';
+import { PushService } from '@/push/push.service';
 
 @Module({
   imports: [
@@ -73,6 +78,7 @@ import { StorageService } from '@/storage/storage.service';
     RoommateApplicationsController,
     EquipmentTypesController,
     PropertyImagesController,
+    DeviceTokensController,
   ],
   providers: [
     UsersService,
@@ -86,6 +92,8 @@ import { StorageService } from '@/storage/storage.service';
     EquipmentTypesService,
     PropertyImagesService,
     StorageService,
+    DeviceTokensService,
+    PushService,
     JwtStrategy,
     {
       provide: APP_PIPE,
@@ -126,6 +134,10 @@ import { StorageService } from '@/storage/storage.service';
     {
       provide: PROPERTY_IMAGES_REPOSITORY,
       useClass: DrizzlePropertyImagesRepository,
+    },
+    {
+      provide: DEVICE_TOKENS_REPOSITORY,
+      useClass: DrizzleDeviceTokensRepository,
     },
     {
       provide: "DRIZZLE_DB",
