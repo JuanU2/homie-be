@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { DeviceToken } from '@/api/deviceTokens/domain/entity/deviceToken';
 import type { IDeviceTokensRepository } from '@/api/deviceTokens/domain/interface/deviceTokens.repository';
@@ -37,5 +37,15 @@ export class DrizzleDeviceTokensRepository implements IDeviceTokensRepository {
       .where(eq(deviceTokens.userId, userId));
 
     return rows.map((row) => row.token);
+  }
+
+  async deleteByTokens(tokens: string[]): Promise<void> {
+    if (tokens.length === 0) {
+      return;
+    }
+
+    await this.db
+      .delete(deviceTokens)
+      .where(inArray(deviceTokens.token, tokens));
   }
 }
