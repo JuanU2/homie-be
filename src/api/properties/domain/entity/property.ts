@@ -45,3 +45,18 @@ export interface CreatedPropertyAggregate {
   rooms: CreatePropertyRoomModel[];
   equipment: CreatePropertyEquipmentModel[];
 }
+
+export interface UpdatePropertyModel {
+  description: string;
+  sizeM2?: number;
+  roomCount: number;
+  country: string;
+  city: string;
+  zipCode: string;
+  street: string;
+  streetNumber: string;
+  lat: number;
+  lng: number;
+  rooms: CreatePropertyRoomModel[];
+  equipment: CreatePropertyEquipmentModel[];
+}

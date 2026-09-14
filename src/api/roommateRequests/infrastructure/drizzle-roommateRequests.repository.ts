@@ -24,6 +24,7 @@ import {
   RoommateRequestOwnerProfile,
   RoommateRequestPropertyDetail,
   RoommateRequestsPage,
+  UpdateRoommateRequestModel,
   UserRoommateRequestDetail,
   UserRoommateRequestListItem,
   UserRoommateRequestsPage,
@@ -98,6 +99,28 @@ export class DrizzleRoommateRequestsRepository
     }
 
     return createdRequest;
+  }
+
+  async updateRoommateRequest(
+    id: string,
+    request: UpdateRoommateRequestModel,
+  ): Promise<RoommateRequest | undefined> {
+    const [updatedRequest] = await this.db
+      .update(roommateRequests)
+      .set({
+        title: request.title,
+        description: request.description,
+        priceAmount: request.priceAmount,
+        priceCurrency: request.priceCurrency,
+        idealMoveInDate: request.idealMoveInDate ?? null,
+        maxRoommates: request.maxRoommates,
+        currentRoommates: request.currentRoommates,
+        updatedAt: new Date(),
+      })
+      .where(eq(roommateRequests.id, id))
+      .returning();
+
+    return updatedRequest;
   }
 
   async getRoommateRequestById(id: string): Promise<RoommateRequest | undefined> {

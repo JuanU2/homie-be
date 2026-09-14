@@ -27,6 +27,21 @@ export const createRoommateRequestDtoRequestSchema = z
     path: ['currentRoommates'],
   });
 
+export const updateRoommateRequestDtoRequestSchema = z
+  .object({
+    title: z.string().min(1),
+    description: z.string().min(1),
+    priceAmount: z.number().int().positive(),
+    priceCurrency: roommateRequestCurrencySchema,
+    idealMoveInDate: z.string().min(1).optional(),
+    maxRoommates: z.number().int().positive(),
+    currentRoommates: z.number().int().nonnegative(),
+  })
+  .refine(data => data.currentRoommates <= data.maxRoommates, {
+    message: 'currentRoommates must not exceed maxRoommates',
+    path: ['currentRoommates'],
+  });
+
 export const roommateRequestDtoResponseSchema = z.object({
   id: z.string(),
   propertyId: z.string(),
@@ -46,6 +61,10 @@ export const roommateRequestDtoResponseSchema = z.object({
 
 export class CreateRoommateRequestDtoRequest extends createZodDto(
   createRoommateRequestDtoRequestSchema,
+) {}
+
+export class UpdateRoommateRequestDtoRequest extends createZodDto(
+  updateRoommateRequestDtoRequestSchema,
 ) {}
 
 export class RoommateRequestDtoResponse extends createZodDto(

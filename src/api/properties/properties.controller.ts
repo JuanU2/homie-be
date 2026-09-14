@@ -2,7 +2,9 @@ import {
   Body,
   Controller,
   ForbiddenException,
+  Param,
   Post,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -11,6 +13,8 @@ import { PropertiesService } from './properties.service';
 import {
   CreatePropertyDtoRequest,
   CreatePropertyDtoResponse,
+  PropertyParamsDto,
+  UpdatePropertyDtoRequest,
 } from './dtos/properties.dto';
 import { JwtAuthGuard } from '@/api/auth/jwt-auth.guard';
 import { type Request } from 'express';
@@ -32,5 +36,20 @@ export class PropertiesController {
       );
     }
     return this.propertiesService.createProperty(createPropertyDto);
+  }
+
+  @Put(":propertyId")
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: "Update a property" })
+  async updateProperty(
+    @Req() request: Request,
+    @Param() params: PropertyParamsDto,
+    @Body() updatePropertyDto: UpdatePropertyDtoRequest,
+  ): Promise<CreatePropertyDtoResponse> {
+    return this.propertiesService.updateProperty(
+      request.user!.userId,
+      params.propertyId,
+      updatePropertyDto,
+    );
   }
 }

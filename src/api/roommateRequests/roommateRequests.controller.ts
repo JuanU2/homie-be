@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -17,6 +18,7 @@ import {
   RoommateRequestDetailDtoResponse,
   RoommateRequestDtoResponse,
   RoommateRequestParamsDto,
+  UpdateRoommateRequestDtoRequest,
 } from '@/api/roommateRequests/dtos/roommateRequests.dto';
 import { RoommateRequestsPage } from '@/api/roommateRequests/domain/entity/roommateRequest';
 import { RoommateRequestsService } from '@/api/roommateRequests/roommateRequests.service';
@@ -47,6 +49,21 @@ export class RoommateRequestsController {
   ): Promise<RoommateRequestDetailDtoResponse> {
     return this.roommateRequestsService.getRoommateRequestDetail(
       params.roommateRequestId,
+    );
+  }
+
+  @Put(':roommateRequestId')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Update roommate request' })
+  async updateRoommateRequest(
+    @Req() request: Request,
+    @Param() params: RoommateRequestParamsDto,
+    @Body() data: UpdateRoommateRequestDtoRequest,
+  ): Promise<RoommateRequestDtoResponse> {
+    return this.roommateRequestsService.updateRoommateRequest(
+      request.user!.userId,
+      params.roommateRequestId,
+      data,
     );
   }
 

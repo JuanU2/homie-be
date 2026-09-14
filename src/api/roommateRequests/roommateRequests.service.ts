@@ -13,6 +13,7 @@ import {
   RoommateRequestDetailDtoResponse,
   roommateRequestDetailDtoResponseSchema,
   RoommateRequestDtoResponse,
+  UpdateRoommateRequestDtoRequest,
   UserRoommateRequestDetailDtoResponse,
   userRoommateRequestDetailDtoResponseSchema,
 } from '@/api/roommateRequests/dtos/roommateRequests.dto';
@@ -61,6 +62,49 @@ export class RoommateRequestsService {
       maxRoommates: data.maxRoommates,
       currentRoommates: data.currentRoommates,
     });
+
+    return {
+      ...request,
+      idealMoveInDate: request.idealMoveInDate ?? null,
+      closedAt: request.closedAt ?? null,
+    };
+  }
+
+  async updateRoommateRequest(
+    userId: string,
+    id: string,
+    data: UpdateRoommateRequestDtoRequest,
+  ): Promise<RoommateRequestDtoResponse> {
+    const existing = await this.roommateRequestsRepository.getRoommateRequestById(
+      id,
+    );
+
+    if (!existing) {
+      throw new NotFoundException('Roommate request not found');
+    }
+
+    if (existing.createdBy !== userId) {
+      throw new ForbiddenException(
+        'You can only update your own roommate request',
+      );
+    }
+
+    const request = await this.roommateRequestsRepository.updateRoommateRequest(
+      id,
+      {
+        title: data.title,
+        description: data.description,
+        priceAmount: data.priceAmount,
+        priceCurrency: data.priceCurrency,
+        idealMoveInDate: data.idealMoveInDate,
+        maxRoommates: data.maxRoommates,
+        currentRoommates: data.currentRoommates,
+      },
+    );
+
+    if (!request) {
+      throw new NotFoundException('Roommate request not found');
+    }
 
     return {
       ...request,

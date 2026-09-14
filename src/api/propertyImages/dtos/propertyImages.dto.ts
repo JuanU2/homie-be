@@ -30,3 +30,11 @@ export const propertyImageParamsSchema = z.object({
 export class PropertyImageParamsDto extends createZodDto(
   propertyImageParamsSchema,
 ) {}
+
+export const updatePropertyImageSchema = z.object({
+  title: z.boolean(),
+});
+
+export class UpdatePropertyImageDto extends createZodDto(
+  updatePropertyImageSchema,
+) {}

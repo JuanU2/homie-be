@@ -54,6 +54,61 @@ export class DrizzlePropertyImagesRepository implements IPropertyImagesRepositor
     });
   }
 
+  async deleteImage(propertyId: string, imageId: string): Promise<void> {
+    await this.db
+      .delete(propertyImages)
+      .where(
+        and(
+          eq(propertyImages.id, imageId),
+          eq(propertyImages.propertyId, propertyId),
+        ),
+      );
+  }
+
+  async setImageTitle(
+    propertyId: string,
+    imageId: string,
+    title: boolean,
+  ): Promise<PropertyImage | undefined> {
+    return this.db.transaction(async tx => {
+      if (title) {
+        await tx
+          .update(propertyImages)
+          .set({ title: false })
+          .where(
+            and(
+              eq(propertyImages.propertyId, propertyId),
+              eq(propertyImages.title, true),
+            ),
+          );
+      }
+
+      const [updated] = await tx
+        .update(propertyImages)
+        .set({ title, updatedAt: new Date() })
+        .where(
+          and(
+            eq(propertyImages.id, imageId),
+            eq(propertyImages.propertyId, propertyId),
+          ),
+        )
+        .returning();
+
+      if (!updated) {
+        return undefined;
+      }
+
+      return {
+        id: updated.id,
+        propertyId: updated.propertyId,
+        imageUrl: updated.imageUrl ?? "",
+        title: updated.title,
+        createdAt: updated.createdAt,
+        updatedAt: updated.updatedAt,
+      };
+    });
+  }
+
   async getImageById(
     propertyId: string,
     imageId: string,

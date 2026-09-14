@@ -37,6 +37,16 @@ export interface CreateRoommateRequestModel {
   currentRoommates: number;
 }
 
+export interface UpdateRoommateRequestModel {
+  title: string;
+  description: string;
+  priceAmount: number;
+  priceCurrency: RoommateRequestCurrency;
+  idealMoveInDate?: string;
+  maxRoommates: number;
+  currentRoommates: number;
+}
+
 export interface RoommateRequestPropertySummary {
   id: string;
   country: string;

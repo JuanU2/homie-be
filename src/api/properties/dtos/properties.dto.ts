@@ -42,6 +42,25 @@ export const createPropertyRequestSchema = z.object({
   equipment: z.array(equipmentSchema),
 });
 
+export const updatePropertyRequestSchema = z.object({
+  description: z.string().min(1),
+  sizeM2: z.number().positive().optional(),
+  roomCount: z.number().positive(),
+  country: z.string().max(100),
+  city: z.string().max(100),
+  zipCode: z.string().max(20),
+  street: z.string().max(100),
+  streetNumber: z.string().max(10),
+  lat: z.number().refine((val) => val >= -90 && val <= 90, {
+    message: 'Latitude must be between -90 and 90',
+  }),
+  lng: z.number().refine((val) => val >= -180 && val <= 180, {
+    message: 'Longitude must be between -180 and 180',
+  }),
+  rooms: z.array(roomsSchema),
+  equipment: z.array(equipmentSchema),
+});
+
 export const createPropertyResponseSchema = z.object({
   id: z.string(),
   ownerId: z.string(),
@@ -69,6 +88,16 @@ export class CreatePropertyDtoRequest extends createZodDto(
   createPropertyRequestSchema
 ) {}
 
+export class UpdatePropertyDtoRequest extends createZodDto(
+  updatePropertyRequestSchema
+) {}
+
 export class CreatePropertyDtoResponse extends createZodDto(
   createPropertyResponseSchema,
 ) {}
+
+export const propertyParamsSchema = z.object({
+  propertyId: z.uuid(),
+});
+
+export class PropertyParamsDto extends createZodDto(propertyParamsSchema) {}

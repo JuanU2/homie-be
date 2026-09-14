@@ -5,6 +5,7 @@ import { IPropertiesRepository } from '@/api/properties/domain/interface/propert
 import {
   CreatePropertyModel,
   CreatedPropertyAggregate,
+  UpdatePropertyModel,
 } from '@/api/properties/domain/entity/property';
 import { equipmentTypes, properties, propertyEquipment, propertyRooms } from '@/db/schema';
 import * as schema from '@/db/schema';
@@ -120,6 +121,77 @@ export class PropertiesRepository implements IPropertiesRepository {
 
       return {
         property: createdProperty,
+        rooms: property.rooms,
+        equipment: property.equipment,
+      };
+    });
+  }
+
+  async updateProperty(
+    propertyId: string,
+    property: UpdatePropertyModel,
+  ): Promise<CreatedPropertyAggregate | undefined> {
+    return this.db.transaction(async transaction => {
+      const [updatedProperty] = await transaction
+        .update(properties)
+        .set({
+          description: property.description,
+          sizeM2: property.sizeM2 ?? null,
+          roomCount: property.roomCount,
+          country: property.country,
+          city: property.city,
+          zipCode: property.zipCode,
+          street: property.street,
+          streetNumber: property.streetNumber,
+          location: `SRID=4326;POINT(${property.lng} ${property.lat})`,
+          updatedAt: new Date(),
+        })
+        .where(eq(properties.id, propertyId))
+        .returning();
+
+      if (!updatedProperty) {
+        return undefined;
+      }
+
+      await transaction
+        .delete(propertyRooms)
+        .where(eq(propertyRooms.propertyId, propertyId));
+
+      if (property.rooms.length > 0) {
+        await transaction.insert(propertyRooms).values(
+          property.rooms.map(room => ({
+            propertyId,
+            roomType: room.roomType,
+            count: room.count,
+          })),
+        );
+      }
+
+      await transaction
+        .delete(propertyEquipment)
+        .where(eq(propertyEquipment.propertyId, propertyId));
+
+      for (const equipment of property.equipment) {
+        const equipmentTypeId = await this.getOrCreateEquipmentTypeId(
+          transaction,
+          equipment.equipmentType,
+        );
+
+        await transaction
+          .insert(propertyEquipment)
+          .values({
+            propertyId,
+            equipmentTypeId,
+            quantity: equipment.count,
+          })
+          .onConflictDoUpdate({
+            target: [propertyEquipment.propertyId, propertyEquipment.equipmentTypeId],
+            set: { quantity: equipment.count },
+          });
+      }
+
+      return {
+        property: updatedProperty,
         rooms: property.rooms,
         equipment: property.equipment,
       };

@@ -1,7 +1,12 @@
 import {
+  Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
+  Patch,
   Post,
   Req,
   Res,
@@ -19,6 +24,7 @@ import {
   PropertyImageParamsDto,
   PropertyImageResponse,
   PropertyImagesParamsDto,
+  UpdatePropertyImageDto,
 } from "./dtos/propertyImages.dto";
 
 @Controller("properties/:propertyId/images")
@@ -85,5 +91,50 @@ export class PropertyImagesController {
 
     res.setHeader("Content-Type", contentType);
     res.send(body);
+  }
+
+  @Delete(":imageId")
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: "Delete a property image" })
+  @ApiParam({ name: "propertyId", type: String, description: "Property id" })
+  @ApiParam({ name: "imageId", type: String, description: "Image id" })
+  async deleteImage(
+    @Req() request: Request,
+    @Param() params: PropertyImageParamsDto,
+  ): Promise<void> {
+    const userId = request.user?.userId;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    await this.propertyImagesService.deleteImage(
+      userId,
+      params.propertyId,
+      params.imageId,
+    );
+  }
+
+  @Patch(":imageId")
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: "Update a property image" })
+  @ApiParam({ name: "propertyId", type: String, description: "Property id" })
+  @ApiParam({ name: "imageId", type: String, description: "Image id" })
+  async updateImage(
+    @Req() request: Request,
+    @Param() params: PropertyImageParamsDto,
+    @Body() updatePropertyImageDto: UpdatePropertyImageDto,
+  ): Promise<PropertyImageResponse> {
+    const userId = request.user?.userId;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    return this.propertyImagesService.setImageTitle(
+      userId,
+      params.propertyId,
+      params.imageId,
+      updatePropertyImageDto.title,
+    );
   }
 }

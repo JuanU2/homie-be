@@ -1,12 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 
-export const createEquipmentDtoRequestSchema = z.object({
-  propertyId: z.uuid(),
-  equipmentType: z.string().min(1).max(255),
-  count: z.number().int().positive(),
-});
-
 export const patchEquipmentDtoRequestSchema = z.object({
   count: z.number().int().positive(),
 });
@@ -16,10 +10,6 @@ export const equipmentDtoResponseSchema = z.object({
   equipmentType: z.string().min(1).max(255),
   count: z.number().int().positive(),
 });
-
-export class CreateEquipmentDtoRequest extends createZodDto(
-  createEquipmentDtoRequestSchema,
-) {}
 
 export class PatchEquipmentDtoRequest extends createZodDto(
   patchEquipmentDtoRequestSchema,

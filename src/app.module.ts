@@ -21,10 +21,6 @@ import { PropertiesController } from '@/api/properties/properties.controller';
 import { PropertiesService } from '@/api/properties/properties.service';
 import { PROPERTIES_REPOSITORY } from '@/api/properties/domain/interface/properties.repository';
 import { PropertiesRepository } from '@/api/properties/infrastructure/drizzle-properties.repository';
-import { RoomsController } from '@/api/rooms/rooms.controller';
-import { RoomsService } from '@/api/rooms/rooms.service';
-import { ROOMS_REPOSITORY } from '@/api/rooms/domain/interface/rooms.repository';
-import { DrizzleRoomsRepository } from '@/api/rooms/infrastructure/drizzle-rooms.repository';
 import { EquipmentController } from '@/api/equipment/equipment.controller';
 import { EquipmentService } from '@/api/equipment/equipment.service';
 import { EQUIPMENT_REPOSITORY } from '@/api/equipment/domain/interface/equipment.repository';
@@ -71,7 +67,6 @@ import { PushService } from '@/push/push.service';
     AuthController,
     UserSettingsController,
     PropertiesController,
-    RoomsController,
     EquipmentController,
     RoommateRequestsController,
     UserRoommateRequestsController,
@@ -85,7 +80,6 @@ import { PushService } from '@/push/push.service';
     AuthService,
     UserSettingsService,
     PropertiesService,
-    RoomsService,
     EquipmentService,
     RoommateRequestsService,
     RoommateApplicationsService,
@@ -110,10 +104,6 @@ import { PushService } from '@/push/push.service';
     {
       provide: PROPERTIES_REPOSITORY,
       useClass: PropertiesRepository,
-    },
-    {
-      provide: ROOMS_REPOSITORY,
-      useClass: DrizzleRoomsRepository,
     },
     {
       provide: EQUIPMENT_REPOSITORY,

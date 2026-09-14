@@ -86,4 +86,64 @@ export class PropertyImagesService {
 
     return this.storageService.get(image.imageUrl);
   }
+
+  async deleteImage(
+    userId: string,
+    propertyId: string,
+    imageId: string,
+  ): Promise<void> {
+    const ownerId = await this.propertiesRepository.getOwnerId(propertyId);
+    if (!ownerId) {
+      throw new NotFoundException("Property not found");
+    }
+    if (ownerId !== userId) {
+      throw new ForbiddenException(
+        "You can only delete images for your own property",
+      );
+    }
+
+    const image = await this.propertyImagesRepository.getImageById(
+      propertyId,
+      imageId,
+    );
+
+    if (!image) {
+      throw new NotFoundException("Image not found");
+    }
+
+    if (image.imageUrl) {
+      await this.storageService.delete(image.imageUrl);
+    }
+
+    await this.propertyImagesRepository.deleteImage(propertyId, imageId);
+  }
+
+  async setImageTitle(
+    userId: string,
+    propertyId: string,
+    imageId: string,
+    title: boolean,
+  ): Promise<PropertyImage> {
+    const ownerId = await this.propertiesRepository.getOwnerId(propertyId);
+    if (!ownerId) {
+      throw new NotFoundException("Property not found");
+    }
+    if (ownerId !== userId) {
+      throw new ForbiddenException(
+        "You can only update images for your own property",
+      );
+    }
+
+    const updated = await this.propertyImagesRepository.setImageTitle(
+      propertyId,
+      imageId,
+      title,
+    );
+
+    if (!updated) {
+      throw new NotFoundException("Image not found");
+    }
+
+    return updated;
+  }
 }

@@ -1,7 +1,6 @@
-import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Param, Patch } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import {
-  CreateEquipmentDtoRequest,
   EquipmentDtoResponse,
   PatchEquipmentDtoRequest,
   PatchEquipmentParamsDto,
@@ -11,14 +10,6 @@ import { EquipmentService } from '@/api/equipment/equipment.service';
 @Controller('equipment')
 export class EquipmentController {
   constructor(private readonly equipmentService: EquipmentService) {}
-
-  @Post()
-  @ApiOperation({ summary: 'Create property equipment' })
-  async createEquipment(
-    @Body() data: CreateEquipmentDtoRequest,
-  ): Promise<EquipmentDtoResponse> {
-    return this.equipmentService.createEquipment(data);
-  }
 
   @Patch(':propertyId/:equipmentType')
   @ApiOperation({ summary: 'Patch property equipment quantity' })

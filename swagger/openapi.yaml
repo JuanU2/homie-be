@@ -102,6 +102,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/PropertyResponse'
 
+  /properties/{propertyId}:
+    put:
+      summary: Update a property
+      tags:
+        - Properties
+      parameters:
+        - name: propertyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePropertyRequest'
+      responses:
+        '200':
+          description: Property updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Property not found
+
   /properties/{propertyId}/images:
     post:
       summary: Upload a property image
@@ -172,33 +204,44 @@ paths:
                 format: binary
         '404':
           description: Image not found
-
-  /rooms:
-    post:
-      summary: Create a room
+    delete:
+      summary: Delete a property image
       tags:
-        - Rooms
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateRoomRequest'
-      responses:
-        '201':
-          description: Room created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RoomResponse'
-
-  /rooms/{id}:
-    patch:
-      summary: Update a room
-      tags:
-        - Rooms
+        - Properties
       parameters:
-        - name: id
+        - name: propertyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Image deleted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Image not found
+    patch:
+      summary: Update a property image
+      tags:
+        - Properties
+      parameters:
+        - name: propertyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: imageId
           in: path
           required: true
           schema:
@@ -209,35 +252,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateRoomRequest'
+              $ref: '#/components/schemas/UpdatePropertyImageRequest'
       responses:
         '200':
-          description: Room updated
+          description: Image updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoomResponse'
+                $ref: '#/components/schemas/PropertyImageResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
         '404':
-          description: Room not found
-
-  /equipment:
-    post:
-      summary: Create property equipment
-      tags:
-        - Equipment
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateEquipmentRequest'
-      responses:
-        '201':
-          description: Equipment created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EquipmentResponse'
+          description: Image not found
 
   /equipment/{propertyId}/{equipmentType}:
     patch:
@@ -367,6 +395,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RoommateRequestDetailResponse'
+        '404':
+          description: Roommate request not found
+    put:
+      summary: Update roommate request
+      tags:
+        - Roommate Requests
+      parameters:
+        - name: roommateRequestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoommateRequestRequest'
+      responses:
+        '200':
+          description: Roommate request updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoommateRequestResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
         '404':
           description: Roommate request not found
 
@@ -798,6 +856,55 @@ components:
         - rooms
         - equipment
 
+    UpdatePropertyRequest:
+      type: object
+      properties:
+        description:
+          type: string
+        sizeM2:
+          type: number
+        roomCount:
+          type: integer
+          minimum: 1
+        country:
+          type: string
+        city:
+          type: string
+        zipCode:
+          type: string
+        street:
+          type: string
+        streetNumber:
+          type: string
+        lat:
+          type: number
+          minimum: -90
+          maximum: 90
+        lng:
+          type: number
+          minimum: -180
+          maximum: 180
+        rooms:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoomDto'
+        equipment:
+          type: array
+          items:
+            $ref: '#/components/schemas/EquipmentDto'
+      required:
+        - description
+        - roomCount
+        - country
+        - city
+        - zipCode
+        - street
+        - streetNumber
+        - lat
+        - lng
+        - rooms
+        - equipment
+
     PropertyResponse:
       type: object
       properties:
@@ -951,68 +1058,15 @@ components:
         - createdAt
         - updatedAt
 
-    # Room Schemas
-    CreateRoomRequest:
+    UpdatePropertyImageRequest:
       type: object
       properties:
-        propertyId:
-          type: string
-          format: uuid
-        roomType:
-          $ref: '#/components/schemas/RoomTypeEnum'
-        count:
-          type: integer
-          minimum: 1
+        title:
+          type: boolean
       required:
-        - propertyId
-        - roomType
-        - count
-
-    UpdateRoomRequest:
-      type: object
-      properties:
-        roomType:
-          $ref: '#/components/schemas/RoomTypeEnum'
-        count:
-          type: integer
-          minimum: 1
-
-    RoomResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        propertyId:
-          type: string
-          format: uuid
-        roomType:
-          $ref: '#/components/schemas/RoomTypeEnum'
-        count:
-          type: integer
-      required:
-        - id
-        - propertyId
-        - roomType
-        - count
+        - title
 
     # Equipment Schemas
-    CreateEquipmentRequest:
-      type: object
-      properties:
-        propertyId:
-          type: string
-          format: uuid
-        equipmentType:
-          type: string
-        count:
-          type: integer
-          minimum: 1
-      required:
-        - propertyId
-        - equipmentType
-        - count
-
     UpdateEquipmentRequest:
       type: object
       properties:
@@ -1076,6 +1130,35 @@ components:
           minimum: 0
       required:
         - propertyId
+        - title
+        - description
+        - priceAmount
+        - priceCurrency
+        - maxRoommates
+        - currentRoommates
+
+    UpdateRoommateRequestRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        priceAmount:
+          type: integer
+          minimum: 1
+        priceCurrency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        idealMoveInDate:
+          type: string
+          format: date
+        maxRoommates:
+          type: integer
+          minimum: 1
+        currentRoommates:
+          type: integer
+          minimum: 0
+      required:
         - title
         - description
         - priceAmount
