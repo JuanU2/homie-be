@@ -21,8 +21,17 @@ export const roommateApplicationDtoResponseSchema = z.object({
   createdAt: z.date(),
 });
 
+export const updateRoommateApplicationDtoRequestSchema = z.object({
+  status: roommateApplicationStatusSchema,
+  incrementCurrentRoommates: z.boolean().optional(),
+});
+
 export class CreateRoommateApplicationDtoRequest extends createZodDto(
   createRoommateApplicationDtoRequestSchema,
+) {}
+
+export class UpdateRoommateApplicationDtoRequest extends createZodDto(
+  updateRoommateApplicationDtoRequestSchema,
 ) {}
 
 export class RoommateApplicationDtoResponse extends createZodDto(
@@ -67,4 +76,12 @@ export const roommateApplicationParamsSchema = z.object({
 
 export class RoommateApplicationParamsDto extends createZodDto(
   roommateApplicationParamsSchema,
+) {}
+
+export const roommateApplicationIdParamsSchema = z.object({
+  roommateApplicationId: z.uuid(),
+});
+
+export class RoommateApplicationIdParamsDto extends createZodDto(
+  roommateApplicationIdParamsSchema,
 ) {}

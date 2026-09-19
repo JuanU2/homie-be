@@ -583,6 +583,39 @@ paths:
         '404':
           description: Roommate request not found
 
+  /roommate-applications/{roommateApplicationId}:
+    put:
+      summary: Update a roommate application status
+      description: Updates the status of a roommate application. Only the owner of the roommate request can update it. Sends a push notification to the applicant.
+      tags:
+        - Roommate Applications
+      parameters:
+        - name: roommateApplicationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoommateApplicationRequest'
+      responses:
+        '200':
+          description: Roommate application updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoommateApplicationResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Roommate application or roommate request not found
+
   /device-tokens:
     post:
       summary: Register a device token for push notifications
@@ -1427,6 +1460,17 @@ components:
           type: string
       required:
         - roommateRequestId
+
+    UpdateRoommateApplicationRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/RoommateApplicationStatus'
+        incrementCurrentRoommates:
+          type: boolean
+          description: When accepting, also increment the roommate request's currentRoommates by 1.
+      required:
+        - status
 
     RoommateApplicationResponse:
       type: object

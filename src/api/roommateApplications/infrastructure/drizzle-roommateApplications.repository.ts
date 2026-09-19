@@ -1,7 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { roommateApplications, userSettings, users } from '@/db/schema';
+import {
+  roommateApplications,
+  roommateRequests,
+  userSettings,
+  users,
+} from '@/db/schema';
 import * as schema from '@/db/schema';
 import {
   CreateRoommateApplicationModel,
@@ -62,6 +67,59 @@ export class DrizzleRoommateApplicationsRepository
     }
 
     return created;
+  }
+
+  async getRoommateApplicationById(
+    id: string,
+  ): Promise<RoommateApplication | undefined> {
+    return this.db.query.roommateApplications.findFirst({
+      where: eq(roommateApplications.id, id),
+    });
+  }
+
+  async updateRoommateApplicationStatus(
+    id: string,
+    status: RoommateApplicationStatus,
+  ): Promise<RoommateApplication | undefined> {
+    const [updated] = await this.db
+      .update(roommateApplications)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(roommateApplications.id, id))
+      .returning();
+
+    return updated;
+  }
+
+  async acceptRoommateApplication(
+    id: string,
+    roommateRequestId: string,
+  ): Promise<RoommateApplication | undefined> {
+    return this.db.transaction(async tx => {
+      const [updated] = await tx
+        .update(roommateApplications)
+        .set({ status: 'ACCEPTED', updatedAt: new Date() })
+        .where(eq(roommateApplications.id, id))
+        .returning();
+
+      if (!updated) {
+        return undefined;
+      }
+
+      await tx
+        .update(roommateRequests)
+        .set({
+          currentRoommates: sql`${roommateRequests.currentRoommates} + 1`,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(roommateRequests.id, roommateRequestId),
+            sql`${roommateRequests.currentRoommates} < ${roommateRequests.maxRoommates}`,
+          ),
+        );
+
+      return updated;
+    });
   }
 
   async getRoommateApplicationsPage(

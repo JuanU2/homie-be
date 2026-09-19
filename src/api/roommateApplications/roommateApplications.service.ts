@@ -17,6 +17,7 @@ import {
   RoommateApplicationDtoResponse,
   RoommateApplicationWithApplicantDtoResponse,
   roommateApplicationWithApplicantResponseSchema,
+  UpdateRoommateApplicationDtoRequest,
 } from '@/api/roommateApplications/dtos/roommateApplications.dto';
 import {
   GetRoommateApplicationsParams,
@@ -71,6 +72,71 @@ export class RoommateApplicationsService {
     });
 
     return application;
+  }
+
+  async updateRoommateApplicationStatus(
+    userId: string,
+    roommateApplicationId: string,
+    data: UpdateRoommateApplicationDtoRequest,
+  ): Promise<RoommateApplicationDtoResponse> {
+    const application =
+      await this.roommateApplicationsRepository.getRoommateApplicationById(
+        roommateApplicationId,
+      );
+
+    if (!application) {
+      throw new NotFoundException('Roommate application not found');
+    }
+
+    const roommateRequest =
+      await this.roommateRequestsRepository.getRoommateRequestById(
+        application.roommateRequestId,
+      );
+
+    if (!roommateRequest) {
+      throw new NotFoundException('Roommate request not found');
+    }
+
+    if (roommateRequest.createdBy !== userId) {
+      throw new ForbiddenException(
+        'You can only update applications for your own roommate request',
+      );
+    }
+
+    const shouldIncrement =
+      data.status === 'ACCEPTED' &&
+      data.incrementCurrentRoommates === true &&
+      application.status !== 'ACCEPTED';
+
+    const updated = shouldIncrement
+      ? await this.roommateApplicationsRepository.acceptRoommateApplication(
+          roommateApplicationId,
+          application.roommateRequestId,
+        )
+      : await this.roommateApplicationsRepository.updateRoommateApplicationStatus(
+          roommateApplicationId,
+          data.status,
+        );
+
+    if (!updated) {
+      throw new NotFoundException('Roommate application not found');
+    }
+
+    const tokens = await this.deviceTokensService.getTokens(
+      application.applicantId,
+    );
+    await this.pushService.send(tokens, {
+      title: 'Roommate application updated',
+      body: `Your application to "${roommateRequest.title}" was ${data.status.toLowerCase()}`,
+      data: {
+        type: 'application_status_changed',
+        roommateRequestId: roommateRequest.id,
+        applicationId: application.id,
+        status: data.status,
+      },
+    });
+
+    return updated;
   }
 
   async getRoommateApplications(
