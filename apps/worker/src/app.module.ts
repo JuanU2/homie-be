@@ -6,6 +6,7 @@ import { Pool } from 'pg';
 import { createDb, type Database } from '@homie/db';
 import { AiModule } from './ai/ai.module';
 import { ScraperModule } from './scraper/scraper.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ScraperModule } from './scraper/scraper.module';
       isGlobal: true,
       envFilePath: ['.env', '../../.env'],
     }),
+    AuthModule,
     AiModule,
     ScraperModule,
   ],

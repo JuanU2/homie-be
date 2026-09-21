@@ -74,6 +74,11 @@ Standalone NestJS app on port `3002` (override with `WORKER_PORT`). Two modules:
 - `scraper/` — `ScraperService` uses Node `fetch` + Cheerio. Endpoints:
   `GET /scraper/health`, `POST /scraper/scrape` (`{ url, selector? }`).
 
+The `POST` endpoints are protected by the worker's own `GoogleTokenGuard`
+(`src/auth/google-token.guard.ts`), which validates the `Authorization: Bearer
+<idToken>` header against Google's JWKS — same auth as core, but without a user
+lookup (the worker only needs `sub`/`email`). The `/health` routes are public.
+
 The worker also wires a `DRIZZLE_DB` provider via `@homie/db` so it can read/write
 the same database as core when needed.
 

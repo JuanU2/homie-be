@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ScraperService } from './scraper.service';
 import { ScrapeDto } from './dtos/scraper.dto';
+import { GoogleTokenGuard } from '../auth/google-token.guard';
 
 @Controller('scraper')
 export class ScraperController {
@@ -12,6 +13,7 @@ export class ScraperController {
   }
 
   @Post('scrape')
+  @UseGuards(GoogleTokenGuard)
   async scrape(@Body() dto: ScrapeDto) {
     return this.scraperService.scrape(dto.url, dto.selector);
   }

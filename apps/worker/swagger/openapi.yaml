@@ -25,6 +25,8 @@ paths:
   /ai/generate:
     post:
       summary: Generate text with Google Gemini
+      security:
+        - bearerAuth: []
       tags:
         - AI
       requestBody:
@@ -59,6 +61,8 @@ paths:
   /scraper/scrape:
     post:
       summary: Scrape a URL and extract title, text and links
+      security:
+        - bearerAuth: []
       tags:
         - Scraper
       requestBody:
@@ -80,6 +84,12 @@ paths:
           description: Failed to fetch the target URL
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Google ID token
+
   schemas:
     HealthResponse:
       type: object
