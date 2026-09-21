@@ -1,0 +1,139 @@
+openapi: 3.0.0
+info:
+  title: Homie Worker API
+  version: 1.0.0
+  description: AI (Google Gemini) and scraping API for the Homie app.
+
+servers:
+  - url: http://localhost:3002
+    description: Development server
+
+paths:
+  /ai/health:
+    get:
+      summary: AI service health check
+      tags:
+        - AI
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /ai/generate:
+    post:
+      summary: Generate text with Google Gemini
+      tags:
+        - AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiGenerateRequest'
+      responses:
+        '201':
+          description: Generated text
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiGenerateResponse'
+        '400':
+          description: Invalid request body
+
+  /scraper/health:
+    get:
+      summary: Scraper service health check
+      tags:
+        - Scraper
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /scraper/scrape:
+    post:
+      summary: Scrape a URL and extract title, text and links
+      tags:
+        - Scraper
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScrapeRequest'
+      responses:
+        '201':
+          description: Scraped content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScrapeResponse'
+        '400':
+          description: Invalid request body
+        '500':
+          description: Failed to fetch the target URL
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+      required:
+        - status
+
+    AiGenerateRequest:
+      type: object
+      properties:
+        prompt:
+          type: string
+          minLength: 1
+      required:
+        - prompt
+
+    AiGenerateResponse:
+      type: object
+      properties:
+        text:
+          type: string
+      required:
+        - text
+
+    ScrapeRequest:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        selector:
+          type: string
+          description: Optional CSS selector to extract a subset of the page.
+      required:
+        - url
+
+    ScrapeResponse:
+      type: object
+      properties:
+        url:
+          type: string
+        title:
+          type: string
+        text:
+          type: string
+        links:
+          type: array
+          items:
+            type: string
+      required:
+        - url
+        - title
+        - text
+        - links
