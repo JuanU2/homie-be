@@ -1,9 +1,11 @@
+import "dotenv/config";
 import type { Config } from "drizzle-kit";
 
 export default {
-  schema: ['src/db/schema/index.ts'],
+  schema: ['packages/db/src/schema/index.ts'],
   out: "./drizzle",
-  dialect: "postgresql", // zmeň ak nepoužívaš Postgres
+  dialect: "postgresql",
+  extensionsFilters: ['postgis'],
   dbCredentials: {
     url: process.env.DATABASE_URL!,
   },

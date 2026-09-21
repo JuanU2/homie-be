@@ -1,0 +1,21 @@
+{
+  "name": "@homie/db",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared Drizzle schema and database client for Homie",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.1",
+    "pg": "^8.17.1",
+    "wkx": "^0.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

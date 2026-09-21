@@ -14,7 +14,7 @@ security:
 paths:
   /auth:
     post:
-      summary: Authenticate a user and return a JWT token
+      summary: Authenticate a user with a Google ID token
       tags:
         - Auth
       requestBody:
@@ -642,7 +642,7 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
+      bearerFormat: Google ID token
 
   schemas:
     # Enums
@@ -702,26 +702,9 @@ components:
     AuthUserDtoRequest:
       type: object
       properties:
-        user:
-          type: object
-          properties:
-            name:
-              type: string
-            email:
-              type: string
-              format: email
-            image:
-              type: string
-          required:
-            - name
-            - email
-            - image
-        expires:
-          type: string
         idToken:
           type: string
       required:
-        - user
         - idToken
 
     UserSettings:
@@ -776,12 +759,9 @@ components:
     AuthUserDtoResponse:
       type: object
       properties:
-        token:
-          type: string
         user:
           $ref: '#/components/schemas/UserResponse'
       required:
-        - token
         - user
 
     # User Settings Schemas

@@ -4,23 +4,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-NestJS (v11) backend for the Homie app. PostgreSQL/PostGIS via Drizzle ORM,
-zod-based request/response validation (`nestjs-zod`), JWT auth backed by Google
-Sign-In token exchange, and S3-compatible (MinIO) object storage.
+Turborepo + pnpm-workspaces monorepo for the Homie backend. Three workspaces:
+
+- `apps/core` (`@homie/core`) — the main NestJS (v11) API. PostgreSQL/PostGIS via
+  Drizzle ORM, zod validation (`nestjs-zod`), Google Sign-In auth (validates
+  Google ID tokens via JWKS), and S3-compatible (MinIO) object storage.
+- `apps/worker` (`@homie/worker`) — a NestJS backend for AI (Google Gemini via
+  `@google/genai`) and scraping (Cheerio), exposed as an HTTP API on port `3002`.
+- `packages/db` (`@homie/db`) — the shared Drizzle schema + `createDb` client,
+  imported by both apps.
 
 ## Commands
 
-- `pnpm install` — install dependencies (uses pnpm, see `pnpm-lock.yaml`).
-- `pnpm run start:dev` — run the dev server with watch mode.
-- `pnpm run build` / `pnpm run start:prod` — build / run the compiled output.
-- `pnpm exec tsc --noEmit -p tsconfig.json` — typecheck (there is no dedicated `typecheck` script).
-- `pnpm run lint` — eslint (note: `eslint.config.mjs` currently throws `tseslint is not defined`; typecheck is the reliable check).
-- `pnpm run format` — prettier over `src`/`test`.
-- `pnpm run test` / `pnpm run test:e2e` — jest unit / e2e tests.
-- `pnpm run drizzle:generate` / `pnpm run drizzle:push` — create / apply Drizzle migrations.
+- `pnpm install` — install all workspace dependencies.
+- `pnpm dev` — run core (`:3001`) and worker (`:3002`) in watch mode via turbo.
+- `pnpm build` — build all packages/apps (turbo orders `@homie/db` first).
+- `pnpm typecheck` — `tsc --noEmit` across workspaces.
+- `pnpm --filter @homie/core start:dev` — run just the core app in watch mode.
+- `pnpm --filter @homie/worker start:dev` — run just the worker app in watch mode.
+- `pnpm --filter @homie/db build` — build the shared db package (needed before
+  typechecking/building apps if not using `pnpm build`/`pnpm dev`).
+- `pnpm lint` — eslint (note: `eslint.config.mjs` currently throws
+  `tseslint is not defined`; typecheck is the reliable check).
+- `pnpm format` — prettier over `apps/**/*.ts` and `packages/**/*.ts`.
+- `pnpm drizzle:generate` / `pnpm drizzle:push` — create / apply Drizzle migrations.
 - `sudo docker-compose up -d` — start the local PostGIS database.
 
 ## Architecture
+
+### Core (`apps/core`)
 
 Single `AppModule` (`src/app.module.ts`) — there are no per-feature modules; all
 controllers and providers are registered there. Each feature lives under
@@ -36,17 +48,59 @@ Key cross-cutting pieces:
 
 - **Validation**: `ZodValidationPipe` is registered as `APP_PIPE`, so DTO classes
   declared with `createZodDto` are validated automatically.
-- **Database**: Drizzle ORM. Tables in `src/db/schema/*.ts` (re-exported by
-  `src/db/schema/index.ts`). The `DRIZZLE_DB` provider exposes a
-  `NodePgDatabase<typeof schema>`; repositories inject it via
-  `@Inject('DRIZZLE_DB')` and use `this.db.query.*` or raw `sql`/`execute`.
-- **Auth**: `POST /auth` verifies a Google ID token (`google-auth-library`),
-  find-or-creates the user, then signs a JWT containing `{ userId, email }`.
-  `JwtAuthGuard` protects routes; controllers read `request.user!.userId`.
+- **Database**: Drizzle ORM. Tables live in `packages/db/src/schema/*.ts` and are
+  re-exported from `@homie/db` (which also exports `schema` and `createDb`). The
+  `DRIZZLE_DB` provider is created with `createDb(new Pool(...))`; repositories
+  inject it via `@Inject('DRIZZLE_DB')` and use `this.db.query.*` or raw
+  `sql`/`execute`.
+- **Auth**: `POST /auth` verifies a Google ID token (`google-auth-library`) and
+  find-or-creates the user keyed by Google `sub` (stored in `users.google_sub`).
+  No backend JWT is issued. Protected routes use `GoogleTokenGuard`, which
+  validates the `Authorization: Bearer <idToken>` header against Google's JWKS
+  on every request, then maps `sub` → `userId` (`request.user!.userId`).
 - **Storage**: `StorageService` wraps `@aws-sdk/client-s3` against MinIO
   (`forcePathStyle: true`).
-- **Paths**: `@/*` resolves to `./src/*` (see `tsconfig.json`).
+- **Paths**: `@/*` resolves to `./src/*` within each app (see each app's
+  `tsconfig.json`).
 - Server listens on `3001`; CORS is limited to `localhost:3000`/`localhost:5000`.
+
+### Worker (`apps/worker`)
+
+Standalone NestJS app on port `3002` (override with `WORKER_PORT`). Two modules:
+
+- `ai/` — `AiService` wraps `@google/genai` (`GoogleGenAI`). Endpoints:
+  `GET /ai/health`, `POST /ai/generate` (`{ prompt }`). Reads `GEMINI_API_KEY`
+  (and optional `GEMINI_MODEL`).
+- `scraper/` — `ScraperService` uses Node `fetch` + Cheerio. Endpoints:
+  `GET /scraper/health`, `POST /scraper/scrape` (`{ url, selector? }`).
+
+The worker also wires a `DRIZZLE_DB` provider via `@homie/db` so it can read/write
+the same database as core when needed.
+
+## Swagger (source of truth for the mobile app)
+
+There are two API descriptions:
+
+- Runtime Swagger UI served at `/api` (core), generated by `@nestjs/swagger` from
+  `@ApiOperation` decorators.
+- A **manually-maintained** `swagger/openapi.yaml` that is the source the mobile
+  app copies to generate its OpenAPI client.
+
+When adding or changing a core endpoint, update `swagger/openapi.yaml` to match
+the **actual** request/response shapes the code returns — it can drift from the
+NestJS code (for example, a field the endpoint returns but the yaml omits). The
+mobile repo (`../homie_mobile`) consumes this file.
+
+## Database & config
+
+- `drizzle.config.ts` points at `packages/db/src/schema/index.ts`, outputs to
+  `./drizzle`, and reads `DATABASE_URL` (loads `.env` via `dotenv/config`).
+- Local DB: `docker-compose.yml` runs `postgis/postgis:16-3.4` on port `5432`.
+- Root `.env` keys (shared by both apps): `DATABASE_URL`, `GOOGLE_CLIENT_ID`,
+  `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`,
+  `GOOGLE_APPLICATION_CREDENTIALS`. Worker-only: `GEMINI_API_KEY`,
+  `GEMINI_MODEL` (optional), `WORKER_PORT` (optional).
+
 
 ## Swagger (source of truth for the mobile app)
 
