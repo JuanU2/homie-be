@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Homie Worker API
   version: 1.0.0
-  description: AI (Google Gemini) and scraping API for the Homie app.
+  description: AI (Google Gemini) property analysis API for the Homie app.
 
 servers:
   - url: http://localhost:3002
@@ -22,9 +22,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
 
-  /ai/generate:
+  /ai/analyze-property:
     post:
-      summary: Generate text with Google Gemini
+      summary: Analyze property photos with Gemini and return structured output
       security:
         - bearerAuth: []
       tags:
@@ -34,54 +34,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AiGenerateRequest'
+              $ref: '#/components/schemas/AnalyzePropertyImagesRequest'
       responses:
         '201':
-          description: Generated text
+          description: Structured property data extracted from the images
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AiGenerateResponse'
+                $ref: '#/components/schemas/AnalyzePropertyImagesResponse'
         '400':
           description: Invalid request body
-
-  /scraper/health:
-    get:
-      summary: Scraper service health check
-      tags:
-        - Scraper
-      responses:
-        '200':
-          description: Service is healthy
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HealthResponse'
-
-  /scraper/scrape:
-    post:
-      summary: Scrape a URL and extract title, text and links
-      security:
-        - bearerAuth: []
-      tags:
-        - Scraper
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScrapeRequest'
-      responses:
-        '201':
-          description: Scraped content
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScrapeResponse'
-        '400':
-          description: Invalid request body
-        '500':
-          description: Failed to fetch the target URL
 
 components:
   securitySchemes:
@@ -100,50 +62,122 @@ components:
       required:
         - status
 
-    AiGenerateRequest:
+    AnalyzePropertyImagesRequest:
       type: object
       properties:
-        prompt:
+        images:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            type: object
+            properties:
+              data:
+                type: string
+                description: Base64-encoded image bytes.
+              mimeType:
+                type: string
+                description: Image MIME type, e.g. image/jpeg.
+            required:
+              - data
+              - mimeType
+        language:
           type: string
-          minLength: 1
+          description: Optional language for the generated description (e.g. "English", "Spanish"). Does not affect the roomType/equipmentType enum values.
+        location:
+          $ref: '#/components/schemas/PropertyLocation'
       required:
-        - prompt
+        - images
 
-    AiGenerateResponse:
+    PropertyLocation:
       type: object
+      description: Optional property address and coordinates, used to contextualize the generated description.
       properties:
-        text:
+        country:
           type: string
+          maxLength: 100
+        city:
+          type: string
+          maxLength: 100
+        zipCode:
+          type: string
+          maxLength: 20
+        street:
+          type: string
+          maxLength: 100
+        streetNumber:
+          type: string
+          maxLength: 10
+        lat:
+          type: number
+          minimum: -90
+          maximum: 90
+        lng:
+          type: number
+          minimum: -180
+          maximum: 180
       required:
-        - text
+        - country
+        - city
+        - zipCode
+        - street
+        - streetNumber
+        - lat
+        - lng
 
-    ScrapeRequest:
+    AnalyzePropertyImagesResponse:
       type: object
       properties:
-        url:
+        description:
           type: string
-          format: uri
-        selector:
-          type: string
-          description: Optional CSS selector to extract a subset of the page.
-      required:
-        - url
-
-    ScrapeResponse:
-      type: object
-      properties:
-        url:
-          type: string
-        title:
-          type: string
-        text:
-          type: string
-        links:
+        sizeM2:
+          type: number
+          nullable: true
+        roomCount:
+          type: integer
+        rooms:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/PropertyRoom'
+        equipment:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertyEquipment'
       required:
-        - url
-        - title
-        - text
-        - links
+        - description
+        - sizeM2
+        - roomCount
+        - rooms
+        - equipment
+
+    PropertyRoom:
+      type: object
+      properties:
+        roomType:
+          type: string
+          enum:
+            - DORMITORY
+            - BATHROOM
+            - KITCHEN
+            - LIVING_ROOM
+            - TOILET
+            - WARDROBE
+            - BALCONY
+            - OTHER
+        count:
+          type: integer
+      required:
+        - roomType
+        - count
+
+    PropertyEquipment:
+      type: object
+      properties:
+        equipmentType:
+          type: string
+          description: One of the equipment type names defined in the equipment_types table (e.g. fridge, oven, tv).
+        count:
+          type: integer
+      required:
+        - equipmentType
+        - count

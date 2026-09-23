@@ -1,35 +1,54 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { GoogleGenAI } from '@google/genai';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  propertyAnalysisResultSchema,
+  type PropertyAnalysisResult,
+  type PropertyLocation,
+} from './dtos/ai.dto';
+import {
+  buildPropertyAnalysisJsonSchema,
+  buildPropertyAnalysisPrompt,
+} from './property-analysis.prompt';
+import {
+  AI_API_SERVICE,
+  type IAiApiService,
+  type PropertyImageInput,
+} from './domain/interface/ai-api.service';
+import {
+  EQUIPMENT_TYPES_REPOSITORY,
+  type IEquipmentTypesRepository,
+} from './domain/interface/equipment-types.repository';
 
 @Injectable()
 export class AiService {
-  private readonly logger = new Logger(AiService.name);
-  private readonly ai?: GoogleGenAI;
-  private readonly model: string;
+  constructor(
+    @Inject(AI_API_SERVICE) private readonly aiApi: IAiApiService,
+    @Inject(EQUIPMENT_TYPES_REPOSITORY)
+    private readonly equipmentTypesRepository: IEquipmentTypesRepository,
+  ) {}
 
-  constructor(config: ConfigService) {
-    const apiKey = config.get<string>('GEMINI_API_KEY');
-    this.model = config.get<string>('GEMINI_MODEL') ?? 'gemini-2.5-flash';
+  async analyzePropertyImages(
+    images: PropertyImageInput[],
+    language?: string,
+    location?: PropertyLocation,
+  ): Promise<PropertyAnalysisResult> {
+    const equipmentTypeNames = await this.equipmentTypesRepository.getNames();
+    const prompt = buildPropertyAnalysisPrompt({
+      language,
+      equipmentTypeNames,
+      location,
+    });
+    const jsonSchema = buildPropertyAnalysisJsonSchema({ equipmentTypeNames });
 
-    if (!apiKey) {
-      this.logger.warn('GEMINI_API_KEY is not set — AI requests will fail.');
-      return;
-    }
-
-    this.ai = new GoogleGenAI({ apiKey });
-  }
-
-  async generate(prompt: string): Promise<string> {
-    if (!this.ai) {
-      throw new Error('GEMINI_API_KEY is not configured');
-    }
-
-    const response = await this.ai.models.generateContent({
-      model: this.model,
-      contents: prompt,
+    const raw = await this.aiApi.analyzePropertyImages({
+      prompt,
+      images,
+      jsonSchema,
     });
 
-    return response.text ?? '';
+    const json = JSON.parse(
+      raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, ''),
+    );
+
+    return propertyAnalysisResultSchema.parse(json);
   }
 }

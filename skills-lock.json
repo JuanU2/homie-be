@@ -6,6 +6,12 @@
       "sourceType": "github",
       "skillPath": "skills/drizzle-orm/SKILL.md",
       "computedHash": "e2cc18721f3a4eb57f5b948d9cf3e33e3f8d5a954687efc5c1dcae297b9e6913"
+    },
+    "gemini-api-dev": {
+      "source": "google-gemini/gemini-skills",
+      "sourceType": "github",
+      "skillPath": "skills/gemini-api-dev/SKILL.md",
+      "computedHash": "3311a3dd2abc2133f3748c8b47f257f78e35d5b2adc517af32b80e7a3af39434"
     }
   }
 }
