@@ -24,6 +24,12 @@ export class EquipmentTypeConsumer {
       return;
     }
 
+    this.logger.log(
+      `Received ${parsed.data.eventType} event ${parsed.data.eventId}`,
+    );
     await this.equipmentTypesRepository.upsert(parsed.data.payload.name);
+    this.logger.log(
+      `Processed ${parsed.data.eventType} event ${parsed.data.eventId}`,
+    );
   }
 }

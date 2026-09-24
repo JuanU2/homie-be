@@ -28,7 +28,13 @@ export class RoommateRequestConsumer {
       return;
     }
 
+    this.logger.log(
+      `Received ${parsed.data.eventType} event ${parsed.data.eventId}`,
+    );
     await this.roommateRequestsRepository.upsert(parsed.data.payload);
+    this.logger.log(
+      `Processed ${parsed.data.eventType} event ${parsed.data.eventId}`,
+    );
   }
 
   @EventPattern(ROOMMATE_REQUEST_UPDATED_ROUTING_KEY)
@@ -39,7 +45,13 @@ export class RoommateRequestConsumer {
       return;
     }
 
+    this.logger.log(
+      `Received ${parsed.data.eventType} event ${parsed.data.eventId}`,
+    );
     await this.roommateRequestsRepository.upsert(parsed.data.payload);
+    this.logger.log(
+      `Processed ${parsed.data.eventType} event ${parsed.data.eventId}`,
+    );
   }
 
   @EventPattern(PROPERTY_UPDATED_ROUTING_KEY)
@@ -50,9 +62,15 @@ export class RoommateRequestConsumer {
       return;
     }
 
+    this.logger.log(
+      `Received ${parsed.data.eventType} event ${parsed.data.eventId}`,
+    );
     await this.roommateRequestsRepository.updateProperty(
       parsed.data.payload.id,
       parsed.data.payload,
+    );
+    this.logger.log(
+      `Processed ${parsed.data.eventType} event ${parsed.data.eventId}`,
     );
   }
 }
