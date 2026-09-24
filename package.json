@@ -13,9 +13,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "lint": "turbo run lint",
-    "format": "prettier --write \"apps/**/*.ts\" \"packages/**/*.ts\"",
-    "drizzle:generate": "drizzle-kit generate",
-    "drizzle:push": "drizzle-kit push"
+    "format": "prettier --write \"apps/**/*.ts\" \"packages/**/*.ts\""
   },
   "devDependencies": {
     "dotenv": "^17.2.3",

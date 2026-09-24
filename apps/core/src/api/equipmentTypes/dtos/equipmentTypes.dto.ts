@@ -9,3 +9,11 @@ export const equipmentTypeResponseSchema = z.object({
 export class EquipmentTypeResponseDto extends createZodDto(
   equipmentTypeResponseSchema,
 ) {}
+
+export const createEquipmentTypeDtoSchema = z.object({
+  name: z.string().min(1),
+});
+
+export class CreateEquipmentTypeDtoRequest extends createZodDto(
+  createEquipmentTypeDtoSchema,
+) {}

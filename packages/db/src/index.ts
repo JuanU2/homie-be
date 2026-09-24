@@ -1,13 +1,11 @@
-export * from './schema';
-
-import * as schema from './schema';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Pool } from 'pg';
 
-export { schema };
+export type { NodePgDatabase };
 
-export type Database = NodePgDatabase<typeof schema>;
-
-export function createDb(pool: Pool): Database {
+export function createDb<TSchema extends Record<string, unknown>>(
+  pool: Pool,
+  schema: TSchema,
+): NodePgDatabase<TSchema> {
   return drizzle(pool, { schema });
 }

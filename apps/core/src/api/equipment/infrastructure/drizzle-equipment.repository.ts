@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { equipmentTypes, propertyEquipment, schema } from '@homie/db';
+import { equipmentTypes, propertyEquipment } from '@/db/schema/index';
+import * as schema from '@/db/schema/index';
 import {
   PatchPropertyEquipmentModel,
   PropertyEquipment,

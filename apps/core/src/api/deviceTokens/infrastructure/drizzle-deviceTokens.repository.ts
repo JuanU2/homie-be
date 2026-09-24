@@ -3,7 +3,8 @@ import { eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { DeviceToken } from '@/api/deviceTokens/domain/entity/deviceToken';
 import type { IDeviceTokensRepository } from '@/api/deviceTokens/domain/interface/deviceTokens.repository';
-import { deviceTokens, schema } from '@homie/db';
+import { deviceTokens } from '@/db/schema/index';
+import * as schema from '@/db/schema/index';
 
 @Injectable()
 export class DrizzleDeviceTokensRepository implements IDeviceTokensRepository {

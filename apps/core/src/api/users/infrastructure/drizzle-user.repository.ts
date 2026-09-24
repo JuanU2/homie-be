@@ -4,7 +4,8 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { IUserRepository } from "@/api/users/domain/interface/user.repository";
 import { UserWithSettings } from '@/api/users/domain/entity/user.entity';
 import { eq } from 'drizzle-orm';
-import { users, userSettings, schema } from '@homie/db';
+import { users, userSettings } from '@/db/schema/index';
+import * as schema from '@/db/schema/index';
   
 
 @Injectable()

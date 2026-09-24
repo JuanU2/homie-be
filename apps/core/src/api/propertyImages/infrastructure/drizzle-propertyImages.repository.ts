@@ -1,7 +1,8 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { and, eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { propertyImages, schema } from '@homie/db';
+import { propertyImages } from '@/db/schema/index';
+import * as schema from '@/db/schema/index';
 import { IPropertyImagesRepository } from "@/api/propertyImages/domain/interface/propertyImages.repository";
 import {
   CreatePropertyImageModel,

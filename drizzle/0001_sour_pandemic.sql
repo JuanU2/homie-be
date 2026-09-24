@@ -1,1 +1,0 @@
-ALTER TABLE "roommate_applications" ADD COLUMN "note" text;

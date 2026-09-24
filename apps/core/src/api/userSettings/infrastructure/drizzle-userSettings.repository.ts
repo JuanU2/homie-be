@@ -1,4 +1,4 @@
-import { userSettings } from '@homie/db';
+import { userSettings } from '@/db/schema/index';
 import { IUserSettingsRepository } from '@/api/userSettings/domain/interface/userSettings.repository';
 import { Inject, InternalServerErrorException } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';

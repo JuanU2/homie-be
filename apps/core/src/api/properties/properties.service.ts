@@ -1,12 +1,18 @@
 import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PROPERTIES_REPOSITORY, type IPropertiesRepository } from '@/api/properties/domain/interface/properties.repository';
 import { CreatePropertyDtoRequest, CreatePropertyDtoResponse, roomTypeEnum, UpdatePropertyDtoRequest } from './dtos/properties.dto';
+import {
+  PROPERTY_UPDATED_EVENT_TYPE,
+  PROPERTY_UPDATED_ROUTING_KEY,
+} from '@homie/events';
+import { EventPublisher } from '@/messaging/event.publisher';
 
 @Injectable()
 export class PropertiesService {
   constructor(
     @Inject(PROPERTIES_REPOSITORY)
     private readonly propertiesRepository: IPropertiesRepository,
+    private readonly eventPublisher: EventPublisher,
   ) {}
 
   async createProperty(createPropertyDto: CreatePropertyDtoRequest): Promise<CreatePropertyDtoResponse> {
@@ -84,7 +90,7 @@ export class PropertiesService {
       throw new NotFoundException('Property not found');
     }
 
-    return {
+    const response: CreatePropertyDtoResponse = {
       id: updatedProperty.property.id,
       ownerId: updatedProperty.property.ownerId,
       description: updatedProperty.property.description,
@@ -105,5 +111,14 @@ export class PropertiesService {
       })),
       equipment: updatedProperty.equipment,
     };
+
+    const { ownerId: _ownerId, ...payload } = response;
+    await this.eventPublisher.publish(
+      PROPERTY_UPDATED_EVENT_TYPE,
+      PROPERTY_UPDATED_ROUTING_KEY,
+      payload,
+    );
+
+    return response;
   }
 }

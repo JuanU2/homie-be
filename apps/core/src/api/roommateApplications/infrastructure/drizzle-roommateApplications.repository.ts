@@ -6,8 +6,8 @@ import {
   roommateRequests,
   userSettings,
   users,
-  schema,
-} from '@homie/db';
+} from '@/db/schema/index';
+import * as schema from '@/db/schema/index';
 import {
   CreateRoommateApplicationModel,
   GetRoommateApplicationsParams,
@@ -148,9 +148,9 @@ export class DrizzleRoommateApplicationsRepository
         rr.property_id AS "propertyId",
         rr.title AS "title",
         ti.id AS "titleImageId"
-      FROM roommate_applications ra
-      JOIN roommate_requests rr ON rr.id = ra.roommate_request_id
-      LEFT JOIN property_images ti ON ti.property_id = rr.property_id AND ti.title = true
+      FROM core.roommate_applications ra
+      JOIN core.roommate_requests rr ON rr.id = ra.roommate_request_id
+      LEFT JOIN core.property_images ti ON ti.property_id = rr.property_id AND ti.title = true
       ${where}
       ORDER BY ra.created_at DESC, ra.id DESC
       LIMIT ${limit + 1}

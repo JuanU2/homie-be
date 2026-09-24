@@ -11,8 +11,8 @@ Turborepo + pnpm-workspaces monorepo for the Homie backend. Three workspaces:
   Google ID tokens via JWKS), and S3-compatible (MinIO) object storage.
 - `apps/worker` (`@homie/worker`) — a NestJS backend for AI (Google Gemini via
   `@google/genai`) and scraping (Cheerio), exposed as an HTTP API on port `3002`.
-- `packages/db` (`@homie/db`) — the shared Drizzle schema + `createDb` client,
-  imported by both apps.
+- `packages/db` (`@homie/db`) — a tiny `createDb(pool, schema)` Drizzle client
+  factory; each app passes its own schema.
 
 ## Commands
 
@@ -27,7 +27,9 @@ Turborepo + pnpm-workspaces monorepo for the Homie backend. Three workspaces:
 - `pnpm lint` — eslint (note: `eslint.config.mjs` currently throws
   `tseslint is not defined`; typecheck is the reliable check).
 - `pnpm format` — prettier over `apps/**/*.ts` and `packages/**/*.ts`.
-- `pnpm drizzle:generate` / `pnpm drizzle:push` — create / apply Drizzle migrations.
+- `pnpm --filter @homie/core drizzle:generate` / `drizzle:migrate` / `db:seed` —
+  manage core's `core`-schema migrations and seed data (the same three commands
+  exist for `@homie/worker`).
 - `sudo docker-compose up -d` — start the local PostGIS database.
 
 ## Architecture
@@ -48,11 +50,10 @@ Key cross-cutting pieces:
 
 - **Validation**: `ZodValidationPipe` is registered as `APP_PIPE`, so DTO classes
   declared with `createZodDto` are validated automatically.
-- **Database**: Drizzle ORM. Tables live in `packages/db/src/schema/*.ts` and are
-  re-exported from `@homie/db` (which also exports `schema` and `createDb`). The
-  `DRIZZLE_DB` provider is created with `createDb(new Pool(...))`; repositories
-  inject it via `@Inject('DRIZZLE_DB')` and use `this.db.query.*` or raw
-  `sql`/`execute`.
+- **Database**: Drizzle ORM. Core owns its tables in `src/db/schema/*.ts` under
+  the `core` PostgreSQL schema. The `DRIZZLE_DB` provider is created with
+  `createDb(new Pool(...), schema)`; repositories inject it via
+  `@Inject('DRIZZLE_DB')` and use `this.db.query.*` or raw `sql`/`execute`.
 - **Auth**: `POST /auth` verifies a Google ID token (`google-auth-library`) and
   find-or-creates the user keyed by Google `sub` (stored in `users.google_sub`).
   No backend JWT is issued. Protected routes use `GoogleTokenGuard`, which
@@ -79,8 +80,8 @@ The `POST` endpoints are protected by the worker's own `GoogleTokenGuard`
 <idToken>` header against Google's JWKS — same auth as core, but without a user
 lookup (the worker only needs `sub`/`email`). The `/health` routes are public.
 
-The worker also wires a `DRIZZLE_DB` provider via `@homie/db` so it can read/write
-the same database as core when needed.
+The worker wires a `DRIZZLE_DB` provider via `@homie/db` and owns its own schema
+(`worker`) in `src/database/schema/*.ts` — it does not read core's tables.
 
 ## Swagger / OpenAPI
 
@@ -100,10 +101,26 @@ field the endpoint returns but the yaml omits). The mobile repo
 
 ## Database & config
 
-- `drizzle.config.ts` points at `packages/db/src/schema/index.ts`, outputs to
-  `./drizzle`, and reads `DATABASE_URL` (loads `.env` via `dotenv/config`).
+Each app owns its own PostgreSQL schema and migrations (single local PostGIS DB
+for now):
+
+- `apps/core/drizzle.config.ts` → `core` schema, `apps/core/src/db/schema/`,
+  migrations in `apps/core/drizzle/`.
+- `apps/worker/drizzle.config.ts` → `worker` schema,
+  `apps/worker/src/database/schema/`, migrations in `apps/worker/drizzle/`.
+- Each app uses its own migration-tracking table
+  (`drizzle.__drizzle_migrations_core` / `..._worker`), so they migrate
+  independently against the shared DB.
+- After `drizzle-kit generate`, prepend `CREATE SCHEMA "<name>";` to the generated
+  migration (drizzle-kit does not emit it) and unquote the custom
+  `"geography(Point, 4326)"` → `geography(Point, 4326)` (drizzle-kit quotes it
+  incorrectly).
 - Local DB: `docker-compose.yml` runs `postgis/postgis:16-3.4` on port `5432`.
-- Root `.env` keys (shared by both apps): `DATABASE_URL`, `GOOGLE_CLIENT_ID`,
-  `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`,
+- RabbitMQ: `docker-compose.yml` also runs `rabbitmq:3-management` (AMQP `5672`,
+  management UI `15672`). Core publishes domain events to the `homie.events`
+  topic exchange; the worker consumes them (`packages/events` holds the shared
+  event contracts).
+- Root `.env` keys (shared by both apps): `DATABASE_URL`, `RABBITMQ_URL`,
+  `GOOGLE_CLIENT_ID`, `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`,
   `GOOGLE_APPLICATION_CREDENTIALS`. Worker-only: `GEMINI_API_KEY`,
   `GEMINI_MODEL` (optional), `WORKER_PORT` (optional).

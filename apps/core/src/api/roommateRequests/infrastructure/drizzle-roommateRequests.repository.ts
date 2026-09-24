@@ -11,8 +11,8 @@ import {
   roommateRequests,
   userSettings,
   users,
-  schema,
-} from '@homie/db';
+} from '@/db/schema/index';
+import * as schema from '@/db/schema/index';
 import {
   CreateRoommateRequestModel,
   GetRoommateRequestsParams,
@@ -408,12 +408,12 @@ export class DrizzleRoommateRequestsRepository
         ti.id AS "titleImageId",
         (
           SELECT COUNT(*)::int
-          FROM roommate_applications ra
+          FROM core.roommate_applications ra
           WHERE ra.roommate_request_id = rr.id AND ra.status = 'PENDING'
         ) AS "pendingApplicationsCount"
-      FROM roommate_requests rr
-      JOIN properties p ON p.id = rr.property_id
-      LEFT JOIN property_images ti ON ti.property_id = p.id AND ti.title = true
+      FROM core.roommate_requests rr
+      JOIN core.properties p ON p.id = rr.property_id
+      LEFT JOIN core.property_images ti ON ti.property_id = p.id AND ti.title = true
       ${where}
       ORDER BY rr.created_at DESC, rr.id DESC
       LIMIT ${limit + 1}
@@ -460,9 +460,9 @@ export class DrizzleRoommateRequestsRepository
         p.location AS "location",
         ti.id AS "titleImageId",
         NULL::float8 AS "distance"
-      FROM roommate_requests rr
-      JOIN properties p ON p.id = rr.property_id
-      LEFT JOIN property_images ti ON ti.property_id = p.id AND ti.title = true
+      FROM core.roommate_requests rr
+      JOIN core.properties p ON p.id = rr.property_id
+      LEFT JOIN core.property_images ti ON ti.property_id = p.id AND ti.title = true
       ${where}
       ORDER BY rr.created_at DESC, rr.id DESC
       LIMIT ${limit + 1}
@@ -506,9 +506,9 @@ export class DrizzleRoommateRequestsRepository
             p.location,
             ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography
           ) AS distance
-        FROM roommate_requests rr
-        JOIN properties p ON p.id = rr.property_id
-        LEFT JOIN property_images ti ON ti.property_id = p.id AND ti.title = true
+        FROM core.roommate_requests rr
+        JOIN core.properties p ON p.id = rr.property_id
+        LEFT JOIN core.property_images ti ON ti.property_id = p.id AND ti.title = true
       ) sub
       ${where}
       ORDER BY sub.distance ASC, sub."rrId" ASC

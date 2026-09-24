@@ -7,7 +7,8 @@ import {
   CreatedPropertyAggregate,
   UpdatePropertyModel,
 } from '@/api/properties/domain/entity/property';
-import { equipmentTypes, properties, propertyEquipment, propertyRooms, schema } from '@homie/db';
+import { equipmentTypes, properties, propertyEquipment, propertyRooms } from '@/db/schema/index';
+import * as schema from '@/db/schema/index';
 
 @Injectable()
 export class PropertiesRepository implements IPropertiesRepository {

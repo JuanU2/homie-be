@@ -7,7 +7,8 @@ import { DrizzleUserRepository } from "@/api/users/infrastructure/drizzle-user.r
 import { USER_REPOSITORY } from "@/api/users/domain/interface/user.repository";
 import { Pool } from "pg";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { createDb, type Database } from "@homie/db";
+import { createDb, type NodePgDatabase } from "@homie/db";
+import * as schema from "@/db/schema/index";
 import { AuthService } from '@/api/auth/auth.service';
 import { OAuth2Client } from 'google-auth-library';
 import { GoogleTokenGuard } from '@/api/auth/google-token.guard';
@@ -47,6 +48,7 @@ import { DeviceTokensService } from '@/api/deviceTokens/deviceTokens.service';
 import { DEVICE_TOKENS_REPOSITORY } from '@/api/deviceTokens/domain/interface/deviceTokens.repository';
 import { DrizzleDeviceTokensRepository } from '@/api/deviceTokens/infrastructure/drizzle-deviceTokens.repository';
 import { PushService } from '@/push/push.service';
+import { MessagingModule } from '@/messaging/messaging.module';
 
 @Module({
   imports: [
@@ -54,6 +56,7 @@ import { PushService } from '@/push/push.service';
       isGlobal: true,
       envFilePath: ['.env', '../../.env'],
     }),
+    MessagingModule,
   ],
   controllers: [
     UsersController,
@@ -130,12 +133,12 @@ import { PushService } from '@/push/push.service';
     },
     {
       provide: "DRIZZLE_DB",
-      useFactory: async (): Promise<Database> => {
+      useFactory: async (): Promise<NodePgDatabase<typeof schema>> => {
         const pool = new Pool({
           connectionString: process.env.DATABASE_URL,
         });
 
-        return createDb(pool);
+        return createDb(pool, schema);
       },
     },
   ],

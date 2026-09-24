@@ -20,6 +20,7 @@ import {
 import {
   GetRoommateRequestsParams,
   GetUserRoommateRequestsParams,
+  RoommateRequestDetail,
   RoommateRequestsPage,
   UserRoommateRequestsPage,
 } from '@/api/roommateRequests/domain/entity/roommateRequest';
@@ -27,6 +28,13 @@ import {
   type IPropertiesRepository,
   PROPERTIES_REPOSITORY,
 } from '@/api/properties/domain/interface/properties.repository';
+import {
+  ROOMMATE_REQUEST_CREATED_EVENT_TYPE,
+  ROOMMATE_REQUEST_CREATED_ROUTING_KEY,
+  ROOMMATE_REQUEST_UPDATED_EVENT_TYPE,
+  ROOMMATE_REQUEST_UPDATED_ROUTING_KEY,
+} from '@homie/events';
+import { EventPublisher } from '@/messaging/event.publisher';
 
 @Injectable()
 export class RoommateRequestsService {
@@ -35,6 +43,7 @@ export class RoommateRequestsService {
     private readonly roommateRequestsRepository: IRoommateRequestsRepository,
     @Inject(PROPERTIES_REPOSITORY)
     private readonly propertiesRepository: IPropertiesRepository,
+    private readonly eventPublisher: EventPublisher,
   ) {}
 
   async createRoommateRequest(
@@ -62,6 +71,12 @@ export class RoommateRequestsService {
       maxRoommates: data.maxRoommates,
       currentRoommates: data.currentRoommates,
     });
+
+    await this.publishRoommateRequestEvent(
+      ROOMMATE_REQUEST_CREATED_EVENT_TYPE,
+      ROOMMATE_REQUEST_CREATED_ROUTING_KEY,
+      request.id,
+    );
 
     return {
       ...request,
@@ -105,6 +120,12 @@ export class RoommateRequestsService {
     if (!request) {
       throw new NotFoundException('Roommate request not found');
     }
+
+    await this.publishRoommateRequestEvent(
+      ROOMMATE_REQUEST_UPDATED_EVENT_TYPE,
+      ROOMMATE_REQUEST_UPDATED_ROUTING_KEY,
+      request.id,
+    );
 
     return {
       ...request,
@@ -158,5 +179,28 @@ export class RoommateRequestsService {
       userId,
       params,
     );
+  }
+
+  private async publishRoommateRequestEvent(
+    eventType: string,
+    routingKey: string,
+    roommateRequestId: string,
+  ): Promise<void> {
+    const detail =
+      await this.roommateRequestsRepository.getRoommateRequestDetail(
+        roommateRequestId,
+      );
+
+    if (!detail) {
+      return;
+    }
+
+    await this.eventPublisher.publish(eventType, routingKey, this.toBlob(detail));
+  }
+
+  private toBlob(detail: RoommateRequestDetail) {
+    const { createdBy, owner, property, ...request } = detail;
+    const { ownerId, ...propertyData } = property;
+    return { ...request, property: propertyData };
   }
 }

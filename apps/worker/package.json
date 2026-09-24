@@ -12,16 +12,24 @@
     "dev": "nest start --watch",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "drizzle:generate": "drizzle-kit generate",
+    "drizzle:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx src/database/seed.ts"
   },
   "dependencies": {
     "@google/genai": "^2.23.0",
     "@homie/db": "workspace:*",
+    "@homie/events": "workspace:*",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/microservices": "^11.1.13",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.6",
+    "amqp-connection-manager": "^5.0.0",
+    "amqplib": "^2.0.1",
+    "drizzle-orm": "^0.45.1",
     "google-auth-library": "^10.5.0",
     "nestjs-zod": "^5.1.1",
     "pg": "^8.17.1",
@@ -35,8 +43,10 @@
     "@nestjs/schematics": "^11.0.0",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.7",
+    "dotenv": "^18.0.3",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.3"
   }
 }
