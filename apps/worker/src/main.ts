@@ -63,7 +63,7 @@ async function bootstrap() {
       exchange: EVENTS_EXCHANGE,
       exchangeType: 'topic',
       wildcards: true,
-      noAck: false,
+      noAck: true,
     },
   });
   await app.startAllMicroservices();

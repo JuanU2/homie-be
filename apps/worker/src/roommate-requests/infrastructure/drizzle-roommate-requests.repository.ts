@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { type NodePgDatabase } from '@homie/db';
 import type {
+  PropertyData,
   PropertyUpdatedPayload,
   RoommateRequestBlob,
 } from '@homie/events';
@@ -49,5 +50,19 @@ export class DrizzleRoommateRequestsRepository
         .set({ data })
         .where(eq(roommateRequests.roommateRequestId, row.roommateRequestId));
     }
+  }
+
+  async getProperty(propertyId: string): Promise<PropertyData | null> {
+    const [row] = await this.db
+      .select()
+      .from(roommateRequests)
+      .where(eq(roommateRequests.propertyId, propertyId))
+      .limit(1);
+
+    if (!row) {
+      return null;
+    }
+
+    return (row.data as RoommateRequestBlob).property;
   }
 }

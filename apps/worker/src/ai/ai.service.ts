@@ -13,6 +13,7 @@ import {
   type IAiApiService,
   type PropertyImageInput,
 } from './domain/interface/ai-api.service';
+import { parseModelJson } from './infrastructure/parse-model-json';
 import {
   EQUIPMENT_TYPES_REPOSITORY,
   type IEquipmentTypesRepository,
@@ -45,9 +46,7 @@ export class AiService {
       jsonSchema,
     });
 
-    const json = JSON.parse(
-      raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, ''),
-    );
+    const json = parseModelJson(raw);
 
     return propertyAnalysisResultSchema.parse(json);
   }

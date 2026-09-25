@@ -29,6 +29,6 @@ import { EQUIPMENT_TYPES_REPOSITORY } from './domain/interface/equipment-types.r
       useClass: DrizzleEquipmentTypesRepository,
     },
   ],
-  exports: [AiService, EQUIPMENT_TYPES_REPOSITORY],
+  exports: [AiService, EQUIPMENT_TYPES_REPOSITORY, AI_API_SERVICE],
 })
 export class AiModule {}

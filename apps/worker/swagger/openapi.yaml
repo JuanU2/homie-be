@@ -45,6 +45,31 @@ paths:
         '400':
           description: Invalid request body
 
+  /ai/properties/{propertyId}/insights:
+    get:
+      summary: Get AI-generated neighborhood insights for a property
+      operationId: getPropertyInsights
+      security:
+        - bearerAuth: []
+      tags:
+        - AI
+      parameters:
+        - name: propertyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Property insights
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyInsightsResponse'
+        '404':
+          description: No insights available for this property
+
 components:
   securitySchemes:
     bearerAuth:
@@ -181,3 +206,91 @@ components:
       required:
         - equipmentType
         - count
+
+    PropertyInsightsResponse:
+      type: object
+      properties:
+        nearbyPlaces:
+          type: array
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/NearbyPlace'
+        advantages:
+          type: array
+          maxItems: 5
+          items:
+            type: string
+      required:
+        - nearbyPlaces
+        - advantages
+
+    NearbyPlace:
+      type: object
+      properties:
+        placeCategory:
+          $ref: '#/components/schemas/PlaceCategory'
+        location:
+          $ref: '#/components/schemas/InsightLocation'
+        name:
+          type: string
+        distance:
+          $ref: '#/components/schemas/InsightDistance'
+      required:
+        - placeCategory
+        - location
+        - name
+        - distance
+
+    InsightLocation:
+      type: object
+      properties:
+        lat:
+          type: number
+        lng:
+          type: number
+      required:
+        - lat
+        - lng
+
+    InsightDistance:
+      type: object
+      properties:
+        distanceApproxMeters:
+          type: integer
+        distanceApproxTime:
+          $ref: '#/components/schemas/InsightDistanceTime'
+      required:
+        - distanceApproxMeters
+        - distanceApproxTime
+
+    InsightDistanceTime:
+      type: object
+      properties:
+        transportType:
+          $ref: '#/components/schemas/TransportType'
+        timeInMinutes:
+          type: integer
+      required:
+        - transportType
+        - timeInMinutes
+
+    PlaceCategory:
+      type: string
+      enum:
+        - PUBLIC_TRANSPORT
+        - SUPERMARKET
+        - CITY_CENTER
+        - LIBRARY
+        - SHOPPING_CENTER
+        - SCHOOL
+        - HOSPITAL
+        - PARKING
+        - OTHER
+
+    TransportType:
+      type: string
+      enum:
+        - CAR
+        - WALK
+        - PUBLIC_TRANSPORT
+        - BIKE

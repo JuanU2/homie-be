@@ -3,7 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { GoogleGenAI } from '@google/genai';
 import {
   type AnalyzePropertyImagesRequest,
+  type GenerateStructuredRequest,
   type IAiApiService,
+  type PropertyImageInput,
 } from '../domain/interface/ai-api.service';
 import { ContentType } from './content-type';
 
@@ -30,16 +32,36 @@ export class GeminiAiApiService implements IAiApiService {
     images,
     jsonSchema,
   }: AnalyzePropertyImagesRequest): Promise<string> {
+    return this.generateJson({
+      prompt: `You are given ${images.length} photograph(s) of a single property.\n\n${prompt}`,
+      jsonSchema,
+      images,
+    });
+  }
+
+  async generateStructured({
+    prompt,
+    jsonSchema,
+  }: GenerateStructuredRequest): Promise<string> {
+    return this.generateJson({ prompt, jsonSchema });
+  }
+
+  private async generateJson({
+    prompt,
+    jsonSchema,
+    images,
+  }: {
+    prompt: string;
+    jsonSchema: Record<string, unknown>;
+    images?: PropertyImageInput[];
+  }): Promise<string> {
     if (!this.ai) {
       throw new Error('GEMINI_API_KEY is not configured');
     }
 
     const input = [
-      {
-        type: ContentType.TEXT,
-        text: `You are given ${images.length} photograph(s) of a single property.\n\n${prompt}`,
-      },
-      ...images.map((image) => ({
+      { type: ContentType.TEXT, text: prompt },
+      ...(images ?? []).map((image) => ({
         type: ContentType.IMAGE,
         data: image.data,
         mime_type: image.mimeType,
