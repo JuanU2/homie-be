@@ -40,6 +40,19 @@ export const propertyInsightsSchema = z.object({
 
 export type PropertyInsights = z.infer<typeof propertyInsightsSchema>;
 
+const nearbyPlaceAiSchema = nearbyPlaceSchema.extend({
+  fulltextSearchTerm: z.string().min(1),
+});
+
+export const propertyInsightsAiSchema = z.object({
+  nearbyPlaces: z.array(nearbyPlaceAiSchema).max(3),
+  advantages: z.array(z.string().min(1)).max(5),
+});
+
+export type PropertyInsightsAiResponse = z.infer<
+  typeof propertyInsightsAiSchema
+>;
+
 export interface PropertyLocation {
   country: string;
   city: string;

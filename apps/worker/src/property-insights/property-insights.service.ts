@@ -10,7 +10,7 @@ import {
 } from '@/ai/domain/interface/ai-api.service';
 import { parseModelJson } from '@/ai/infrastructure/parse-model-json';
 import {
-  propertyInsightsSchema,
+  propertyInsightsAiSchema,
   type PropertyInsights,
   type PropertyInsightsInput,
   type PropertyLocation,
@@ -21,6 +21,7 @@ import {
 } from './property-insights.prompt';
 import { PROPERTY_INSIGHTS_REPOSITORY } from './domain/interface/property-insights.repository';
 import type { IPropertyInsightsRepository } from './domain/interface/property-insights.repository';
+import { GeocodingService } from '@/geocoding/geocoding.service';
 
 @Injectable()
 export class PropertyInsightsService {
@@ -30,6 +31,7 @@ export class PropertyInsightsService {
     @Inject(AI_API_SERVICE) private readonly aiApi: IAiApiService,
     @Inject(PROPERTY_INSIGHTS_REPOSITORY)
     private readonly propertyInsightsRepository: IPropertyInsightsRepository,
+    private readonly geocodingService: GeocodingService,
   ) {}
 
   async generateForProperty(input: PropertyInsightsInput): Promise<void> {
@@ -37,7 +39,21 @@ export class PropertyInsightsService {
     const jsonSchema = buildPropertyInsightsJsonSchema();
 
     const raw = await this.aiApi.generateStructured({ prompt, jsonSchema });
-    const insight = propertyInsightsSchema.parse(parseModelJson(raw));
+    const aiResponse = propertyInsightsAiSchema.parse(parseModelJson(raw));
+
+    const insight: PropertyInsights = {
+      advantages: aiResponse.advantages,
+      nearbyPlaces: await Promise.all(
+        aiResponse.nearbyPlaces.map(async (place) => ({
+          placeCategory: place.placeCategory,
+          location:
+            (await this.geocodingService.search(place.fulltextSearchTerm)) ??
+            place.location,
+          name: place.name,
+          distance: place.distance,
+        })),
+      ),
+    };
 
     await this.propertyInsightsRepository.upsert(input.id, insight);
     this.logger.log(`Generated property insights for property ${input.id}`);

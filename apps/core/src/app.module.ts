@@ -54,7 +54,7 @@ import { MessagingModule } from '@/messaging/messaging.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env', '../../.env'],
+      envFilePath: ['.env'],
     }),
     MessagingModule,
   ],

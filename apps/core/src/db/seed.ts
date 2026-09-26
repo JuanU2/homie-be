@@ -3,7 +3,7 @@ import { Pool } from 'pg';
 import { createDb } from '@homie/db';
 import * as schema from './schema';
 
-config({ path: '../../.env' });
+config({ path: '.env' });
 
 const EQUIPMENT_TYPES = [
   'fridge',

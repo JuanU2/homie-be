@@ -120,7 +120,11 @@ for now):
   management UI `15672`). Core publishes domain events to the `homie.events`
   topic exchange; the worker consumes them (`packages/events` holds the shared
   event contracts).
-- Root `.env` keys (shared by both apps): `DATABASE_URL`, `RABBITMQ_URL`,
-  `GOOGLE_CLIENT_ID`, `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`,
-  `GOOGLE_APPLICATION_CREDENTIALS`. Worker-only: `GEMINI_API_KEY`,
-  `GEMINI_MODEL` (optional), `WORKER_PORT` (optional).
+- Each app has its own `.env` (`apps/core/.env`, `apps/worker/.env`), loaded via
+  `ConfigModule.forRoot({ envFilePath: ['.env'] })`. Core keys: `DATABASE_URL`,
+  `RABBITMQ_URL`, `GOOGLE_CLIENT_ID`, `S3_ENDPOINT`, `S3_ACCESS_KEY`,
+  `S3_SECRET_KEY`, `S3_BUCKET`, `GOOGLE_APPLICATION_CREDENTIALS`. Worker keys:
+  `DATABASE_URL`, `RABBITMQ_URL`, `GOOGLE_CLIENT_ID`, `GEMINI_API_KEY`,
+  `GEMINI_MODEL` (optional), `WORKER_PORT` (optional), `GEOCODING_API_KEY`,
+  `GEOCODING_BASE_URL` (geocode.maps.co, used to resolve AI-provided full-text
+  search terms to coordinates).
