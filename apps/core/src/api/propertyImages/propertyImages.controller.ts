@@ -25,6 +25,7 @@ import {
   PropertyImageResponse,
   PropertyImagesParamsDto,
   UpdatePropertyImageDto,
+  UploadPropertyImageUrlDto,
 } from "./dtos/propertyImages.dto";
 
 @Controller("properties/:propertyId/images")
@@ -74,6 +75,28 @@ export class PropertyImagesController {
     if (value === undefined || value === null) return false;
     if (typeof value === "boolean") return value;
     return value === "true" || value === "1" || value === "yes";
+  }
+
+  @Post("url")
+  @UseGuards(GoogleTokenGuard)
+  @ApiOperation({ summary: "Upload a property image from a URL" })
+  @ApiParam({ name: "propertyId", type: String, description: "Property id" })
+  async uploadImageFromUrl(
+    @Req() request: Request,
+    @Param() params: PropertyImagesParamsDto,
+    @Body() uploadPropertyImageUrlDto: UploadPropertyImageUrlDto,
+  ): Promise<PropertyImageResponse> {
+    const userId = request.user?.userId;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    return this.propertyImagesService.uploadImageFromUrl(
+      userId,
+      params.propertyId,
+      uploadPropertyImageUrlDto.imageUrl,
+      uploadPropertyImageUrlDto.title,
+    );
   }
 
   @Get(":imageId")

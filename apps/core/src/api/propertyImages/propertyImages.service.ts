@@ -71,6 +71,69 @@ export class PropertyImagesService {
     });
   }
 
+  async uploadImageFromUrl(
+    userId: string,
+    propertyId: string,
+    imageUrl: string,
+    title: boolean,
+  ): Promise<PropertyImage> {
+    const ownerId = await this.propertiesRepository.getOwnerId(propertyId);
+    if (!ownerId) {
+      throw new NotFoundException("Property not found");
+    }
+    if (ownerId !== userId) {
+      throw new ForbiddenException(
+        "You can only upload images for your own property",
+      );
+    }
+
+    const { buffer, contentType } = await this.downloadImage(imageUrl);
+
+    const extension = IMAGE_EXTENSIONS[contentType] ?? "bin";
+    const key = `properties/${propertyId}/${randomUUID()}.${extension}`;
+
+    await this.storageService.upload(key, buffer, contentType);
+
+    return this.propertyImagesRepository.createImage({
+      propertyId,
+      imageUrl: key,
+      title,
+    });
+  }
+
+  private async downloadImage(
+    url: string,
+  ): Promise<{ buffer: Buffer; contentType: string }> {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      throw new BadRequestException("Only http and https URLs are supported");
+    }
+
+    const response = await fetch(parsed.toString(), {
+      redirect: "follow",
+      headers: { Accept: "image/*" },
+      signal: AbortSignal.timeout(15_000),
+    }).catch(() => {
+      throw new BadRequestException("Could not download the image from the URL");
+    });
+
+    if (!response.ok) {
+      throw new BadRequestException(
+        `Failed to download the image (HTTP ${response.status})`,
+      );
+    }
+
+    const rawContentType = response.headers.get("content-type") ?? "";
+    const contentType = rawContentType.split(";")[0].trim().toLowerCase();
+
+    if (!contentType.startsWith("image/")) {
+      throw new BadRequestException("Downloaded content is not an image");
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    return { buffer, contentType };
+  }
+
   async getImage(
     propertyId: string,
     imageId: string,

@@ -33,6 +33,7 @@ export class AiController {
   }
 
   @Post('listing-scraping')
+  @UseGuards(GoogleTokenGuard)
   @ApiOperation({ summary: 'Scrape a listing URL and extract structured data' })
   async scrapeListing(
     @Body() dto: ScrapeListingDto,

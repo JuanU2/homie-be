@@ -38,3 +38,12 @@ export const updatePropertyImageSchema = z.object({
 export class UpdatePropertyImageDto extends createZodDto(
   updatePropertyImageSchema,
 ) {}
+
+export const uploadPropertyImageUrlSchema = z.object({
+  imageUrl: z.url(),
+  title: z.boolean(),
+});
+
+export class UploadPropertyImageUrlDto extends createZodDto(
+  uploadPropertyImageUrlSchema,
+) {}

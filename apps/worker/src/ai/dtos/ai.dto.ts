@@ -75,13 +75,6 @@ const scrapeListingPropertySchema = stripNonMatching({
   description: z.string().min(1).max(5000).optional(),
   sizeM2: z.number().positive().optional(),
   roomCount: z.number().int().positive().optional(),
-  country: z.string().min(1).max(100).optional(),
-  city: z.string().min(1).max(100).optional(),
-  zipCode: z.string().min(1).max(8).optional(),
-  street: z.string().min(1).max(100).optional(),
-  streetNumber: z.string().min(1).max(10).optional(),
-  lat: z.number().optional(),
-  lng: z.number().optional(),
   rooms: z
     .array(
       z.object({
