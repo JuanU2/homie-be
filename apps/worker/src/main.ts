@@ -28,6 +28,7 @@ async function bootstrap() {
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     const start = Date.now();
+    Logger.log(`-> ${req.method} ${req.originalUrl}`, 'Request');
     res.on('finish', () => {
       const duration = Date.now() - start;
       const bodyLog =

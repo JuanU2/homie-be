@@ -5,6 +5,8 @@ import { AiService } from './ai.service';
 import {
   AnalyzePropertyImagesDto,
   type PropertyAnalysisResult,
+  ScrapeListingDto,
+  type ScrapeListingResult,
 } from './dtos/ai.dto';
 
 @Controller('ai')
@@ -17,7 +19,7 @@ export class AiController {
     return { status: 'ok' };
   }
 
-  @Post('analyze-property')
+  @Post('property-analysis')
   @UseGuards(GoogleTokenGuard)
   @ApiOperation({ summary: 'Analyze property photos with Gemini' })
   async analyzeProperty(
@@ -28,5 +30,13 @@ export class AiController {
       dto.language,
       dto.location,
     );
+  }
+
+  @Post('listing-scraping')
+  @ApiOperation({ summary: 'Scrape a listing URL and extract structured data' })
+  async scrapeListing(
+    @Body() dto: ScrapeListingDto,
+  ): Promise<ScrapeListingResult> {
+    return this.aiService.scrapeListing(dto.url);
   }
 }

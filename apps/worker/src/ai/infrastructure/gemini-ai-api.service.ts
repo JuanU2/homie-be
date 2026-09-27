@@ -4,12 +4,33 @@ import { GoogleGenAI } from '@google/genai';
 import {
   type AnalyzePropertyImagesRequest,
   type GenerateStructuredRequest,
+  type GenerateStructuredWithDocumentRequest,
   type IAiApiService,
   type PropertyImageInput,
 } from '../domain/interface/ai-api.service';
 import { ContentType } from './content-type';
 
 const DEFAULT_MODEL = 'gemini-3.8-flash';
+const REQUEST_TIMEOUT_MS = 120_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`Gemini request timed out after ${ms / 1000}s`)),
+      ms,
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
 
 @Injectable()
 export class GeminiAiApiService implements IAiApiService {
@@ -46,14 +67,41 @@ export class GeminiAiApiService implements IAiApiService {
     return this.generateJson({ prompt, jsonSchema });
   }
 
+  async generateStructuredWithDocument({
+    prompt,
+    jsonSchema,
+    document,
+  }: GenerateStructuredWithDocumentRequest): Promise<string> {
+    if (!this.ai) {
+      throw new Error('GEMINI_API_KEY is not configured');
+    }
+
+    const file = await this.ai.files.upload({
+      file: new Blob([document.content], { type: document.mimeType }),
+      config: { mimeType: document.mimeType, displayName: 'listing.html' },
+    });
+
+    if (!file.uri) {
+      throw new Error('Gemini did not return a file URI for the listing');
+    }
+
+    return this.generateJson({
+      prompt,
+      jsonSchema,
+      documents: [{ uri: file.uri, mimeType: document.mimeType }],
+    });
+  }
+
   private async generateJson({
     prompt,
     jsonSchema,
     images,
+    documents,
   }: {
     prompt: string;
     jsonSchema: Record<string, unknown>;
     images?: PropertyImageInput[];
+    documents?: Array<{ uri: string; mimeType: string }>;
   }): Promise<string> {
     if (!this.ai) {
       throw new Error('GEMINI_API_KEY is not configured');
@@ -66,17 +114,25 @@ export class GeminiAiApiService implements IAiApiService {
         data: image.data,
         mime_type: image.mimeType,
       })),
+      ...(documents ?? []).map((document) => ({
+        type: ContentType.DOCUMENT,
+        uri: document.uri,
+        mime_type: document.mimeType,
+      })),
     ];
 
-    const interaction = await this.ai.interactions.create({
-      model: this.model,
-      input,
-      response_format: {
-        type: ContentType.TEXT,
-        mime_type: 'application/json',
-        schema: jsonSchema,
-      },
-    });
+    const interaction = await withTimeout(
+      this.ai.interactions.create({
+        model: this.model,
+        input,
+        response_format: {
+          type: ContentType.TEXT,
+          mime_type: 'application/json',
+          schema: jsonSchema,
+        },
+      }),
+      REQUEST_TIMEOUT_MS,
+    );
 
     const raw = interaction.output_text;
     if (!raw) {

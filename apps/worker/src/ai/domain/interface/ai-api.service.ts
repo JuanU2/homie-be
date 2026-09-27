@@ -14,9 +14,18 @@ export interface GenerateStructuredRequest {
   jsonSchema: Record<string, unknown>;
 }
 
+export interface GenerateStructuredWithDocumentRequest {
+  prompt: string;
+  jsonSchema: Record<string, unknown>;
+  document: { content: string; mimeType: string };
+}
+
 export interface IAiApiService {
   analyzePropertyImages(request: AnalyzePropertyImagesRequest): Promise<string>;
   generateStructured(request: GenerateStructuredRequest): Promise<string>;
+  generateStructuredWithDocument(
+    request: GenerateStructuredWithDocumentRequest,
+  ): Promise<string>;
 }
 
 export const AI_API_SERVICE = Symbol('AI_API_SERVICE');

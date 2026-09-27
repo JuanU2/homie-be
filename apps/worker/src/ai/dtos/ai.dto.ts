@@ -64,3 +64,98 @@ export const propertyAnalysisResultSchema = z.object({
 });
 
 export type PropertyAnalysisResult = z.infer<typeof propertyAnalysisResultSchema>;
+
+export const scrapeListingSchema = z.object({
+  url: z.url(),
+});
+
+export class ScrapeListingDto extends createZodDto(scrapeListingSchema) {}
+
+const scrapeListingPropertySchema = stripNonMatching({
+  description: z.string().min(1).max(5000).optional(),
+  sizeM2: z.number().positive().optional(),
+  roomCount: z.number().int().positive().optional(),
+  country: z.string().min(1).max(100).optional(),
+  city: z.string().min(1).max(100).optional(),
+  zipCode: z.string().min(1).max(8).optional(),
+  street: z.string().min(1).max(100).optional(),
+  streetNumber: z.string().min(1).max(10).optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+  rooms: z
+    .array(
+      z.object({
+        roomType: roomTypeSchema,
+        count: z.number().int().positive(),
+      }),
+    )
+    .optional(),
+  equipment: z
+    .array(
+      z.object({
+        equipmentType: z.string().min(1).max(255),
+        count: z.number().int().positive(),
+      }),
+    )
+    .optional(),
+  images: z
+    .array(
+      z.object({
+        imageUrl: z.string().min(1),
+        title: z.boolean(),
+      }),
+    )
+    .optional(),
+});
+
+function stripEmpty(value: unknown): unknown {
+  if (value === null) return undefined;
+  if (typeof value === 'string' && value.trim() === '') return undefined;
+  if (Array.isArray(value)) return value.map(stripEmpty);
+  if (value && typeof value === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, entry] of Object.entries(value)) {
+      result[key] = stripEmpty(entry);
+    }
+    return result;
+  }
+  return value;
+}
+
+
+//This method is required because the Gemini API may return invalid json.
+// But we do not want to dump everything, only the invalid part of the json.
+function stripNonMatching(shape: Record<string, z.ZodTypeAny>) {
+  return z.preprocess(
+    (value: unknown): unknown => {
+      if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+        return undefined;
+      }
+      const result: Record<string, unknown> = {};
+      for (const [key, schema] of Object.entries(shape)) {
+        const parsed = schema.safeParse((value as Record<string, unknown>)[key]);
+        if (parsed.success && parsed.data !== undefined) {
+          result[key] = parsed.data;
+        }
+      }
+      return Object.keys(result).length > 0 ? result : undefined;
+    },
+    z.object(shape).optional(),
+  );
+}
+
+export const scrapeListingResultSchema = z.preprocess(
+  stripEmpty,
+  z.object({
+    title: z.string().min(1).optional(),
+    description: z.string().min(1).optional(),
+    priceAmount: z.number().nonnegative().optional(),
+    priceCurrency: z.string().min(1).optional(),
+    idealMoveInDate: z.string().min(1).optional(),
+    maxRoommates: z.number().int().positive().optional(),
+    currentRoommates: z.number().int().nonnegative().optional(),
+    property: scrapeListingPropertySchema.optional(),
+  }),
+);
+
+export type ScrapeListingResult = z.infer<typeof scrapeListingResultSchema>;
