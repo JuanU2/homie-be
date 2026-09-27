@@ -359,20 +359,6 @@ components:
           type: integer
         roomCount:
           type: integer
-        country:
-          type: string
-        city:
-          type: string
-        zipCode:
-          type: string
-        street:
-          type: string
-        streetNumber:
-          type: string
-        lat:
-          type: number
-        lng:
-          type: number
         rooms:
           type: array
           items:

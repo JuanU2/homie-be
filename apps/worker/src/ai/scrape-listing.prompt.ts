@@ -106,34 +106,6 @@ export function buildScrapeListingJsonSchema({
             type: 'integer',
             description: 'Total number of rooms.',
           },
-          country: {
-            type: 'string',
-            description: 'The country where the property is located.',
-          },
-          city: {
-            type: 'string',
-            description: 'The city where the property is located.',
-          },
-          zipCode: {
-            type: 'string',
-            description: 'The postal / ZIP code.',
-          },
-          street: {
-            type: 'string',
-            description: 'The street name.',
-          },
-          streetNumber: {
-            type: 'string',
-            description: 'The street (house) number.',
-          },
-          lat: {
-            type: 'number',
-            description: 'Latitude, only if explicitly present on the page.',
-          },
-          lng: {
-            type: 'number',
-            description: 'Longitude, only if explicitly present on the page.',
-          },
           rooms: {
             type: 'array',
             description: 'Distinct room types with their counts.',
