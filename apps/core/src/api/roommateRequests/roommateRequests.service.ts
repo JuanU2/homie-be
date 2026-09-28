@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -14,6 +15,7 @@ import {
   roommateRequestDetailDtoResponseSchema,
   RoommateRequestDtoResponse,
   UpdateRoommateRequestDtoRequest,
+  UpdateRoommateRequestStatusDtoRequest,
   UserRoommateRequestDetailDtoResponse,
   userRoommateRequestDetailDtoResponseSchema,
 } from '@/api/roommateRequests/dtos/roommateRequests.dto';
@@ -22,6 +24,7 @@ import {
   GetUserRoommateRequestsParams,
   RoommateRequestDetail,
   RoommateRequestsPage,
+  UpdateRoommateRequestStatusModel,
   UserRoommateRequestsPage,
 } from '@/api/roommateRequests/domain/entity/roommateRequest';
 import {
@@ -116,6 +119,79 @@ export class RoommateRequestsService {
         currentRoommates: data.currentRoommates,
       },
     );
+
+    if (!request) {
+      throw new NotFoundException('Roommate request not found');
+    }
+
+    await this.publishRoommateRequestEvent(
+      ROOMMATE_REQUEST_UPDATED_EVENT_TYPE,
+      ROOMMATE_REQUEST_UPDATED_ROUTING_KEY,
+      request.id,
+    );
+
+    return {
+      ...request,
+      idealMoveInDate: request.idealMoveInDate ?? null,
+      closedAt: request.closedAt ?? null,
+    };
+  }
+
+  async updateRoommateRequestStatus(
+    userId: string,
+    id: string,
+    data: UpdateRoommateRequestStatusDtoRequest,
+  ): Promise<RoommateRequestDtoResponse> {
+    const existing =
+      await this.roommateRequestsRepository.getRoommateRequestById(id);
+
+    if (!existing) {
+      throw new NotFoundException('Roommate request not found');
+    }
+
+    if (existing.createdBy !== userId) {
+      throw new ForbiddenException(
+        'You can only update your own roommate request',
+      );
+    }
+
+    const updates: UpdateRoommateRequestStatusModel = {
+      status: data.status,
+    };
+
+    if (data.status === 'ACTIVE') {
+      if (existing.status === 'CLOSED') {
+        if (
+          data.maxRoommates === undefined ||
+          data.currentRoommates === undefined
+        ) {
+          throw new BadRequestException(
+            'maxRoommates and currentRoommates are required when reactivating a closed request',
+          );
+        }
+        if (data.maxRoommates - data.currentRoommates <= 0) {
+          throw new BadRequestException(
+            'maxRoommates must be greater than currentRoommates',
+          );
+        }
+      }
+
+      if (data.maxRoommates !== undefined) {
+        updates.maxRoommates = data.maxRoommates;
+      }
+      if (data.currentRoommates !== undefined) {
+        updates.currentRoommates = data.currentRoommates;
+      }
+      updates.closedAt = null;
+    } else if (data.status === 'CLOSED') {
+      updates.closedAt = new Date();
+    }
+
+    const request =
+      await this.roommateRequestsRepository.updateRoommateRequestStatus(
+        id,
+        updates,
+      );
 
     if (!request) {
       throw new NotFoundException('Roommate request not found');

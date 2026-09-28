@@ -105,7 +105,7 @@ export class DrizzleRoommateApplicationsRepository
         return undefined;
       }
 
-      await tx
+      const [request] = await tx
         .update(roommateRequests)
         .set({
           currentRoommates: sql`${roommateRequests.currentRoommates} + 1`,
@@ -116,7 +116,18 @@ export class DrizzleRoommateApplicationsRepository
             eq(roommateRequests.id, roommateRequestId),
             sql`${roommateRequests.currentRoommates} < ${roommateRequests.maxRoommates}`,
           ),
-        );
+        )
+        .returning({
+          currentRoommates: roommateRequests.currentRoommates,
+          maxRoommates: roommateRequests.maxRoommates,
+        });
+
+      if (request && request.currentRoommates === request.maxRoommates) {
+        await tx
+          .update(roommateRequests)
+          .set({ status: 'CLOSED', closedAt: new Date(), updatedAt: new Date() })
+          .where(eq(roommateRequests.id, roommateRequestId));
+      }
 
       return updated;
     });

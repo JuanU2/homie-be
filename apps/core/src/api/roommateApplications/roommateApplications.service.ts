@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -49,6 +50,12 @@ export class RoommateApplicationsService {
 
     if (!roommateRequest) {
       throw new NotFoundException('Roommate request not found');
+    }
+
+    if (roommateRequest.status === 'CLOSED') {
+      throw new BadRequestException(
+        'Cannot apply to a closed roommate request',
+      );
     }
 
     const application =

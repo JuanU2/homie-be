@@ -47,6 +47,13 @@ export interface UpdateRoommateRequestModel {
   currentRoommates: number;
 }
 
+export interface UpdateRoommateRequestStatusModel {
+  status: RoommateRequestStatus;
+  maxRoommates?: number;
+  currentRoommates?: number;
+  closedAt?: Date | null;
+}
+
 export interface RoommateRequestPropertySummary {
   id: string;
   country: string;
@@ -83,6 +90,7 @@ export interface GetRoommateRequestsParams {
 
 export interface UserRoommateRequestListItem
   extends RoommateRequestListItem {
+  status: RoommateRequestStatus;
   pendingApplicationsCount: number;
 }
 
@@ -94,6 +102,7 @@ export interface UserRoommateRequestsPage {
 export interface GetUserRoommateRequestsParams {
   limit: number;
   cursor?: string;
+  status?: RoommateRequestStatus;
 }
 
 export interface RoommateRequestOwnerProfile {

@@ -19,6 +19,7 @@ import {
   RoommateRequestDtoResponse,
   RoommateRequestParamsDto,
   UpdateRoommateRequestDtoRequest,
+  UpdateRoommateRequestStatusDtoRequest,
 } from '@/api/roommateRequests/dtos/roommateRequests.dto';
 import { RoommateRequestsPage } from '@/api/roommateRequests/domain/entity/roommateRequest';
 import { RoommateRequestsService } from '@/api/roommateRequests/roommateRequests.service';
@@ -78,5 +79,20 @@ export class RoommateRequestsController {
       lat: query.lat,
       lng: query.lng,
     });
+  }
+
+  @Put(':roommateRequestId/status')
+  @UseGuards(GoogleTokenGuard)
+  @ApiOperation({ summary: 'Update roommate request status' })
+  async updateRoommateRequestStatus(
+    @Req() request: Request,
+    @Param() params: RoommateRequestParamsDto,
+    @Body() data: UpdateRoommateRequestStatusDtoRequest,
+  ): Promise<RoommateRequestDtoResponse> {
+    return this.roommateRequestsService.updateRoommateRequestStatus(
+      request.user!.userId,
+      params.roommateRequestId,
+      data,
+    );
   }
 }

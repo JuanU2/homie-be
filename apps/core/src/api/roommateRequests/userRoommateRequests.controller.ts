@@ -42,6 +42,7 @@ export class UserRoommateRequestsController {
     return this.roommateRequestsService.getUserRoommateRequests(params.userId, {
       limit: query.limit,
       cursor: query.cursor,
+      status: query.status,
     });
   }
 

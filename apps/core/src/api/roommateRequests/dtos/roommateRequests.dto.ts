@@ -67,6 +67,37 @@ export class UpdateRoommateRequestDtoRequest extends createZodDto(
   updateRoommateRequestDtoRequestSchema,
 ) {}
 
+export const updateRoommateRequestStatusDtoRequestSchema = z
+  .object({
+    status: roommateRequestStatusSchema,
+    maxRoommates: z.number().int().positive().optional(),
+    currentRoommates: z.number().int().nonnegative().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.status === 'ACTIVE') {
+      return;
+    }
+
+    if (data.maxRoommates !== undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'maxRoommates is only allowed when transitioning to ACTIVE',
+        path: ['maxRoommates'],
+      });
+    }
+    if (data.currentRoommates !== undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'currentRoommates is only allowed when transitioning to ACTIVE',
+        path: ['currentRoommates'],
+      });
+    }
+  });
+
+export class UpdateRoommateRequestStatusDtoRequest extends createZodDto(
+  updateRoommateRequestStatusDtoRequestSchema,
+) {}
+
 export class RoommateRequestDtoResponse extends createZodDto(
   roommateRequestDtoResponseSchema,
 ) {}
@@ -174,6 +205,7 @@ export class UserRoommateRequestParamsDto extends createZodDto(
 export const getUserRoommateRequestsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   cursor: z.string().min(1).optional(),
+  status: roommateRequestStatusSchema.optional(),
 });
 
 export class GetUserRoommateRequestsQueryDto extends createZodDto(

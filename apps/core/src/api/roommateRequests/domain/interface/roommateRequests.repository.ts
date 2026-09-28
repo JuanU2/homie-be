@@ -6,6 +6,7 @@ import {
   RoommateRequestDetail,
   RoommateRequestsPage,
   UpdateRoommateRequestModel,
+  UpdateRoommateRequestStatusModel,
   UserRoommateRequestDetail,
   UserRoommateRequestsPage,
 } from '@/api/roommateRequests/domain/entity/roommateRequest';
@@ -17,6 +18,10 @@ export interface IRoommateRequestsRepository {
   updateRoommateRequest(
     id: string,
     request: UpdateRoommateRequestModel,
+  ): Promise<RoommateRequest | undefined>;
+  updateRoommateRequestStatus(
+    id: string,
+    updates: UpdateRoommateRequestStatusModel,
   ): Promise<RoommateRequest | undefined>;
   getRoommateRequestById(id: string): Promise<RoommateRequest | undefined>;
   getRoommateRequestDetail(

@@ -19,12 +19,14 @@ import {
   GetUserRoommateRequestsParams,
   RoommateRequest,
   type RoommateRequestCurrency,
+  type RoommateRequestStatus,
   RoommateRequestDetail,
   RoommateRequestListItem,
   RoommateRequestOwnerProfile,
   RoommateRequestPropertyDetail,
   RoommateRequestsPage,
   UpdateRoommateRequestModel,
+  UpdateRoommateRequestStatusModel,
   UserRoommateRequestDetail,
   UserRoommateRequestListItem,
   UserRoommateRequestsPage,
@@ -53,6 +55,7 @@ interface RawPageRow {
 }
 
 interface RawUserPageRow extends RawPageRow {
+  status: string;
   pendingApplicationsCount: number;
 }
 
@@ -117,6 +120,34 @@ export class DrizzleRoommateRequestsRepository
         currentRoommates: request.currentRoommates,
         updatedAt: new Date(),
       })
+      .where(eq(roommateRequests.id, id))
+      .returning();
+
+    return updatedRequest;
+  }
+
+  async updateRoommateRequestStatus(
+    id: string,
+    updates: UpdateRoommateRequestStatusModel,
+  ): Promise<RoommateRequest | undefined> {
+    const set: Partial<typeof roommateRequests.$inferInsert> = {
+      status: updates.status,
+      updatedAt: new Date(),
+    };
+
+    if (updates.maxRoommates !== undefined) {
+      set.maxRoommates = updates.maxRoommates;
+    }
+    if (updates.currentRoommates !== undefined) {
+      set.currentRoommates = updates.currentRoommates;
+    }
+    if ('closedAt' in updates) {
+      set.closedAt = updates.closedAt;
+    }
+
+    const [updatedRequest] = await this.db
+      .update(roommateRequests)
+      .set(set)
       .where(eq(roommateRequests.id, id))
       .returning();
 
@@ -380,12 +411,15 @@ export class DrizzleRoommateRequestsRepository
     ownerId: string,
     params: GetUserRoommateRequestsParams,
   ): Promise<UserRoommateRequestsPage> {
-    const { limit, cursor } = params;
+    const { limit, cursor, status } = params;
 
     const conditions = [sql`rr.created_by = ${ownerId}`];
     if (cursor) {
       const { key, id } = decodeCursor(cursor);
       conditions.push(sql`(rr.created_at, rr.id) < (${key}, ${id})`);
+    }
+    if (status) {
+      conditions.push(sql`rr.status = ${status}`);
     }
     const where = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
 
@@ -398,6 +432,7 @@ export class DrizzleRoommateRequestsRepository
         rr.price_currency AS "priceCurrency",
         rr.created_at AS "createdAt",
         rr.title AS "title",
+        rr.status AS "status",
         p.id AS "propertyId",
         p.country AS "country",
         p.city AS "city",
@@ -436,11 +471,12 @@ export class DrizzleRoommateRequestsRepository
     limit: number,
     cursor?: string,
   ): Promise<RawPageRow[]> {
-    let where = sql``;
+    const conditions = [sql`rr.status = 'ACTIVE'`];
     if (cursor) {
       const { key, id } = decodeCursor(cursor);
-      where = sql`WHERE (rr.created_at, rr.id) < (${key}, ${id})`;
+      conditions.push(sql`(rr.created_at, rr.id) < (${key}, ${id})`);
     }
+    const where = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
 
     const result = await this.db.execute(sql`
       SELECT
@@ -509,6 +545,7 @@ export class DrizzleRoommateRequestsRepository
         FROM core.roommate_requests rr
         JOIN core.properties p ON p.id = rr.property_id
         LEFT JOIN core.property_images ti ON ti.property_id = p.id AND ti.title = true
+        WHERE rr.status = 'ACTIVE'
       ) sub
       ${where}
       ORDER BY sub.distance ASC, sub."rrId" ASC
@@ -544,6 +581,7 @@ export class DrizzleRoommateRequestsRepository
   private toUserListItem(row: RawUserPageRow): UserRoommateRequestListItem {
     return {
       ...this.toListItem(row),
+      status: row.status as RoommateRequestStatus,
       pendingApplicationsCount: row.pendingApplicationsCount,
     };
   }
