@@ -1,5 +1,7 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { compressImage, downloadImage } from '@homie/images';
 import {
+  type AnalyzePropertyImageInput,
   propertyAnalysisResultSchema,
   scrapeListingResultSchema,
   type PropertyAnalysisResult,
@@ -36,10 +38,14 @@ export class AiService {
   ) {}
 
   async analyzePropertyImages(
-    images: PropertyImageInput[],
+    images: AnalyzePropertyImageInput[],
     language?: string,
     location?: PropertyLocation,
   ): Promise<PropertyAnalysisResult> {
+    const normalizedImages = await Promise.all(
+      images.map((image) => this.resolveImageInput(image)),
+    );
+
     const equipmentTypeNames = await this.equipmentTypesRepository.getNames();
     const prompt = buildPropertyAnalysisPrompt({
       language,
@@ -50,13 +56,48 @@ export class AiService {
 
     const raw = await this.aiApi.analyzePropertyImages({
       prompt,
-      images,
+      images: normalizedImages,
       jsonSchema,
     });
 
     const json = parseModelJson(raw);
 
     return propertyAnalysisResultSchema.parse(json);
+  }
+
+  private async resolveImageInput(
+    image: AnalyzePropertyImageInput,
+  ): Promise<PropertyImageInput> {
+    if (image.data) {
+      const bytes = Buffer.from(image.data, 'base64');
+      const { buffer, contentType } = await compressImage(
+        bytes,
+        image.mimeType ?? 'image/jpeg',
+      );
+      return { data: buffer.toString('base64'), mimeType: contentType };
+    }
+    const { buffer, contentType } = await this.downloadAndCompress(
+      image.imageUrl!,
+    );
+    return { data: buffer.toString('base64'), mimeType: contentType };
+  }
+
+  private async downloadAndCompress(
+    imageUrl: string,
+  ): Promise<{ buffer: Buffer; contentType: string }> {
+    try {
+      const downloaded = await downloadImage(imageUrl);
+      return compressImage(downloaded.buffer, downloaded.contentType);
+    } catch (error) {
+      this.logger.warn(
+        `Failed to download image: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw new BadRequestException(
+        error instanceof Error
+          ? error.message
+          : 'Could not download the provided image URL',
+      );
+    }
   }
 
   async scrapeListing(url: string): Promise<ScrapeListingResult> {

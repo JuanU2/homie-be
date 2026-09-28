@@ -120,16 +120,18 @@ components:
           maxItems: 20
           items:
             type: object
+            description: Exactly one of `data` or `imageUrl` must be provided. When `imageUrl` is used, the worker downloads the image and processes it.
             properties:
               data:
                 type: string
                 description: Base64-encoded image bytes.
+              imageUrl:
+                type: string
+                format: uri
+                description: URL of the image to download and analyze. Mutually exclusive with `data`.
               mimeType:
                 type: string
-                description: Image MIME type, e.g. image/jpeg.
-            required:
-              - data
-              - mimeType
+                description: Image MIME type, e.g. image/jpeg. Optional for `imageUrl` (inferred from the response); defaults to image/jpeg for `data`.
         language:
           type: string
           description: Optional language for the generated description (e.g. "English", "Spanish"). Does not affect the roomType/equipmentType enum values.

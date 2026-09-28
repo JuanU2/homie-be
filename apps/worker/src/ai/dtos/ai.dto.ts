@@ -14,10 +14,17 @@ export const ROOM_TYPES = [
 
 const roomTypeSchema = z.enum(ROOM_TYPES);
 
-export const propertyImageSchema = z.object({
-  data: z.string().min(1),
-  mimeType: z.string().regex(/^image\//),
-});
+export const propertyImageSchema = z
+  .object({
+    data: z.string().min(1).optional(),
+    imageUrl: z.url().optional(),
+    mimeType: z.string().regex(/^image\//).optional(),
+  })
+  .refine((image) => (image.data ? !image.imageUrl : !!image.imageUrl), {
+    message: 'Each image must provide exactly one of "data" or "imageUrl"',
+  });
+
+export type AnalyzePropertyImageInput = z.infer<typeof propertyImageSchema>;
 
 export const locationSchema = z.object({
   country: z.string().max(100),

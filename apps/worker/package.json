@@ -21,6 +21,7 @@
     "@google/genai": "^2.23.0",
     "@homie/db": "workspace:*",
     "@homie/events": "workspace:*",
+    "@homie/images": "workspace:*",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
