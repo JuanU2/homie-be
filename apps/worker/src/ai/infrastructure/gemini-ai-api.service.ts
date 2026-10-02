@@ -67,6 +67,27 @@ export class GeminiAiApiService implements IAiApiService {
     return this.generateJson({ prompt, jsonSchema });
   }
 
+  async generateText(prompt: string): Promise<string> {
+    if (!this.ai) {
+      throw new Error('GEMINI_API_KEY is not configured');
+    }
+
+    const interaction = await withTimeout(
+      this.ai.interactions.create({
+        model: this.model,
+        input: [{ type: ContentType.TEXT, text: prompt }],
+      }),
+      REQUEST_TIMEOUT_MS,
+    );
+
+    const raw = interaction.output_text;
+    if (!raw) {
+      throw new Error('Gemini returned no text output');
+    }
+
+    return raw;
+  }
+
   async generateStructuredWithDocument({
     prompt,
     jsonSchema,

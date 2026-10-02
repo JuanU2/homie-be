@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { AiModule } from './ai/ai.module';
 import { AuthModule } from './auth/auth.module';
+import { ChatModule } from './chat/chat.module';
 import { DatabaseModule } from './database/database.module';
 import { MessagingModule } from './messaging/messaging.module';
 
@@ -16,6 +17,7 @@ import { MessagingModule } from './messaging/messaging.module';
     DatabaseModule,
     AuthModule,
     AiModule,
+    ChatModule,
     MessagingModule,
   ],
   providers: [

@@ -26,6 +26,7 @@ export interface IAiApiService {
   generateStructuredWithDocument(
     request: GenerateStructuredWithDocumentRequest,
   ): Promise<string>;
+  generateText(prompt: string): Promise<string>;
 }
 
 export const AI_API_SERVICE = Symbol('AI_API_SERVICE');

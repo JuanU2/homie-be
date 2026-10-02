@@ -15,6 +15,13 @@
       "when": 1790263490700,
       "tag": "0001_quiet_silverclaw",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790937326524,
+      "tag": "0002_puzzling_moira_mactaggert",
+      "breakpoints": true
     }
   ]
 }

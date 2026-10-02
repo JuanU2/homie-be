@@ -11,6 +11,7 @@ export interface IRoommateRequestsRepository {
     property: PropertyUpdatedPayload,
   ): Promise<void>;
   getProperty(propertyId: string): Promise<PropertyData | null>;
+  findById(id: string): Promise<RoommateRequestBlob | null>;
 }
 
 export const ROOMMATE_REQUESTS_REPOSITORY = Symbol(

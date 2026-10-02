@@ -94,6 +94,61 @@ paths:
         '400':
           description: Invalid request body or URL could not be scraped
 
+  /ai/messages:
+    post:
+      summary: Send a chat message about a roommate request and get the AI reply
+      operationId: sendChatMessage
+      security:
+        - bearerAuth: []
+      tags:
+        - AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '201':
+          description: The user's message and the AI's reply
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendMessageResponse'
+        '400':
+          description: Conversation does not match the roommate request
+        '403':
+          description: Conversation does not belong to the authenticated user
+        '404':
+          description: Roommate request or conversation not found
+        '409':
+          description: Conversation is not active
+
+  /conversations/{roommateRequestId}:
+    get:
+      summary: Get the active conversation for a roommate request
+      operationId: getActiveConversation
+      security:
+        - bearerAuth: []
+      tags:
+        - Conversations
+      parameters:
+        - name: roommateRequestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Active conversation with messages ordered by creation time
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetConversationResponse'
+        '404':
+          description: No active conversation for this roommate request
+
 components:
   securitySchemes:
     bearerAuth:
@@ -384,3 +439,83 @@ components:
       required:
         - imageUrl
         - title
+
+    SendMessageRequest:
+      type: object
+      properties:
+        roommateRequestId:
+          type: string
+          format: uuid
+        conversationId:
+          type: string
+          format: uuid
+          description: Omit for the first message; the backend creates a new conversation and closes any previous active one for this user and request.
+        content:
+          type: string
+          minLength: 1
+      required:
+        - roommateRequestId
+        - content
+
+    SendMessageResponse:
+      type: object
+      properties:
+        conversationId:
+          type: string
+          format: uuid
+        clientMessage:
+          $ref: '#/components/schemas/ChatMessageResponse'
+        response:
+          $ref: '#/components/schemas/ChatMessageResponse'
+      required:
+        - conversationId
+        - clientMessage
+        - response
+
+    ChatMessageResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - content
+        - createdAt
+
+    GetConversationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationMessage'
+      required:
+        - id
+        - messages
+
+    ConversationMessage:
+      type: object
+      properties:
+        content:
+          type: string
+        role:
+          type: string
+          enum:
+            - USER
+            - AGENT
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - content
+        - role
+        - createdAt

@@ -11,9 +11,7 @@ import * as schema from '@/database/schema/index';
 import { IRoommateRequestsRepository } from '../domain/interface/roommate-requests.repository';
 
 @Injectable()
-export class DrizzleRoommateRequestsRepository
-  implements IRoommateRequestsRepository
-{
+export class DrizzleRoommateRequestsRepository implements IRoommateRequestsRepository {
   constructor(
     @Inject('DRIZZLE_DB') private readonly db: NodePgDatabase<typeof schema>,
   ) {}
@@ -64,5 +62,19 @@ export class DrizzleRoommateRequestsRepository
     }
 
     return (row.data as RoommateRequestBlob).property;
+  }
+
+  async findById(id: string): Promise<RoommateRequestBlob | null> {
+    const [row] = await this.db
+      .select()
+      .from(roommateRequests)
+      .where(eq(roommateRequests.roommateRequestId, id))
+      .limit(1);
+
+    if (!row) {
+      return null;
+    }
+
+    return row.data as RoommateRequestBlob;
   }
 }
