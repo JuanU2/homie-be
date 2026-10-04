@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "core": {
+      "root": "apps/core",
+      "framework": "nestjs"
+    },
+    "worker": {
+      "root": "apps/worker",
+      "framework": "nestjs"
+    }
+  },
+  "rewrites": [
+    { "source": "/worker/(.*)", "destination": { "service": "worker" } },
+    { "source": "/(.*)", "destination": { "service": "core" } }
+  ]
+}

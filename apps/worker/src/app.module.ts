@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { DatabaseModule } from './database/database.module';
 import { MessagingModule } from './messaging/messaging.module';
+import { UsageLimitsModule } from './usage-limits/usage-limits.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { MessagingModule } from './messaging/messaging.module';
     }),
     DatabaseModule,
     AuthModule,
+    UsageLimitsModule,
     AiModule,
     ChatModule,
     MessagingModule,

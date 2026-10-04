@@ -44,6 +44,8 @@ paths:
                 $ref: '#/components/schemas/AnalyzePropertyImagesResponse'
         '400':
           description: Invalid request body
+        '429':
+          description: Daily limit of 5 analyses per user reached
 
   /ai/properties/{propertyId}/insights:
     get:
@@ -93,6 +95,8 @@ paths:
                 $ref: '#/components/schemas/ScrapeListingResponse'
         '400':
           description: Invalid request body or URL could not be scraped
+        '429':
+          description: Daily limit of 5 scrapes per user reached
 
   /ai/messages:
     post:

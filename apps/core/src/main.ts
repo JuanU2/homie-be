@@ -19,8 +19,16 @@ function summarizeBody(body: unknown): unknown {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const corsOrigins = (
+    process.env.CORS_ORIGINS ??
+    'http://localhost:5000,http://localhost:3000'
+  )
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: ['http://localhost:5000', 'http://localhost:3000'],
+    origin: corsOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
   });
@@ -50,6 +58,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(3001);
+  await app.listen(Number(process.env.PORT ?? 3001));
 }
 bootstrap();

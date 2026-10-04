@@ -53,21 +53,27 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   const config = app.get(ConfigService);
-  const port = Number(config.get('WORKER_PORT') ?? 3002);
+  const port = Number(config.get('WORKER_PORT') ?? process.env.PORT ?? 3002);
 
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
-    options: {
-      urls: [config.get<string>('RABBITMQ_URL', 'amqp://localhost:5672')],
-      queue: 'worker.events',
-      queueOptions: { durable: true },
-      exchange: EVENTS_EXCHANGE,
-      exchangeType: 'topic',
-      wildcards: true,
-      noAck: true,
-    },
-  });
-  await app.startAllMicroservices();
+  // The RabbitMQ consumer is a persistent AMQP subscription, which serverless
+  // hosts (Vercel) cannot run. Disable it there and run it on an always-on host.
+  const enableEventConsumer =
+    config.get<string>('ENABLE_EVENT_CONSUMER', 'true') !== 'false';
+  if (enableEventConsumer) {
+    app.connectMicroservice<MicroserviceOptions>({
+      transport: Transport.RMQ,
+      options: {
+        urls: [config.get<string>('RABBITMQ_URL', 'amqp://localhost:5672')],
+        queue: 'worker.events',
+        queueOptions: { durable: true },
+        exchange: EVENTS_EXCHANGE,
+        exchangeType: 'topic',
+        wildcards: true,
+        noAck: true,
+      },
+    });
+    await app.startAllMicroservices();
+  }
 
   await app.listen(port);
   Logger.log(`Worker listening on ${port}`, 'Bootstrap');

@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { GoogleTokenGuard } from '../auth/google-token.guard';
+import { RateLimitGuard } from '../usage-limits/rate-limit.guard';
+import { RateLimit } from '../usage-limits/rate-limit.decorator';
 import { AiService } from './ai.service';
 import {
   AnalyzePropertyImagesDto,
@@ -20,7 +22,8 @@ export class AiController {
   }
 
   @Post('property-analysis')
-  @UseGuards(GoogleTokenGuard)
+  @UseGuards(GoogleTokenGuard, RateLimitGuard)
+  @RateLimit('property-analysis', 5)
   @ApiOperation({ summary: 'Analyze property photos with Gemini' })
   async analyzeProperty(
     @Body() dto: AnalyzePropertyImagesDto,
@@ -33,7 +36,8 @@ export class AiController {
   }
 
   @Post('listing-scraping')
-  @UseGuards(GoogleTokenGuard)
+  @UseGuards(GoogleTokenGuard, RateLimitGuard)
+  @RateLimit('listing-scraping', 5)
   @ApiOperation({ summary: 'Scrape a listing URL and extract structured data' })
   async scrapeListing(
     @Body() dto: ScrapeListingDto,
