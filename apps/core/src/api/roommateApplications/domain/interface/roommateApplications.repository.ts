@@ -23,7 +23,7 @@ export interface IRoommateApplicationsRepository {
     roommateRequestId: string,
   ): Promise<RoommateApplication | undefined>;
   getRoommateApplicationsPage(
-    ownerId: string,
+    applicantId: string,
     params: GetRoommateApplicationsParams,
   ): Promise<RoommateApplicationsPage>;
   getRoommateApplicationsForRequest(
