@@ -616,7 +616,8 @@ paths:
           description: Roommate request not found
 
     get:
-      summary: Get the owner's roommate applications
+      summary: Get the user's own roommate applications
+      description: Returns the paginated list of roommate applications the caller has submitted, optionally filtered by status.
       tags:
         - Roommate Applications
       parameters:
@@ -640,7 +641,7 @@ paths:
             $ref: '#/components/schemas/RoommateApplicationStatus'
       responses:
         '200':
-          description: Paginated list of the owner's roommate applications
+          description: Paginated list of the user's roommate applications
           content:
             application/json:
               schema:

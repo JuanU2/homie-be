@@ -45,7 +45,7 @@ export class RoommateApplicationsController {
 
   @Get()
   @UseGuards(GoogleTokenGuard)
-  @ApiOperation({ summary: "Get the owner's roommate applications" })
+  @ApiOperation({ summary: "Get the user's own roommate applications" })
   async getRoommateApplications(
     @Req() request: Request,
     @Query() query: GetRoommateApplicationsQueryDto,

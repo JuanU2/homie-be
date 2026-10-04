@@ -134,12 +134,12 @@ export class DrizzleRoommateApplicationsRepository
   }
 
   async getRoommateApplicationsPage(
-    ownerId: string,
+    applicantId: string,
     params: GetRoommateApplicationsParams,
   ): Promise<RoommateApplicationsPage> {
     const { limit, cursor, status } = params;
 
-    const conditions = [sql`rr.created_by = ${ownerId}`];
+    const conditions = [sql`ra.applicant_id = ${applicantId}`];
     if (cursor) {
       const { key, id } = decodeCursor(cursor);
       conditions.push(sql`(ra.created_at, ra.id) < (${key}, ${id})`);

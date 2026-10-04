@@ -147,11 +147,11 @@ export class RoommateApplicationsService {
   }
 
   async getRoommateApplications(
-    ownerId: string,
+    applicantId: string,
     params: GetRoommateApplicationsParams,
   ): Promise<RoommateApplicationsPage> {
     return this.roommateApplicationsRepository.getRoommateApplicationsPage(
-      ownerId,
+      applicantId,
       params,
     );
   }
