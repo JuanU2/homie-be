@@ -1,0 +1,27 @@
+# Dependencies / build artifacts (recreated inside the image)
+node_modules
+**/node_modules
+dist
+**/dist
+.turbo
+**/.turbo
+
+# VCS
+.git
+.gitignore
+
+# Secrets — never bake these into an image
+.env
+**/.env
+.env.*
+**/.env.*
+firebase-service-account.json
+
+# Misc
+.claude
+minio-data
+docker
+coverage
+*.log
+.vercel
+README.md

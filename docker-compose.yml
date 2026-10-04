@@ -1,32 +1,44 @@
+# ---------------------------------------------------------------------------
+# Production / VM deployment compose.
+#
+# Only the NestJS apps run here. PostgreSQL and RabbitMQ live in the cloud and
+# are configured through each app's `.env` (DATABASE_URL / RABBITMQ_URL).
+#
+# Local dev (PostGIS + RabbitMQ) lives in docker-compose.local.yml.
+# ---------------------------------------------------------------------------
 version: "3.9"
 
 services:
-  db:
-    image: postgis/postgis:16-3.4
-    container_name: homie-postgres
-    restart: always
+  core:
+    image: homie-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: homie-core
+    restart: unless-stopped
+    env_file:
+      - ./apps/core/.env
     environment:
-      POSTGRES_USER: homie
-      POSTGRES_PASSWORD: homie
-      POSTGRES_DB: homie
-    ports:
-      - "5432:5432"
+      # Absolute path so PushService finds the mounted Firebase credentials
+      # regardless of the working directory.
+      GOOGLE_APPLICATION_CREDENTIALS: /app/firebase-service-account.json
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: homie-rabbitmq
-    restart: always
-    environment:
-      RABBITMQ_DEFAULT_USER: homie
-      RABBITMQ_DEFAULT_PASS: homie
+      # FCM push notifications. Remove this volume + the env override above to
+      # disable push (the service then only logs a warning).
+      - ./firebase-service-account.json:/app/firebase-service-account.json:ro
     ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - "3001:3001"
+    command: ["node", "apps/core/dist/main.js"]
 
-volumes:
-  postgres_data:
-  rabbitmq_data:
+  worker:
+    image: homie-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: homie-worker
+    restart: unless-stopped
+    env_file:
+      - ./apps/worker/.env
+    ports:
+      - "3002:3002"
+    command: ["node", "apps/worker/dist/main.js"]

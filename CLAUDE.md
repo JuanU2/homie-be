@@ -30,7 +30,9 @@ Turborepo + pnpm-workspaces monorepo for the Homie backend. Three workspaces:
 - `pnpm --filter @homie/core drizzle:generate` / `drizzle:migrate` / `db:seed` —
   manage core's `core`-schema migrations and seed data (the same three commands
   exist for `@homie/worker`).
-- `sudo docker-compose up -d` — start the local PostGIS database.
+- `sudo docker-compose -f docker-compose.local.yml up -d` — start the local
+  PostGIS database + RabbitMQ (dev only; prod uses `docker-compose.yml`, which
+  deploys only the NestJS apps against cloud DB/RabbitMQ).
 
 ## Architecture
 
