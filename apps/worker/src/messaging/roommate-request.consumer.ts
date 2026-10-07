@@ -1,6 +1,8 @@
 import { Controller, Inject, Logger } from '@nestjs/common';
 import { EventPattern } from '@nestjs/microservices';
 import {
+  POINTS_OF_INTEREST_EVENT_TYPE,
+  POINTS_OF_INTEREST_ROUTING_KEY,
   PROPERTY_UPDATED_ROUTING_KEY,
   ROOMMATE_REQUEST_CREATED_ROUTING_KEY,
   ROOMMATE_REQUEST_UPDATED_ROUTING_KEY,
@@ -12,6 +14,7 @@ import { ROOMMATE_REQUESTS_REPOSITORY } from '@/roommate-requests/domain/interfa
 import type { IRoommateRequestsRepository } from '@/roommate-requests/domain/interface/roommate-requests.repository';
 import { PropertyInsightsService } from '@/property-insights/property-insights.service';
 import type { PropertyInsightsInput } from '@/property-insights/dtos/property-insights.dto';
+import { EventPublisher } from './event.publisher';
 
 @Controller()
 export class RoommateRequestConsumer {
@@ -21,6 +24,7 @@ export class RoommateRequestConsumer {
     @Inject(ROOMMATE_REQUESTS_REPOSITORY)
     private readonly roommateRequestsRepository: IRoommateRequestsRepository,
     private readonly propertyInsightsService: PropertyInsightsService,
+    private readonly eventPublisher: EventPublisher,
   ) {}
 
   @EventPattern(ROOMMATE_REQUEST_CREATED_ROUTING_KEY)
@@ -90,7 +94,14 @@ export class RoommateRequestConsumer {
 
   private async generateInsights(input: PropertyInsightsInput): Promise<void> {
     try {
-      await this.propertyInsightsService.generateForProperty(input);
+      const points = await this.propertyInsightsService.generateForProperty(input);
+      if (points.length > 0) {
+        await this.eventPublisher.publish(
+          POINTS_OF_INTEREST_EVENT_TYPE,
+          POINTS_OF_INTEREST_ROUTING_KEY,
+          { propertyId: input.id, points },
+        );
+      }
     } catch (error) {
       this.logger.error(
         `Failed to generate property insights for property ${input.id}`,

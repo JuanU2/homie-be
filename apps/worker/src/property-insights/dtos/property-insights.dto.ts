@@ -34,7 +34,7 @@ export const nearbyPlaceSchema = z.object({
 });
 
 export const propertyInsightsSchema = z.object({
-  nearbyPlaces: z.array(nearbyPlaceSchema).max(3),
+  nearbyPlaces: z.array(nearbyPlaceSchema).max(4),
   advantages: z.array(z.string().min(1)).max(5),
 });
 
@@ -45,7 +45,7 @@ const nearbyPlaceAiSchema = nearbyPlaceSchema.extend({
 });
 
 export const propertyInsightsAiSchema = z.object({
-  nearbyPlaces: z.array(nearbyPlaceAiSchema).max(3),
+  nearbyPlaces: z.array(nearbyPlaceAiSchema).max(4),
   advantages: z.array(z.string().min(1)).max(5),
 });
 

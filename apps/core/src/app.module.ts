@@ -49,6 +49,9 @@ import { DEVICE_TOKENS_REPOSITORY } from '@/api/deviceTokens/domain/interface/de
 import { DrizzleDeviceTokensRepository } from '@/api/deviceTokens/infrastructure/drizzle-deviceTokens.repository';
 import { PushService } from '@/push/push.service';
 import { MessagingModule } from '@/messaging/messaging.module';
+import { PointsOfInterestConsumer } from '@/api/pointsOfInterest/points-of-interest.consumer';
+import { POINTS_OF_INTEREST_REPOSITORY } from '@/api/pointsOfInterest/domain/interface/points-of-interest.repository';
+import { DrizzlePointsOfInterestRepository } from '@/api/pointsOfInterest/infrastructure/drizzle-points-of-interest.repository';
 
 @Module({
   imports: [
@@ -70,6 +73,7 @@ import { MessagingModule } from '@/messaging/messaging.module';
     EquipmentTypesController,
     PropertyImagesController,
     DeviceTokensController,
+    PointsOfInterestConsumer,
   ],
   providers: [
     UsersService,
@@ -130,6 +134,10 @@ import { MessagingModule } from '@/messaging/messaging.module';
     {
       provide: DEVICE_TOKENS_REPOSITORY,
       useClass: DrizzleDeviceTokensRepository,
+    },
+    {
+      provide: POINTS_OF_INTEREST_REPOSITORY,
+      useClass: DrizzlePointsOfInterestRepository,
     },
     {
       provide: "DRIZZLE_DB",

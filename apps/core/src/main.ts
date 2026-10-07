@@ -1,7 +1,10 @@
 import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { Transport, type MicroserviceOptions } from '@nestjs/microservices';
 import type { NextFunction, Request, Response } from 'express';
+import { EVENTS_EXCHANGE } from '@homie/events';
 import { AppModule } from './app.module';
 
 function summarizeBody(body: unknown): unknown {
@@ -57,6 +60,21 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+
+  const configService = app.get(ConfigService);
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [configService.get<string>('RABBITMQ_URL', 'amqp://localhost:5672')],
+      queue: 'core.events',
+      queueOptions: { durable: true },
+      exchange: EVENTS_EXCHANGE,
+      exchangeType: 'topic',
+      wildcards: true,
+      noAck: true,
+    },
+  });
+  await app.startAllMicroservices();
 
   await app.listen(Number(process.env.PORT ?? 3001));
 }
