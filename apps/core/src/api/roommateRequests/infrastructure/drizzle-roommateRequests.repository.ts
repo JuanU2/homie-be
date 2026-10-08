@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { asc, desc, eq, sql } from 'drizzle-orm';
+import { asc, desc, eq, sql, type SQL } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
   equipmentTypes,
@@ -33,6 +33,12 @@ import {
 } from '@/api/roommateRequests/domain/entity/roommateRequest';
 import type { RoommateApplicationWithApplicant } from '@/api/roommateApplications/domain/entity/roommateApplication';
 import { IRoommateRequestsRepository } from '@/api/roommateRequests/domain/interface/roommateRequests.repository';
+import {
+  nullable,
+  RoommateRequestFilters,
+  RoommateRequestGeo,
+  RoommateRequestRanking,
+} from '@/api/roommateRequests/infrastructure/roommateRequests.query';
 import { convertDbLocation } from '@/utils/locationUtil';
 
 interface RawPageRow {
@@ -51,7 +57,6 @@ interface RawPageRow {
   streetNumber: string;
   location: string;
   titleImageId: string | null;
-  distance: number | null;
 }
 
 interface RawUserPageRow extends RawPageRow {
@@ -70,6 +75,23 @@ function decodeCursor(cursor: string): { key: string; id: string } {
   return { key: parsed.key, id: parsed.id };
 }
 
+function encodeOffsetCursor(offset: number): string {
+  return Buffer.from(String(offset)).toString('base64url');
+}
+
+function decodeOffsetCursor(cursor: string): number {
+  const offset = Number(Buffer.from(cursor, 'base64url').toString('utf8'));
+  return Number.isNaN(offset) ? 0 : offset;
+}
+
+function slicePage<T>(
+  items: T[],
+  limit: number,
+): { items: T[]; hasNext: boolean } {
+  const hasNext = items.length > limit;
+  return { items: hasNext ? items.slice(0, limit) : items, hasNext };
+}
+
 @Injectable()
 export class DrizzleRoommateRequestsRepository
   implements IRoommateRequestsRepository
@@ -78,6 +100,17 @@ export class DrizzleRoommateRequestsRepository
     @Inject('DRIZZLE_DB')
     private readonly db: NodePgDatabase<typeof schema>,
   ) {}
+
+  private priceEurExpression(
+    amount: number,
+    currency: RoommateRequestCurrency,
+  ): SQL {
+    return sql`${amount} * (
+      SELECT eur_rate
+      FROM core.exchange_rates
+      WHERE currency::text = ${currency}
+    )`;
+  }
 
   async createRoommateRequest(
     request: CreateRoommateRequestModel,
@@ -91,6 +124,10 @@ export class DrizzleRoommateRequestsRepository
         description: request.description,
         priceAmount: request.priceAmount,
         priceCurrency: request.priceCurrency,
+        priceEur: this.priceEurExpression(
+          request.priceAmount,
+          request.priceCurrency,
+        ),
         idealMoveInDate: request.idealMoveInDate ?? null,
         maxRoommates: request.maxRoommates,
         currentRoommates: request.currentRoommates,
@@ -115,6 +152,10 @@ export class DrizzleRoommateRequestsRepository
         description: request.description,
         priceAmount: request.priceAmount,
         priceCurrency: request.priceCurrency,
+        priceEur: this.priceEurExpression(
+          request.priceAmount,
+          request.priceCurrency,
+        ),
         idealMoveInDate: request.idealMoveInDate ?? null,
         maxRoommates: request.maxRoommates,
         currentRoommates: request.currentRoommates,
@@ -379,32 +420,86 @@ export class DrizzleRoommateRequestsRepository
     };
   }
 
-  async getRoommateRequestsPage(
+  async getRoommateRequests(
     params: GetRoommateRequestsParams,
   ): Promise<RoommateRequestsPage> {
-    const { limit, cursor, lat, lng } = params;
+    const { limit, cursor, lat, lng, sortBy } = params;
     const hasLocation = lat !== undefined && lng !== undefined;
+    const hasRanking = sortBy !== undefined && sortBy.length > 0;
 
-    const rows = hasLocation
-      ? await this.queryByDistance(limit, cursor, lat, lng)
-      : await this.queryByRecency(limit, cursor);
+    const where = RoommateRequestFilters.buildWhere(params);
+    const distanceToUser = nullable(
+      hasLocation,
+      RoommateRequestGeo.distanceToUser(lat, lng),
+    );
+    const distanceToCenter = nullable(
+      hasRanking,
+      RoommateRequestGeo.distanceToCityCenter(),
+    );
+    const distanceToNearestTransit = nullable(
+      hasRanking,
+      RoommateRequestGeo.distanceToNearestTransit(),
+    );
+    const minPrice = nullable(hasRanking, RoommateRequestRanking.minPrice());
+    const maxPrice = nullable(hasRanking, RoommateRequestRanking.maxPrice());
+    const score = nullable(
+      hasRanking,
+      RoommateRequestRanking.buildScoreExpression(
+        RoommateRequestRanking.buildCriteria(sortBy ?? [], hasLocation),
+      ),
+    );
+    const orderBy = RoommateRequestRanking.buildOrderBy(hasRanking, hasLocation);
 
-    const items = rows.map(row => this.toListItem(row));
+    const offset = cursor ? decodeOffsetCursor(cursor) : 0;
 
-    const hasNext = rows.length > limit;
-    const pageItems = hasNext ? items.slice(0, limit) : items;
-    const lastRow = hasNext ? rows[limit - 1] : undefined;
-    const nextCursor =
-      hasNext && lastRow
-        ? encodeCursor(
-            hasLocation
-              ? String(lastRow.distance)
-              : lastRow.createdAt,
-            lastRow.rrId,
-          )
-        : null;
+    const result = await this.db.execute(sql`
+      SELECT *
+      FROM (
+        SELECT metrics.*, ${score} AS "score"
+        FROM (
+          SELECT
+            rr.id AS "rrId",
+            rr.max_roommates AS "maxRoommates",
+            rr.current_roommates AS "currentRoommates",
+            rr.price_amount AS "priceAmount",
+            rr.price_currency AS "priceCurrency",
+            rr.price_eur AS "priceEur",
+            rr.created_at AS "createdAt",
+            rr.title AS "title",
+            p.id AS "propertyId",
+            p.country AS "country",
+            p.city AS "city",
+            p.zip_code AS "zipCode",
+            p.street AS "street",
+            p.street_number AS "streetNumber",
+            p.location AS "location",
+            ti.id AS "titleImageId",
+            ${distanceToUser} AS "distanceToUser",
+            ${distanceToCenter} AS "distanceToCenter",
+            ${distanceToNearestTransit} AS "distanceToNearestTransit",
+            ${minPrice} AS "minPrice",
+            ${maxPrice} AS "maxPrice"
+          FROM core.roommate_requests rr
+          JOIN core.properties p ON p.id = rr.property_id
+          LEFT JOIN core.property_images ti ON ti.property_id = p.id AND ti.title = true
+          ${where}
+        ) metrics
+      ) ranked
+      ${orderBy}
+      LIMIT ${limit + 1}
+      OFFSET ${offset}
+    `);
 
-    return { items: pageItems, nextCursor };
+    const rows = result.rows as unknown as RawPageRow[];
+    const { items, hasNext } = slicePage(
+      rows.map(row => this.toListItem(row)),
+      limit,
+    );
+
+    return {
+      items,
+      nextCursor: hasNext ? encodeOffsetCursor(offset + limit) : null,
+    };
   }
 
   async getRoommateRequestsPageByOwner(
@@ -456,103 +551,15 @@ export class DrizzleRoommateRequestsRepository
 
     const rows = result.rows as unknown as RawUserPageRow[];
 
-    const items = rows.map(row => this.toUserListItem(row));
-
-    const hasNext = rows.length > limit;
-    const pageItems = hasNext ? items.slice(0, limit) : items;
+    const { items, hasNext } = slicePage(
+      rows.map(row => this.toUserListItem(row)),
+      limit,
+    );
     const lastRow = hasNext ? rows[limit - 1] : undefined;
     const nextCursor =
       hasNext && lastRow ? encodeCursor(lastRow.createdAt, lastRow.rrId) : null;
 
-    return { items: pageItems, nextCursor };
-  }
-
-  private async queryByRecency(
-    limit: number,
-    cursor?: string,
-  ): Promise<RawPageRow[]> {
-    const conditions = [sql`rr.status = 'ACTIVE'`];
-    if (cursor) {
-      const { key, id } = decodeCursor(cursor);
-      conditions.push(sql`(rr.created_at, rr.id) < (${key}, ${id})`);
-    }
-    const where = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
-
-    const result = await this.db.execute(sql`
-      SELECT
-        rr.id AS "rrId",
-        rr.max_roommates AS "maxRoommates",
-        rr.current_roommates AS "currentRoommates",
-        rr.price_amount AS "priceAmount",
-        rr.price_currency AS "priceCurrency",
-        rr.created_at AS "createdAt",
-        rr.title AS "title",
-        p.id AS "propertyId",
-        p.country AS "country",
-        p.city AS "city",
-        p.zip_code AS "zipCode",
-        p.street AS "street",
-        p.street_number AS "streetNumber",
-        p.location AS "location",
-        ti.id AS "titleImageId",
-        NULL::float8 AS "distance"
-      FROM core.roommate_requests rr
-      JOIN core.properties p ON p.id = rr.property_id
-      LEFT JOIN core.property_images ti ON ti.property_id = p.id AND ti.title = true
-      ${where}
-      ORDER BY rr.created_at DESC, rr.id DESC
-      LIMIT ${limit + 1}
-    `);
-
-    return result.rows as unknown as RawPageRow[];
-  }
-
-  private async queryByDistance(
-    limit: number,
-    cursor: string | undefined,
-    lat: number,
-    lng: number,
-  ): Promise<RawPageRow[]> {
-    let where = sql``;
-    if (cursor) {
-      const { key, id } = decodeCursor(cursor);
-      where = sql`WHERE (sub.distance, sub."rrId") > (${Number(key)}, ${id})`;
-    }
-
-    const result = await this.db.execute(sql`
-      SELECT sub.*
-      FROM (
-        SELECT
-          rr.id AS "rrId",
-          rr.max_roommates AS "maxRoommates",
-          rr.current_roommates AS "currentRoommates",
-          rr.price_amount AS "priceAmount",
-          rr.price_currency AS "priceCurrency",
-          rr.created_at AS "createdAt",
-          rr.title AS "title",
-          p.id AS "propertyId",
-          p.country AS "country",
-          p.city AS "city",
-          p.zip_code AS "zipCode",
-          p.street AS "street",
-          p.street_number AS "streetNumber",
-          p.location AS "location",
-          ti.id AS "titleImageId",
-          ST_Distance(
-            p.location,
-            ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography
-          ) AS distance
-        FROM core.roommate_requests rr
-        JOIN core.properties p ON p.id = rr.property_id
-        LEFT JOIN core.property_images ti ON ti.property_id = p.id AND ti.title = true
-        WHERE rr.status = 'ACTIVE'
-      ) sub
-      ${where}
-      ORDER BY sub.distance ASC, sub."rrId" ASC
-      LIMIT ${limit + 1}
-    `);
-
-    return result.rows as unknown as RawPageRow[];
+    return { items, nextCursor };
   }
 
   private toListItem(row: RawPageRow): RoommateRequestListItem {

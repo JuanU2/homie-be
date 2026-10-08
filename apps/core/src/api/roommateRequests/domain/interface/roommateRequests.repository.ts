@@ -31,7 +31,7 @@ export interface IRoommateRequestsRepository {
     userId: string,
     roommateRequestId: string,
   ): Promise<UserRoommateRequestDetail | undefined>;
-  getRoommateRequestsPage(
+  getRoommateRequests(
     params: GetRoommateRequestsParams,
   ): Promise<RoommateRequestsPage>;
   getRoommateRequestsPageByOwner(

@@ -1,4 +1,5 @@
 import type { RoommateApplicationWithApplicant } from '@/api/roommateApplications/domain/entity/roommateApplication';
+import type { RoommateRequestSortBy } from '@/api/roommateRequests/domain/ranking';
 
 export type RoommateRequestCurrency = 'EUR' | 'CZK' | 'USD';
 
@@ -86,6 +87,11 @@ export interface GetRoommateRequestsParams {
   cursor?: string;
   lat?: number;
   lng?: number;
+  priceFrom?: number;
+  priceTo?: number;
+  equipment?: string[];
+  rooms?: string[];
+  sortBy?: RoommateRequestSortBy[];
 }
 
 export interface UserRoommateRequestListItem

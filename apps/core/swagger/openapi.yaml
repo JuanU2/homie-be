@@ -420,6 +420,41 @@ paths:
             type: number
             minimum: -180
             maximum: 180
+        - name: priceFrom
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+        - name: priceTo
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+        - name: equipment
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: rooms
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [DORMITORY, BATHROOM, KITCHEN, LIVING_ROOM, TOILET, WARDROBE, BALCONY, OTHER]
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [PRICE, DISTANCE_TRANSIT, DISTANCE_CITY_CENTER]
       responses:
         '200':
           description: Paginated list of roommate requests

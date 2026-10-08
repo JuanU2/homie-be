@@ -9,3 +9,4 @@ export * from './userSettings.schema';
 export * from './users.schema';
 export * from './deviceTokens.schema';
 export * from './pointsOfInterest.schema';
+export * from './exchangeRates.schema';
