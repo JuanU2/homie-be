@@ -78,6 +78,11 @@ export class RoommateRequestsController {
       cursor: query.cursor,
       lat: query.lat,
       lng: query.lng,
+      priceFrom: query.priceFrom,
+      priceTo: query.priceTo,
+      equipment: query.equipment,
+      rooms: query.rooms,
+      sortBy: query.sortBy,
     });
   }
 

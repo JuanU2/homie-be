@@ -183,11 +183,52 @@ export class RoommateRequestParamsDto extends createZodDto(
   roommateRequestParamsSchema,
 ) {}
 
+export const roommateRequestSortBySchema = z.enum([
+  'PRICE',
+  'DISTANCE_TRANSIT',
+  'DISTANCE_CITY_CENTER',
+]);
+
+const queryStringArray = z.preprocess(
+  (value) =>
+    value === undefined
+      ? undefined
+      : Array.isArray(value)
+        ? value
+        : [value],
+  z.array(z.string().min(1)).optional(),
+);
+
+const queryRoomTypesArray = z.preprocess(
+  (value) =>
+    value === undefined
+      ? undefined
+      : Array.isArray(value)
+        ? value
+        : [value],
+  z.array(z.nativeEnum(roomTypeEnum)).optional(),
+);
+
+const querySortByArray = z.preprocess(
+  (value) =>
+    value === undefined
+      ? undefined
+      : Array.isArray(value)
+        ? value
+        : [value],
+  z.array(roommateRequestSortBySchema).optional(),
+);
+
 export const getRoommateRequestsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   cursor: z.string().min(1).optional(),
   lat: z.coerce.number().min(-90).max(90).optional(),
   lng: z.coerce.number().min(-180).max(180).optional(),
+  priceFrom: z.coerce.number().int().nonnegative().optional(),
+  priceTo: z.coerce.number().int().nonnegative().optional(),
+  equipment: queryStringArray,
+  rooms: queryRoomTypesArray,
+  sortBy: querySortByArray,
 });
 
 export class GetRoommateRequestsQueryDto extends createZodDto(

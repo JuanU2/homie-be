@@ -1,4 +1,4 @@
-import { date, integer, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { date, integer, numeric, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { core } from './core';
 import { properties } from './properties.schema';
 import { users } from './users.schema';
@@ -22,6 +22,7 @@ export const roommateRequests = core.table('roommate_requests', {
   description: text('description').notNull(),
   priceAmount: integer('price_amount').notNull(),
   priceCurrency: currencyEnum('price_currency').notNull(),
+  priceEur: numeric('price_eur', { precision: 18, scale: 8 }),
   idealMoveInDate: date('ideal_move_in_date'),
   maxRoommates: integer('max_roommates').notNull(),
   currentRoommates: integer('current_roommates').notNull(),

@@ -244,7 +244,7 @@ export class RoommateRequestsService {
   async getRoommateRequests(
     params: GetRoommateRequestsParams,
   ): Promise<RoommateRequestsPage> {
-    return this.roommateRequestsRepository.getRoommateRequestsPage(params);
+    return this.roommateRequestsRepository.getRoommateRequests(params);
   }
 
   async getUserRoommateRequests(
