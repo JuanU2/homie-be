@@ -154,7 +154,7 @@ export class RoommateRequestRanking {
       case 'DISTANCE_TRANSIT':
         return sql`COALESCE(1 / (1 + "distanceToNearestTransit" / ${config.referenceMeters}::float8), 0)`;
       case 'LOCATION':
-        return sql`COALESCE(1 / (1 + "distanceToUser" / ${config.referenceMeters}::float8), 0)`;
+        return sql`COALESCE(1 / (1 + POWER("distanceToUser" / ${config.referenceMeters}::float8, ${config.referencePower ?? 1})), 0)`;
     }
   }
 }
