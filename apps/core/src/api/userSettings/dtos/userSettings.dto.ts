@@ -11,9 +11,16 @@ export const idealLocationSchema = z.object({
   lng: z.number().min(-180).max(180),
 });
 
+// International phone number, e.g. `+421900123456` (`+` then 7–15 digits,
+// first digit non-zero).
+const PHONE_NUMBER_REGEX = /^\+[1-9]\d{6,14}$/;
+
 export const updateUserSettingsDtoRequestSchema = z
   .object({
-    phoneNumber: z.string().optional(),
+    phoneNumber: z
+      .string()
+      .regex(PHONE_NUMBER_REGEX, 'Invalid phone number')
+      .optional(),
     primaryInterest: interestEnum.optional(),
     idealLocation: idealLocationSchema.optional(),
   })
