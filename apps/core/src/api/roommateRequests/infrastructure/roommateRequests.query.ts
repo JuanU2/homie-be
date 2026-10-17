@@ -37,7 +37,7 @@ export class RoommateRequestFilters {
       conditions.push(this.matchAllRooms(rooms));
     }
     if (preferredGender === 'MALE' || preferredGender === 'FEMALE') {
-      conditions.push(sql`rr.preferred_gender = ${preferredGender}`);
+      conditions.push(sql`rr.preferred_gender IN (${preferredGender}, 'ALL')`);
     }
 
     return conditions;
