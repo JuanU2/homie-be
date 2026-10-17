@@ -455,6 +455,13 @@ paths:
             items:
               type: string
               enum: [PRICE, DISTANCE_TRANSIT, DISTANCE_CITY_CENTER]
+        - name: preferredGender
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [MALE, FEMALE, ALL]
+            default: ALL
       responses:
         '200':
           description: Paginated list of roommate requests
@@ -811,6 +818,13 @@ components:
         - RESERVED
         - CLOSED
         - EXPIRED
+
+    PreferredGender:
+      type: string
+      enum:
+        - MALE
+        - FEMALE
+        - ALL
 
     RoommateApplicationStatus:
       type: string
@@ -1214,6 +1228,8 @@ components:
         currentRoommates:
           type: integer
           minimum: 0
+        preferredGender:
+          $ref: '#/components/schemas/PreferredGender'
       required:
         - title
         - description
@@ -1221,6 +1237,7 @@ components:
         - priceCurrency
         - maxRoommates
         - currentRoommates
+        - preferredGender
 
     UpdateRoommateRequestStatusRequest:
       type: object
@@ -1266,6 +1283,8 @@ components:
           type: integer
         status:
           $ref: '#/components/schemas/RoommateRequestStatus'
+        preferredGender:
+          $ref: '#/components/schemas/PreferredGender'
         createdAt:
           type: string
           format: date-time
@@ -1287,6 +1306,7 @@ components:
         - maxRoommates
         - currentRoommates
         - status
+        - preferredGender
         - createdAt
         - updatedAt
 

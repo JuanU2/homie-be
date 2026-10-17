@@ -14,6 +14,8 @@ export const roommateRequestStatusSchema = z.enum([
   'EXPIRED',
 ]);
 
+export const roommatePreferredGenderSchema = z.enum(['MALE', 'FEMALE', 'ALL']);
+
 export const createRoommateRequestDtoRequestSchema = z
   .object({
     propertyId: z.uuid(),
@@ -24,6 +26,7 @@ export const createRoommateRequestDtoRequestSchema = z
     idealMoveInDate: z.string().min(1).optional(),
     maxRoommates: z.number().int().positive(),
     currentRoommates: z.number().int().nonnegative(),
+    preferredGender: roommatePreferredGenderSchema,
   })
   .refine(data => data.currentRoommates <= data.maxRoommates, {
     message: 'currentRoommates must not exceed maxRoommates',
@@ -39,6 +42,7 @@ export const updateRoommateRequestDtoRequestSchema = z
     idealMoveInDate: z.string().min(1).optional(),
     maxRoommates: z.number().int().positive(),
     currentRoommates: z.number().int().nonnegative(),
+    preferredGender: roommatePreferredGenderSchema,
   })
   .refine(data => data.currentRoommates <= data.maxRoommates, {
     message: 'currentRoommates must not exceed maxRoommates',
@@ -57,6 +61,7 @@ export const roommateRequestDtoResponseSchema = z.object({
   maxRoommates: z.number().int(),
   currentRoommates: z.number().int(),
   status: roommateRequestStatusSchema,
+  preferredGender: roommatePreferredGenderSchema,
   createdAt: z.date(),
   updatedAt: z.date(),
   closedAt: z.date().nullable(),
@@ -234,6 +239,7 @@ export const getRoommateRequestsQuerySchema = z.object({
   equipment: queryStringArray,
   rooms: queryRoomTypesArray,
   sortBy: querySortByArray,
+  preferredGender: roommatePreferredGenderSchema.optional(),
 });
 
 export class GetRoommateRequestsQueryDto extends createZodDto(

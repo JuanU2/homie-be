@@ -1,0 +1,2 @@
+CREATE TYPE "core"."preferred_gender_enum" AS ENUM('MALE', 'FEMALE', 'ALL');--> statement-breakpoint
+ALTER TABLE "core"."roommate_requests" ADD COLUMN "preferred_gender" "core"."preferred_gender_enum" DEFAULT 'ALL' NOT NULL;

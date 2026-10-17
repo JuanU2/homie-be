@@ -131,6 +131,7 @@ export class DrizzleRoommateRequestsRepository
         idealMoveInDate: request.idealMoveInDate ?? null,
         maxRoommates: request.maxRoommates,
         currentRoommates: request.currentRoommates,
+        preferredGender: request.preferredGender,
       })
       .returning();
 
@@ -159,6 +160,7 @@ export class DrizzleRoommateRequestsRepository
         idealMoveInDate: request.idealMoveInDate ?? null,
         maxRoommates: request.maxRoommates,
         currentRoommates: request.currentRoommates,
+        preferredGender: request.preferredGender,
         updatedAt: new Date(),
       })
       .where(eq(roommateRequests.id, id))

@@ -22,7 +22,7 @@ export class RoommateRequestFilters {
 
   private static buildConditions(params: GetRoommateRequestsParams): SQL[] {
     const conditions: SQL[] = [];
-    const { priceFrom, priceTo, equipment, rooms } = params;
+    const { priceFrom, priceTo, equipment, rooms, preferredGender } = params;
 
     if (priceFrom !== undefined) {
       conditions.push(sql`rr.price_eur >= ${priceFrom}`);
@@ -35,6 +35,9 @@ export class RoommateRequestFilters {
     }
     if (rooms?.length) {
       conditions.push(this.matchAllRooms(rooms));
+    }
+    if (preferredGender === 'MALE' || preferredGender === 'FEMALE') {
+      conditions.push(sql`rr.preferred_gender = ${preferredGender}`);
     }
 
     return conditions;

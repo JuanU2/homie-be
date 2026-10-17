@@ -14,6 +14,8 @@ export const ROOM_TYPES = [
 
 const roomTypeSchema = z.enum(ROOM_TYPES);
 
+export const preferredGenderSchema = z.enum(['MALE', 'FEMALE', 'ALL']);
+
 export const propertyImageSchema = z
   .object({
     data: z.string().min(1).optional(),
@@ -154,6 +156,7 @@ export const scrapeListingResultSchema = z.preprocess(
     idealMoveInDate: z.string().min(1).optional(),
     maxRoommates: z.number().int().positive().optional(),
     currentRoommates: z.number().int().nonnegative().optional(),
+    preferredGender: preferredGenderSchema.default('ALL'),
     property: scrapeListingPropertySchema.optional(),
   }),
 );

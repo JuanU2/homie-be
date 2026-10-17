@@ -391,7 +391,7 @@ components:
 
     ScrapeListingResponse:
       type: object
-      description: All fields are optional; only fields clearly present on the listing page are returned.
+      description: Only fields clearly present on the listing page are returned. preferredGender is always present and defaults to ALL.
       properties:
         title:
           type: string
@@ -408,8 +408,13 @@ components:
           type: integer
         currentRoommates:
           type: integer
+        preferredGender:
+          type: string
+          enum: [MALE, FEMALE, ALL]
         property:
           $ref: '#/components/schemas/ScrapeListingProperty'
+      required:
+        - preferredGender
 
     ScrapeListingProperty:
       type: object

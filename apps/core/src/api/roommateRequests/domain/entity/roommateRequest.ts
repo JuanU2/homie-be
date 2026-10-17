@@ -9,6 +9,8 @@ export type RoommateRequestStatus =
   | 'CLOSED'
   | 'EXPIRED';
 
+export type RoommatePreferredGender = 'MALE' | 'FEMALE' | 'ALL';
+
 export interface RoommateRequest {
   id: string;
   propertyId: string;
@@ -21,6 +23,7 @@ export interface RoommateRequest {
   maxRoommates: number;
   currentRoommates: number;
   status: RoommateRequestStatus;
+  preferredGender: RoommatePreferredGender;
   createdAt: Date;
   updatedAt: Date;
   closedAt: Date | null;
@@ -36,6 +39,7 @@ export interface CreateRoommateRequestModel {
   idealMoveInDate?: string;
   maxRoommates: number;
   currentRoommates: number;
+  preferredGender: RoommatePreferredGender;
 }
 
 export interface UpdateRoommateRequestModel {
@@ -46,6 +50,7 @@ export interface UpdateRoommateRequestModel {
   idealMoveInDate?: string;
   maxRoommates: number;
   currentRoommates: number;
+  preferredGender: RoommatePreferredGender;
 }
 
 export interface UpdateRoommateRequestStatusModel {
@@ -92,6 +97,7 @@ export interface GetRoommateRequestsParams {
   equipment?: string[];
   rooms?: string[];
   sortBy?: RoommateRequestSortBy[];
+  preferredGender?: RoommatePreferredGender;
 }
 
 export interface UserRoommateRequestListItem

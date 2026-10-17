@@ -87,6 +87,7 @@ export class RoommateRequestsController {
       equipment: query.equipment,
       rooms: query.rooms,
       sortBy: query.sortBy,
+      preferredGender: query.preferredGender,
     });
   }
 

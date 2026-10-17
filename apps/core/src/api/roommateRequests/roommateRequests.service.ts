@@ -75,6 +75,7 @@ export class RoommateRequestsService {
       idealMoveInDate: data.idealMoveInDate,
       maxRoommates: data.maxRoommates,
       currentRoommates: data.currentRoommates,
+      preferredGender: data.preferredGender,
     });
 
     await this.publishRoommateRequestEvent(
@@ -119,6 +120,7 @@ export class RoommateRequestsService {
         idealMoveInDate: data.idealMoveInDate,
         maxRoommates: data.maxRoommates,
         currentRoommates: data.currentRoommates,
+        preferredGender: data.preferredGender,
       },
     );
 

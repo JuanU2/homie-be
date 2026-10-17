@@ -10,6 +10,12 @@ export const roommateRequestStatusEnum = core.enum(
   ['ACTIVE', 'RESERVED', 'CLOSED', 'EXPIRED'],
 );
 
+export const preferredGenderEnum = core.enum('preferred_gender_enum', [
+  'MALE',
+  'FEMALE',
+  'ALL',
+]);
+
 export const roommateRequests = core.table('roommate_requests', {
   id: uuid('id').defaultRandom().primaryKey(),
   propertyId: uuid('property_id')
@@ -27,6 +33,9 @@ export const roommateRequests = core.table('roommate_requests', {
   maxRoommates: integer('max_roommates').notNull(),
   currentRoommates: integer('current_roommates').notNull(),
   status: roommateRequestStatusEnum('status').default('ACTIVE').notNull(),
+  preferredGender: preferredGenderEnum('preferred_gender')
+    .default('ALL')
+    .notNull(),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),

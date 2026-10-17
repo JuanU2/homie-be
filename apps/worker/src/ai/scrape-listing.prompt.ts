@@ -20,7 +20,7 @@ export function buildScrapeListingPrompt({
 
 Rules:
 - Only report information that is clearly present in the listing. Never invent or guess any detail that is not stated.
-- Every field is optional. If a value is not clearly present, omit the field entirely — do not return null, empty strings, or zero placeholders.
+- Every field is optional except "preferredGender". If a value is not clearly present, omit the field entirely — do not return null, empty strings, or zero placeholders.
 - The listing content may be written in any language, not only English. Read and interpret the content in its original language — do not assume it is English.
 - Write all text fields in the same language as the listing.
 
@@ -30,6 +30,7 @@ Field guidance:
 - "priceAmount" and "priceCurrency": the listing price. Return the numeric amount and the ISO 4217 currency code (e.g. EUR, USD, CZK). Only include both if a price is clearly shown.
 - "idealMoveInDate": the move-in / availability date in YYYY-MM-DD format, only if clearly stated.
 - "maxRoommates" and "currentRoommates": only if the listing states them.
+- "preferredGender": the gender the lister prefers for their new roommate — one of "MALE", "FEMALE", or "ALL". If the listing does not mention a preferred gender, use "ALL". Always include this field.
 - "rooms": distinct room types with their counts. Use ONLY these roomType values:
     DORMITORY = a bedroom / sleeping room
     BATHROOM = a room with a bathtub or shower
@@ -89,6 +90,12 @@ export function buildScrapeListingJsonSchema({
       currentRoommates: {
         type: 'integer',
         description: 'The current number of roommates.',
+      },
+      preferredGender: {
+        type: 'string',
+        enum: ['MALE', 'FEMALE', 'ALL'],
+        description:
+          'The gender the lister prefers for their new roommate. Use "ALL" when the listing does not state a preference.',
       },
       property: {
         type: 'object',
@@ -156,6 +163,6 @@ export function buildScrapeListingJsonSchema({
         required: ['description', 'rooms', 'equipment', 'sizeM2', 'images'],
       },
     },
-    required: ['title', 'description', 'property'],
+    required: ['title', 'description', 'preferredGender', 'property'],
   };
 }
