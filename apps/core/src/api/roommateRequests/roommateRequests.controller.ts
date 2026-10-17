@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { GoogleTokenGuard } from '@/api/auth/google-token.guard';
+import { OptionalGoogleTokenGuard } from '@/api/auth/optional-google-token.guard';
 import { type Request } from 'express';
 import {
   CreateRoommateRequestDtoRequest,
@@ -44,12 +45,15 @@ export class RoommateRequestsController {
   }
 
   @Get(':roommateRequestId')
+  @UseGuards(OptionalGoogleTokenGuard)
   @ApiOperation({ summary: 'Get roommate request detail by id' })
   async getRoommateRequestDetail(
+    @Req() request: Request,
     @Param() params: RoommateRequestParamsDto,
   ): Promise<RoommateRequestDetailDtoResponse> {
     return this.roommateRequestsService.getRoommateRequestDetail(
       params.roommateRequestId,
+      request.user?.userId,
     );
   }
 

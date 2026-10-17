@@ -22,8 +22,10 @@ import {
 } from '@/api/roommateApplications/dtos/roommateApplications.dto';
 import {
   GetRoommateApplicationsParams,
+  RoommateApplication,
   RoommateApplicationsPage,
 } from '@/api/roommateApplications/domain/entity/roommateApplication';
+import type { RoommateRequest } from '@/api/roommateRequests/domain/entity/roommateRequest';
 import { DeviceTokensService } from '@/api/deviceTokens/deviceTokens.service';
 import { PushService } from '@/push/push.service';
 import z from 'zod';
@@ -58,6 +60,22 @@ export class RoommateApplicationsService {
       );
     }
 
+    const { canApply } = await this.canApplyToRoommateRequest(
+      applicantId,
+      roommateRequest,
+    );
+
+    if (!canApply) {
+      if (roommateRequest.createdBy === applicantId) {
+        throw new BadRequestException(
+          'You cannot apply to your own roommate request',
+        );
+      }
+      throw new BadRequestException(
+        'You already have a pending or accepted application for this roommate request',
+      );
+    }
+
     const application =
       await this.roommateApplicationsRepository.createRoommateApplication({
         roommateRequestId: data.roommateRequestId,
@@ -79,6 +97,38 @@ export class RoommateApplicationsService {
     });
 
     return application;
+  }
+
+  async canApplyToRoommateRequest(
+    userId: string,
+    roommateRequest: RoommateRequest,
+  ): Promise<{ canApply: boolean; application?: RoommateApplication }> {
+    if (roommateRequest.createdBy === userId) {
+      return { canApply: false };
+    }
+
+    if (roommateRequest.status === 'CLOSED') {
+      return { canApply: false };
+    }
+
+    const application =
+      await this.roommateApplicationsRepository.getLatestActiveApplication(
+        userId,
+        roommateRequest.id,
+      );
+
+    if (!application) {
+      return { canApply: true };
+    }
+
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - 3);
+
+    if (application.updatedAt < cutoff) {
+      return { canApply: true };
+    }
+
+    return { canApply: false, application };
   }
 
   async updateRoommateApplicationStatus(

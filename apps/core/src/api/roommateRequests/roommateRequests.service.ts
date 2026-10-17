@@ -38,6 +38,7 @@ import {
   ROOMMATE_REQUEST_UPDATED_ROUTING_KEY,
 } from '@homie/events';
 import { EventPublisher } from '@/messaging/event.publisher';
+import { RoommateApplicationsService } from '@/api/roommateApplications/roommateApplications.service';
 
 @Injectable()
 export class RoommateRequestsService {
@@ -47,6 +48,7 @@ export class RoommateRequestsService {
     @Inject(PROPERTIES_REPOSITORY)
     private readonly propertiesRepository: IPropertiesRepository,
     private readonly eventPublisher: EventPublisher,
+    private readonly roommateApplicationsService: RoommateApplicationsService,
   ) {}
 
   async createRoommateRequest(
@@ -212,6 +214,7 @@ export class RoommateRequestsService {
 
   async getRoommateRequestDetail(
     id: string,
+    userId?: string,
   ): Promise<RoommateRequestDetailDtoResponse> {
     const detail = await this.roommateRequestsRepository.getRoommateRequestDetail(
       id,
@@ -221,7 +224,18 @@ export class RoommateRequestsService {
       throw new NotFoundException('Roommate request not found');
     }
 
-    return roommateRequestDetailDtoResponseSchema.parse(detail);
+    const { canApply, application } = userId
+      ? await this.roommateApplicationsService.canApplyToRoommateRequest(
+          userId,
+          detail,
+        )
+      : { canApply: false, application: undefined };
+
+    return roommateRequestDetailDtoResponseSchema.parse({
+      ...detail,
+      canApply,
+      application,
+    });
   }
 
   async getUserRoommateRequestDetail(
@@ -238,7 +252,17 @@ export class RoommateRequestsService {
       throw new NotFoundException('Roommate request not found');
     }
 
-    return userRoommateRequestDetailDtoResponseSchema.parse(detail);
+    const { canApply, application } =
+      await this.roommateApplicationsService.canApplyToRoommateRequest(
+        userId,
+        detail,
+      );
+
+    return userRoommateRequestDetailDtoResponseSchema.parse({
+      ...detail,
+      canApply,
+      application,
+    });
   }
 
   async getRoommateRequests(

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
   roommateApplications,
@@ -74,6 +74,20 @@ export class DrizzleRoommateApplicationsRepository
   ): Promise<RoommateApplication | undefined> {
     return this.db.query.roommateApplications.findFirst({
       where: eq(roommateApplications.id, id),
+    });
+  }
+
+  async getLatestActiveApplication(
+    applicantId: string,
+    roommateRequestId: string,
+  ): Promise<RoommateApplication | undefined> {
+    return this.db.query.roommateApplications.findFirst({
+      where: and(
+        eq(roommateApplications.applicantId, applicantId),
+        eq(roommateApplications.roommateRequestId, roommateRequestId),
+        inArray(roommateApplications.status, ['PENDING', 'ACCEPTED'] as const),
+      ),
+      orderBy: desc(roommateApplications.updatedAt),
     });
   }
 

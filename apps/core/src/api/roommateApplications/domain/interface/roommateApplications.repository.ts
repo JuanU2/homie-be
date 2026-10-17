@@ -14,6 +14,10 @@ export interface IRoommateApplicationsRepository {
   getRoommateApplicationById(
     id: string,
   ): Promise<RoommateApplication | undefined>;
+  getLatestActiveApplication(
+    applicantId: string,
+    roommateRequestId: string,
+  ): Promise<RoommateApplication | undefined>;
   updateRoommateApplicationStatus(
     id: string,
     status: RoommateApplicationStatus,

@@ -469,6 +469,9 @@ paths:
       description: Returns a single roommate request together with its owner's contact details and the full property.
       tags:
         - Roommate Requests
+      security:
+        - bearerAuth: []
+        - {}
       parameters:
         - name: roommateRequestId
           in: path
@@ -1312,9 +1315,16 @@ components:
               $ref: '#/components/schemas/RoommateRequestOwner'
             property:
               $ref: '#/components/schemas/PropertyDetailResponse'
+            canApply:
+              type: boolean
+              description: Whether the authenticated user can currently apply to this roommate request.
+            application:
+              $ref: '#/components/schemas/RoommateApplicationResponse'
+              description: The authenticated user's pending or accepted application, if one exists.
           required:
             - owner
             - property
+            - canApply
 
     RoommateRequestListResponse:
       type: object

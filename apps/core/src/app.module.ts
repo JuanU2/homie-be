@@ -12,6 +12,7 @@ import * as schema from "@/db/schema/index";
 import { AuthService } from '@/api/auth/auth.service';
 import { OAuth2Client } from 'google-auth-library';
 import { GoogleTokenGuard } from '@/api/auth/google-token.guard';
+import { OptionalGoogleTokenGuard } from '@/api/auth/optional-google-token.guard';
 import { AuthController } from '@/api/auth/auth.controller';
 import { UserSettingsService } from '@/api/userSettings/userSettings.service';
 import { USER_SETTINGS_REPOSITORY } from '@/api/userSettings/domain/interface/userSettings.repository';
@@ -89,6 +90,7 @@ import { DrizzlePointsOfInterestRepository } from '@/api/pointsOfInterest/infras
     DeviceTokensService,
     PushService,
     GoogleTokenGuard,
+    OptionalGoogleTokenGuard,
     {
       provide: APP_PIPE,
       useClass: ZodValidationPipe,

@@ -7,6 +7,7 @@ export interface RoommateApplication {
   note: string | null;
   status: RoommateApplicationStatus;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CreateRoommateApplicationModel {
