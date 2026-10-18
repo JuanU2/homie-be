@@ -161,6 +161,7 @@ export const roommateRequestDetailDtoResponseSchema =
     property: roommateRequestPropertyDetailResponseSchema,
     canApply: z.boolean(),
     application: roommateApplicationDtoResponseSchema.optional(),
+    favourite: z.boolean(),
   });
 
 export class RoommateRequestDetailDtoResponse extends createZodDto(

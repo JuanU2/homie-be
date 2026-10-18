@@ -635,6 +635,74 @@ paths:
         '404':
           description: Roommate request not found
 
+  /favourites:
+    get:
+      summary: Get the authenticated user's favourite roommate requests
+      tags:
+        - Favourites
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated list of favourite roommate requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoommateRequestListResponse'
+        '401':
+          description: Unauthorized
+    post:
+      summary: Add a roommate request to favourites
+      tags:
+        - Favourites
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFavouriteRequest'
+      responses:
+        '201':
+          description: Favourite created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavouriteResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Roommate request not found
+
+  /favourites/{roommateRequestId}:
+    delete:
+      summary: Remove a roommate request from favourites
+      tags:
+        - Favourites
+      parameters:
+        - name: roommateRequestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Favourite removed
+        '401':
+          description: Unauthorized
+
   /roommate-applications:
     post:
       summary: Apply for a roommate request
@@ -1341,10 +1409,14 @@ components:
             application:
               $ref: '#/components/schemas/RoommateApplicationResponse'
               description: The authenticated user's pending or accepted application, if one exists.
+            favourite:
+              type: boolean
+              description: Whether the authenticated user has favourited this roommate request.
           required:
             - owner
             - property
             - canApply
+            - favourite
 
     RoommateRequestListResponse:
       type: object
@@ -1644,3 +1716,33 @@ components:
         - token
         - createdAt
         - updatedAt
+
+    CreateFavouriteRequest:
+      type: object
+      properties:
+        roommateRequestId:
+          type: string
+          format: uuid
+      required:
+        - roommateRequestId
+
+    FavouriteResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        roommateRequestId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - roommateRequestId
+        - userId
+        - createdAt

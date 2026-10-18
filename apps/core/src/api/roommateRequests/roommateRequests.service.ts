@@ -39,6 +39,10 @@ import {
 } from '@homie/events';
 import { EventPublisher } from '@/messaging/event.publisher';
 import { RoommateApplicationsService } from '@/api/roommateApplications/roommateApplications.service';
+import {
+  FAVOURITES_REPOSITORY,
+  type IFavouritesRepository,
+} from '@/api/favourites/domain/interface/favourites.repository';
 
 @Injectable()
 export class RoommateRequestsService {
@@ -49,6 +53,8 @@ export class RoommateRequestsService {
     private readonly propertiesRepository: IPropertiesRepository,
     private readonly eventPublisher: EventPublisher,
     private readonly roommateApplicationsService: RoommateApplicationsService,
+    @Inject(FAVOURITES_REPOSITORY)
+    private readonly favouritesRepository: IFavouritesRepository,
   ) {}
 
   async createRoommateRequest(
@@ -233,10 +239,15 @@ export class RoommateRequestsService {
         )
       : { canApply: false, application: undefined };
 
+    const favourite = userId
+      ? await this.favouritesRepository.exists(userId, id)
+      : false;
+
     return roommateRequestDetailDtoResponseSchema.parse({
       ...detail,
       canApply,
       application,
+      favourite,
     });
   }
 
@@ -260,10 +271,16 @@ export class RoommateRequestsService {
         detail,
       );
 
+    const favourite = await this.favouritesRepository.exists(
+      userId,
+      roommateRequestId,
+    );
+
     return userRoommateRequestDetailDtoResponseSchema.parse({
       ...detail,
       canApply,
       application,
+      favourite,
     });
   }
 

@@ -53,6 +53,10 @@ import { MessagingModule } from '@/messaging/messaging.module';
 import { PointsOfInterestConsumer } from '@/api/pointsOfInterest/points-of-interest.consumer';
 import { POINTS_OF_INTEREST_REPOSITORY } from '@/api/pointsOfInterest/domain/interface/points-of-interest.repository';
 import { DrizzlePointsOfInterestRepository } from '@/api/pointsOfInterest/infrastructure/drizzle-points-of-interest.repository';
+import { FavouritesController } from '@/api/favourites/favourites.controller';
+import { FavouritesService } from '@/api/favourites/favourites.service';
+import { FAVOURITES_REPOSITORY } from '@/api/favourites/domain/interface/favourites.repository';
+import { DrizzleFavouritesRepository } from '@/api/favourites/infrastructure/drizzle-favourites.repository';
 
 @Module({
   imports: [
@@ -75,6 +79,7 @@ import { DrizzlePointsOfInterestRepository } from '@/api/pointsOfInterest/infras
     PropertyImagesController,
     DeviceTokensController,
     PointsOfInterestConsumer,
+    FavouritesController,
   ],
   providers: [
     UsersService,
@@ -89,6 +94,7 @@ import { DrizzlePointsOfInterestRepository } from '@/api/pointsOfInterest/infras
     StorageService,
     DeviceTokensService,
     PushService,
+    FavouritesService,
     GoogleTokenGuard,
     OptionalGoogleTokenGuard,
     {
@@ -140,6 +146,10 @@ import { DrizzlePointsOfInterestRepository } from '@/api/pointsOfInterest/infras
     {
       provide: POINTS_OF_INTEREST_REPOSITORY,
       useClass: DrizzlePointsOfInterestRepository,
+    },
+    {
+      provide: FAVOURITES_REPOSITORY,
+      useClass: DrizzleFavouritesRepository,
     },
     {
       provide: "DRIZZLE_DB",

@@ -10,3 +10,4 @@ export * from './users.schema';
 export * from './deviceTokens.schema';
 export * from './pointsOfInterest.schema';
 export * from './exchangeRates.schema';
+export * from './favourites.schema';
