@@ -6,36 +6,36 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
-  type IRoommateRequestsRepository,
-  ROOMMATE_REQUESTS_REPOSITORY,
-} from '@/api/roommateRequests/domain/interface/roommateRequests.repository';
+  type IListingsRepository,
+  LISTINGS_REPOSITORY,
+} from '@/api/listings/domain/interface/listings.repository';
 import {
-  CreateRoommateRequestDtoRequest,
-  RoommateRequestDetailDtoResponse,
-  roommateRequestDetailDtoResponseSchema,
-  RoommateRequestDtoResponse,
-  UpdateRoommateRequestDtoRequest,
-  UpdateRoommateRequestStatusDtoRequest,
-  UserRoommateRequestDetailDtoResponse,
-  userRoommateRequestDetailDtoResponseSchema,
-} from '@/api/roommateRequests/dtos/roommateRequests.dto';
+  CreateListingDtoRequest,
+  ListingDetailDtoResponse,
+  listingDetailDtoResponseSchema,
+  ListingDtoResponse,
+  UpdateListingDtoRequest,
+  UpdateListingStatusDtoRequest,
+  UserListingDetailDtoResponse,
+  userListingDetailDtoResponseSchema,
+} from '@/api/listings/dtos/listings.dto';
 import {
-  GetRoommateRequestsParams,
-  GetUserRoommateRequestsParams,
-  RoommateRequestDetail,
-  RoommateRequestsPage,
-  UpdateRoommateRequestStatusModel,
-  UserRoommateRequestsPage,
-} from '@/api/roommateRequests/domain/entity/roommateRequest';
+  GetListingsParams,
+  GetUserListingsParams,
+  ListingDetail,
+  ListingsPage,
+  UpdateListingStatusModel,
+  UserListingsPage,
+} from '@/api/listings/domain/entity/listing';
 import {
   type IPropertiesRepository,
   PROPERTIES_REPOSITORY,
 } from '@/api/properties/domain/interface/properties.repository';
 import {
-  ROOMMATE_REQUEST_CREATED_EVENT_TYPE,
-  ROOMMATE_REQUEST_CREATED_ROUTING_KEY,
-  ROOMMATE_REQUEST_UPDATED_EVENT_TYPE,
-  ROOMMATE_REQUEST_UPDATED_ROUTING_KEY,
+  LISTING_CREATED_EVENT_TYPE,
+  LISTING_CREATED_ROUTING_KEY,
+  LISTING_UPDATED_EVENT_TYPE,
+  LISTING_UPDATED_ROUTING_KEY,
 } from '@homie/events';
 import { EventPublisher } from '@/messaging/event.publisher';
 import { RoommateApplicationsService } from '@/api/roommateApplications/roommateApplications.service';
@@ -45,10 +45,10 @@ import {
 } from '@/api/favourites/domain/interface/favourites.repository';
 
 @Injectable()
-export class RoommateRequestsService {
+export class ListingsService {
   constructor(
-    @Inject(ROOMMATE_REQUESTS_REPOSITORY)
-    private readonly roommateRequestsRepository: IRoommateRequestsRepository,
+    @Inject(LISTINGS_REPOSITORY)
+    private readonly listingsRepository: IListingsRepository,
     @Inject(PROPERTIES_REPOSITORY)
     private readonly propertiesRepository: IPropertiesRepository,
     private readonly eventPublisher: EventPublisher,
@@ -57,21 +57,21 @@ export class RoommateRequestsService {
     private readonly favouritesRepository: IFavouritesRepository,
   ) {}
 
-  async createRoommateRequest(
+  async createListing(
     userId: string,
-    data: CreateRoommateRequestDtoRequest,
-  ): Promise<RoommateRequestDtoResponse> {
+    data: CreateListingDtoRequest,
+  ): Promise<ListingDtoResponse> {
     const ownerId = await this.propertiesRepository.getOwnerId(data.propertyId);
     if (!ownerId) {
       throw new NotFoundException('Property not found');
     }
     if (ownerId !== userId) {
       throw new ForbiddenException(
-        'You can only create a roommate request for your own property',
+        'You can only create a listing for your own property',
       );
     }
 
-    const request = await this.roommateRequestsRepository.createRoommateRequest({
+    const request = await this.listingsRepository.createListing({
       propertyId: data.propertyId,
       createdBy: userId,
       title: data.title,
@@ -84,9 +84,9 @@ export class RoommateRequestsService {
       preferredGender: data.preferredGender,
     });
 
-    await this.publishRoommateRequestEvent(
-      ROOMMATE_REQUEST_CREATED_EVENT_TYPE,
-      ROOMMATE_REQUEST_CREATED_ROUTING_KEY,
+    await this.publishListingEvent(
+      LISTING_CREATED_EVENT_TYPE,
+      LISTING_CREATED_ROUTING_KEY,
       request.id,
     );
 
@@ -97,26 +97,26 @@ export class RoommateRequestsService {
     };
   }
 
-  async updateRoommateRequest(
+  async updateListing(
     userId: string,
     id: string,
-    data: UpdateRoommateRequestDtoRequest,
-  ): Promise<RoommateRequestDtoResponse> {
-    const existing = await this.roommateRequestsRepository.getRoommateRequestById(
+    data: UpdateListingDtoRequest,
+  ): Promise<ListingDtoResponse> {
+    const existing = await this.listingsRepository.getListingById(
       id,
     );
 
     if (!existing) {
-      throw new NotFoundException('Roommate request not found');
+      throw new NotFoundException('Listing not found');
     }
 
     if (existing.createdBy !== userId) {
       throw new ForbiddenException(
-        'You can only update your own roommate request',
+        'You can only update your own listing',
       );
     }
 
-    const request = await this.roommateRequestsRepository.updateRoommateRequest(
+    const request = await this.listingsRepository.updateListing(
       id,
       {
         title: data.title,
@@ -131,12 +131,12 @@ export class RoommateRequestsService {
     );
 
     if (!request) {
-      throw new NotFoundException('Roommate request not found');
+      throw new NotFoundException('Listing not found');
     }
 
-    await this.publishRoommateRequestEvent(
-      ROOMMATE_REQUEST_UPDATED_EVENT_TYPE,
-      ROOMMATE_REQUEST_UPDATED_ROUTING_KEY,
+    await this.publishListingEvent(
+      LISTING_UPDATED_EVENT_TYPE,
+      LISTING_UPDATED_ROUTING_KEY,
       request.id,
     );
 
@@ -147,25 +147,25 @@ export class RoommateRequestsService {
     };
   }
 
-  async updateRoommateRequestStatus(
+  async updateListingStatus(
     userId: string,
     id: string,
-    data: UpdateRoommateRequestStatusDtoRequest,
-  ): Promise<RoommateRequestDtoResponse> {
+    data: UpdateListingStatusDtoRequest,
+  ): Promise<ListingDtoResponse> {
     const existing =
-      await this.roommateRequestsRepository.getRoommateRequestById(id);
+      await this.listingsRepository.getListingById(id);
 
     if (!existing) {
-      throw new NotFoundException('Roommate request not found');
+      throw new NotFoundException('Listing not found');
     }
 
     if (existing.createdBy !== userId) {
       throw new ForbiddenException(
-        'You can only update your own roommate request',
+        'You can only update your own listing',
       );
     }
 
-    const updates: UpdateRoommateRequestStatusModel = {
+    const updates: UpdateListingStatusModel = {
       status: data.status,
     };
 
@@ -176,7 +176,7 @@ export class RoommateRequestsService {
           data.currentRoommates === undefined
         ) {
           throw new BadRequestException(
-            'maxRoommates and currentRoommates are required when reactivating a closed request',
+            'maxRoommates and currentRoommates are required when reactivating a closed listing',
           );
         }
         if (data.maxRoommates - data.currentRoommates <= 0) {
@@ -198,18 +198,18 @@ export class RoommateRequestsService {
     }
 
     const request =
-      await this.roommateRequestsRepository.updateRoommateRequestStatus(
+      await this.listingsRepository.updateListingStatus(
         id,
         updates,
       );
 
     if (!request) {
-      throw new NotFoundException('Roommate request not found');
+      throw new NotFoundException('Listing not found');
     }
 
-    await this.publishRoommateRequestEvent(
-      ROOMMATE_REQUEST_UPDATED_EVENT_TYPE,
-      ROOMMATE_REQUEST_UPDATED_ROUTING_KEY,
+    await this.publishListingEvent(
+      LISTING_UPDATED_EVENT_TYPE,
+      LISTING_UPDATED_ROUTING_KEY,
       request.id,
     );
 
@@ -220,20 +220,20 @@ export class RoommateRequestsService {
     };
   }
 
-  async getRoommateRequestDetail(
+  async getListingDetail(
     id: string,
     userId?: string,
-  ): Promise<RoommateRequestDetailDtoResponse> {
-    const detail = await this.roommateRequestsRepository.getRoommateRequestDetail(
+  ): Promise<ListingDetailDtoResponse> {
+    const detail = await this.listingsRepository.getListingDetail(
       id,
     );
 
     if (!detail) {
-      throw new NotFoundException('Roommate request not found');
+      throw new NotFoundException('Listing not found');
     }
 
     const { canApply, application } = userId
-      ? await this.roommateApplicationsService.canApplyToRoommateRequest(
+      ? await this.roommateApplicationsService.canApplyToListing(
           userId,
           detail,
         )
@@ -243,7 +243,7 @@ export class RoommateRequestsService {
       ? await this.favouritesRepository.exists(userId, id)
       : false;
 
-    return roommateRequestDetailDtoResponseSchema.parse({
+    return listingDetailDtoResponseSchema.parse({
       ...detail,
       canApply,
       application,
@@ -251,32 +251,32 @@ export class RoommateRequestsService {
     });
   }
 
-  async getUserRoommateRequestDetail(
+  async getUserListingDetail(
     userId: string,
-    roommateRequestId: string,
-  ): Promise<UserRoommateRequestDetailDtoResponse> {
+    listingId: string,
+  ): Promise<UserListingDetailDtoResponse> {
     const detail =
-      await this.roommateRequestsRepository.getUserRoommateRequestDetail(
+      await this.listingsRepository.getUserListingDetail(
         userId,
-        roommateRequestId,
+        listingId,
       );
 
     if (!detail) {
-      throw new NotFoundException('Roommate request not found');
+      throw new NotFoundException('Listing not found');
     }
 
     const { canApply, application } =
-      await this.roommateApplicationsService.canApplyToRoommateRequest(
+      await this.roommateApplicationsService.canApplyToListing(
         userId,
         detail,
       );
 
     const favourite = await this.favouritesRepository.exists(
       userId,
-      roommateRequestId,
+      listingId,
     );
 
-    return userRoommateRequestDetailDtoResponseSchema.parse({
+    return userListingDetailDtoResponseSchema.parse({
       ...detail,
       canApply,
       application,
@@ -284,30 +284,30 @@ export class RoommateRequestsService {
     });
   }
 
-  async getRoommateRequests(
-    params: GetRoommateRequestsParams,
-  ): Promise<RoommateRequestsPage> {
-    return this.roommateRequestsRepository.getRoommateRequests(params);
+  async getListings(
+    params: GetListingsParams,
+  ): Promise<ListingsPage> {
+    return this.listingsRepository.getListings(params);
   }
 
-  async getUserRoommateRequests(
+  async getUserListings(
     userId: string,
-    params: GetUserRoommateRequestsParams,
-  ): Promise<UserRoommateRequestsPage> {
-    return this.roommateRequestsRepository.getRoommateRequestsPageByOwner(
+    params: GetUserListingsParams,
+  ): Promise<UserListingsPage> {
+    return this.listingsRepository.getListingsPageByOwner(
       userId,
       params,
     );
   }
 
-  private async publishRoommateRequestEvent(
+  private async publishListingEvent(
     eventType: string,
     routingKey: string,
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<void> {
     const detail =
-      await this.roommateRequestsRepository.getRoommateRequestDetail(
-        roommateRequestId,
+      await this.listingsRepository.getListingDetail(
+        listingId,
       );
 
     if (!detail) {
@@ -317,7 +317,7 @@ export class RoommateRequestsService {
     await this.eventPublisher.publish(eventType, routingKey, this.toBlob(detail));
   }
 
-  private toBlob(detail: RoommateRequestDetail) {
+  private toBlob(detail: ListingDetail) {
     const { createdBy, owner, property, ...request } = detail;
     const { ownerId, ...propertyData } = property;
     return { ...request, property: propertyData };

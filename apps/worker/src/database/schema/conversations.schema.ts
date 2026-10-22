@@ -13,7 +13,7 @@ export const conversations = worker.table(
   'conversations',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    roommateRequestId: uuid('roommate_request_id').notNull(),
+    listingId: uuid('listing_id').notNull(),
     sub: varchar('sub', { length: 255 }).notNull(),
     status: varchar('status', { length: 32 }).notNull().default('ACTIVE'),
     createdAt: timestamp('created_at', { withTimezone: true })
@@ -24,12 +24,12 @@ export const conversations = worker.table(
       .notNull(),
   },
   (table) => [
-    index('conversations_sub_roommate_request_idx').on(
+    index('conversations_sub_listing_idx').on(
       table.sub,
-      table.roommateRequestId,
+      table.listingId,
     ),
-    uniqueIndex('conversations_one_active_per_user_request')
-      .on(table.sub, table.roommateRequestId)
+    uniqueIndex('conversations_one_active_per_user_listing')
+      .on(table.sub, table.listingId)
       .where(sql`${table.status} = 'ACTIVE'`),
   ],
 );

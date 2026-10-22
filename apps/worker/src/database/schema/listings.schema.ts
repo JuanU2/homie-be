@@ -1,10 +1,10 @@
 import { index, jsonb, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { worker } from './worker';
 
-export const roommateRequests = worker.table(
-  'roommate_requests',
+export const listings = worker.table(
+  'listings',
   {
-    roommateRequestId: uuid('roommate_request_id').primaryKey(),
+    listingId: uuid('listing_id').primaryKey(),
     propertyId: uuid('property_id').notNull(),
     data: jsonb('data').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
@@ -14,5 +14,5 @@ export const roommateRequests = worker.table(
       .defaultNow()
       .notNull(),
   },
-  (table) => [index('roommate_requests_property_id_idx').on(table.propertyId)],
+  (table) => [index('listings_property_id_idx').on(table.propertyId)],
 );

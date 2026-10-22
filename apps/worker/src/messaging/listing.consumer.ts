@@ -4,59 +4,59 @@ import {
   POINTS_OF_INTEREST_EVENT_TYPE,
   POINTS_OF_INTEREST_ROUTING_KEY,
   PROPERTY_UPDATED_ROUTING_KEY,
-  ROOMMATE_REQUEST_CREATED_ROUTING_KEY,
-  ROOMMATE_REQUEST_UPDATED_ROUTING_KEY,
+  LISTING_CREATED_ROUTING_KEY,
+  LISTING_UPDATED_ROUTING_KEY,
   propertyUpdatedEventSchema,
-  roommateRequestCreatedEventSchema,
-  roommateRequestUpdatedEventSchema,
+  listingCreatedEventSchema,
+  listingUpdatedEventSchema,
 } from '@homie/events';
-import { ROOMMATE_REQUESTS_REPOSITORY } from '@/roommate-requests/domain/interface/roommate-requests.repository';
-import type { IRoommateRequestsRepository } from '@/roommate-requests/domain/interface/roommate-requests.repository';
+import { LISTINGS_REPOSITORY } from '@/listings/domain/interface/listings.repository';
+import type { IListingsRepository } from '@/listings/domain/interface/listings.repository';
 import { PropertyInsightsService } from '@/property-insights/property-insights.service';
 import type { PropertyInsightsInput } from '@/property-insights/dtos/property-insights.dto';
 import { EventPublisher } from './event.publisher';
 
 @Controller()
-export class RoommateRequestConsumer {
-  private readonly logger = new Logger(RoommateRequestConsumer.name);
+export class ListingConsumer {
+  private readonly logger = new Logger(ListingConsumer.name);
 
   constructor(
-    @Inject(ROOMMATE_REQUESTS_REPOSITORY)
-    private readonly roommateRequestsRepository: IRoommateRequestsRepository,
+    @Inject(LISTINGS_REPOSITORY)
+    private readonly listingsRepository: IListingsRepository,
     private readonly propertyInsightsService: PropertyInsightsService,
     private readonly eventPublisher: EventPublisher,
   ) {}
 
-  @EventPattern(ROOMMATE_REQUEST_CREATED_ROUTING_KEY)
+  @EventPattern(LISTING_CREATED_ROUTING_KEY)
   async handleCreated(event: unknown): Promise<void> {
-    const parsed = roommateRequestCreatedEventSchema.safeParse(event);
+    const parsed = listingCreatedEventSchema.safeParse(event);
     if (!parsed.success) {
-      this.logger.warn('Discarding malformed RoommateRequestCreated event');
+      this.logger.warn('Discarding malformed ListingCreated event');
       return;
     }
 
     this.logger.log(
       `Received ${parsed.data.eventType} event ${parsed.data.eventId}`,
     );
-    await this.roommateRequestsRepository.upsert(parsed.data.payload);
+    await this.listingsRepository.upsert(parsed.data.payload);
     await this.generateInsights(parsed.data.payload.property);
     this.logger.log(
       `Processed ${parsed.data.eventType} event ${parsed.data.eventId}`,
     );
   }
 
-  @EventPattern(ROOMMATE_REQUEST_UPDATED_ROUTING_KEY)
+  @EventPattern(LISTING_UPDATED_ROUTING_KEY)
   async handleUpdated(event: unknown): Promise<void> {
-    const parsed = roommateRequestUpdatedEventSchema.safeParse(event);
+    const parsed = listingUpdatedEventSchema.safeParse(event);
     if (!parsed.success) {
-      this.logger.warn('Discarding malformed RoommateRequestUpdated event');
+      this.logger.warn('Discarding malformed ListingUpdated event');
       return;
     }
 
     this.logger.log(
       `Received ${parsed.data.eventType} event ${parsed.data.eventId}`,
     );
-    await this.roommateRequestsRepository.upsert(parsed.data.payload);
+    await this.listingsRepository.upsert(parsed.data.payload);
     this.logger.log(
       `Processed ${parsed.data.eventType} event ${parsed.data.eventId}`,
     );
@@ -76,9 +76,9 @@ export class RoommateRequestConsumer {
 
     const { payload } = parsed.data;
     const previousProperty =
-      await this.roommateRequestsRepository.getProperty(payload.id);
+      await this.listingsRepository.getProperty(payload.id);
 
-    await this.roommateRequestsRepository.updateProperty(payload.id, payload);
+    await this.listingsRepository.updateProperty(payload.id, payload);
 
     if (
       previousProperty &&

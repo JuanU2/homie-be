@@ -1,9 +1,9 @@
 import type { RoommateApplicationWithApplicant } from '@/api/roommateApplications/domain/entity/roommateApplication';
-import type { RoommateRequestSortBy } from '@/api/roommateRequests/domain/ranking';
+import type { ListingSortBy } from '@/api/listings/domain/ranking';
 
-export type RoommateRequestCurrency = 'EUR' | 'CZK' | 'USD';
+export type ListingCurrency = 'EUR' | 'CZK' | 'USD';
 
-export type RoommateRequestStatus =
+export type ListingStatus =
   | 'ACTIVE'
   | 'RESERVED'
   | 'CLOSED'
@@ -11,56 +11,56 @@ export type RoommateRequestStatus =
 
 export type RoommatePreferredGender = 'MALE' | 'FEMALE' | 'ALL';
 
-export interface RoommateRequest {
+export interface Listing {
   id: string;
   propertyId: string;
   createdBy: string;
   title: string;
   description: string;
   priceAmount: number;
-  priceCurrency: RoommateRequestCurrency;
+  priceCurrency: ListingCurrency;
   idealMoveInDate: string | null;
   maxRoommates: number;
   currentRoommates: number;
-  status: RoommateRequestStatus;
+  status: ListingStatus;
   preferredGender: RoommatePreferredGender;
   createdAt: Date;
   updatedAt: Date;
   closedAt: Date | null;
 }
 
-export interface CreateRoommateRequestModel {
+export interface CreateListingModel {
   propertyId: string;
   createdBy: string;
   title: string;
   description: string;
   priceAmount: number;
-  priceCurrency: RoommateRequestCurrency;
+  priceCurrency: ListingCurrency;
   idealMoveInDate?: string;
   maxRoommates: number;
   currentRoommates: number;
   preferredGender: RoommatePreferredGender;
 }
 
-export interface UpdateRoommateRequestModel {
+export interface UpdateListingModel {
   title: string;
   description: string;
   priceAmount: number;
-  priceCurrency: RoommateRequestCurrency;
+  priceCurrency: ListingCurrency;
   idealMoveInDate?: string;
   maxRoommates: number;
   currentRoommates: number;
   preferredGender: RoommatePreferredGender;
 }
 
-export interface UpdateRoommateRequestStatusModel {
-  status: RoommateRequestStatus;
+export interface UpdateListingStatusModel {
+  status: ListingStatus;
   maxRoommates?: number;
   currentRoommates?: number;
   closedAt?: Date | null;
 }
 
-export interface RoommateRequestPropertySummary {
+export interface ListingPropertySummary {
   id: string;
   country: string;
   city: string;
@@ -72,22 +72,22 @@ export interface RoommateRequestPropertySummary {
   titleImageId: string | null;
 }
 
-export interface RoommateRequestListItem {
+export interface ListingListItem {
   id: string;
   title: string;
   maxRoommates: number;
   currentRoommates: number;
   priceAmount: number;
-  priceCurrency: RoommateRequestCurrency;
-  property: RoommateRequestPropertySummary;
+  priceCurrency: ListingCurrency;
+  property: ListingPropertySummary;
 }
 
-export interface RoommateRequestsPage {
-  items: RoommateRequestListItem[];
+export interface ListingsPage {
+  items: ListingListItem[];
   nextCursor: string | null;
 }
 
-export interface GetRoommateRequestsParams {
+export interface GetListingsParams {
   limit: number;
   cursor?: string;
   lat?: number;
@@ -96,44 +96,44 @@ export interface GetRoommateRequestsParams {
   priceTo?: number;
   equipment?: string[];
   rooms?: string[];
-  sortBy?: RoommateRequestSortBy[];
+  sortBy?: ListingSortBy[];
   preferredGender?: RoommatePreferredGender;
 }
 
-export interface UserRoommateRequestListItem
-  extends RoommateRequestListItem {
-  status: RoommateRequestStatus;
+export interface UserListingListItem
+  extends ListingListItem {
+  status: ListingStatus;
   pendingApplicationsCount: number;
 }
 
-export interface UserRoommateRequestsPage {
-  items: UserRoommateRequestListItem[];
+export interface UserListingsPage {
+  items: UserListingListItem[];
   nextCursor: string | null;
 }
 
-export interface GetUserRoommateRequestsParams {
+export interface GetUserListingsParams {
   limit: number;
   cursor?: string;
-  status?: RoommateRequestStatus;
+  status?: ListingStatus;
 }
 
-export interface RoommateRequestOwnerProfile {
+export interface ListingOwnerProfile {
   fullName: string;
   phoneNumber: string | null;
   profileUrl: string | null;
 }
 
-export interface RoommateRequestPropertyRoom {
+export interface ListingPropertyRoom {
   roomType: string;
   count: number;
 }
 
-export interface RoommateRequestPropertyEquipment {
+export interface ListingPropertyEquipment {
   equipmentType: string;
   count: number;
 }
 
-export interface RoommateRequestPropertyImage {
+export interface ListingPropertyImage {
   id: string;
   propertyId: string;
   imageUrl: string;
@@ -142,7 +142,7 @@ export interface RoommateRequestPropertyImage {
   updatedAt: Date;
 }
 
-export interface RoommateRequestPropertyDetail {
+export interface ListingPropertyDetail {
   id: string;
   ownerId: string;
   description: string;
@@ -157,16 +157,16 @@ export interface RoommateRequestPropertyDetail {
   lng: number;
   createdAt: Date;
   updatedAt: Date;
-  rooms: RoommateRequestPropertyRoom[];
-  equipment: RoommateRequestPropertyEquipment[];
-  images: RoommateRequestPropertyImage[];
+  rooms: ListingPropertyRoom[];
+  equipment: ListingPropertyEquipment[];
+  images: ListingPropertyImage[];
 }
 
-export interface RoommateRequestDetail extends RoommateRequest {
-  owner: RoommateRequestOwnerProfile;
-  property: RoommateRequestPropertyDetail;
+export interface ListingDetail extends Listing {
+  owner: ListingOwnerProfile;
+  property: ListingPropertyDetail;
 }
 
-export interface UserRoommateRequestDetail extends RoommateRequestDetail {
+export interface UserListingDetail extends ListingDetail {
   applications: RoommateApplicationWithApplicant[];
 }

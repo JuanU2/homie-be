@@ -32,10 +32,10 @@ export class ChatController {
     return this.chatService.sendMessage(req.user!.sub, dto);
   }
 
-  @Get('conversations/:roommateRequestId')
+  @Get('conversations/:listingId')
   @UseGuards(GoogleTokenGuard)
   @ApiOperation({
-    summary: 'Get the active conversation for a roommate request',
+    summary: 'Get the active conversation for a listing',
   })
   async getActiveConversation(
     @Req() req: Request,
@@ -43,7 +43,7 @@ export class ChatController {
   ): Promise<GetConversationResponse> {
     return this.chatService.getActiveConversation(
       req.user!.sub,
-      params.roommateRequestId,
+      params.listingId,
     );
   }
 }

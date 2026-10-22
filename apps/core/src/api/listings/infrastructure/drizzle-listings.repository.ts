@@ -8,37 +8,37 @@ import {
   propertyImages,
   propertyRooms,
   roommateApplications,
-  roommateRequests,
+  listings,
   userSettings,
   users,
 } from '@/db/schema/index';
 import * as schema from '@/db/schema/index';
 import {
-  CreateRoommateRequestModel,
-  GetRoommateRequestsParams,
-  GetUserRoommateRequestsParams,
-  RoommateRequest,
-  type RoommateRequestCurrency,
-  type RoommateRequestStatus,
-  RoommateRequestDetail,
-  RoommateRequestListItem,
-  RoommateRequestOwnerProfile,
-  RoommateRequestPropertyDetail,
-  RoommateRequestsPage,
-  UpdateRoommateRequestModel,
-  UpdateRoommateRequestStatusModel,
-  UserRoommateRequestDetail,
-  UserRoommateRequestListItem,
-  UserRoommateRequestsPage,
-} from '@/api/roommateRequests/domain/entity/roommateRequest';
+  CreateListingModel,
+  GetListingsParams,
+  GetUserListingsParams,
+  Listing,
+  type ListingCurrency,
+  type ListingStatus,
+  ListingDetail,
+  ListingListItem,
+  ListingOwnerProfile,
+  ListingPropertyDetail,
+  ListingsPage,
+  UpdateListingModel,
+  UpdateListingStatusModel,
+  UserListingDetail,
+  UserListingListItem,
+  UserListingsPage,
+} from '@/api/listings/domain/entity/listing';
 import type { RoommateApplicationWithApplicant } from '@/api/roommateApplications/domain/entity/roommateApplication';
-import { IRoommateRequestsRepository } from '@/api/roommateRequests/domain/interface/roommateRequests.repository';
+import { IListingsRepository } from '@/api/listings/domain/interface/listings.repository';
 import {
   nullable,
-  RoommateRequestFilters,
-  RoommateRequestGeo,
-  RoommateRequestRanking,
-} from '@/api/roommateRequests/infrastructure/roommateRequests.query';
+  ListingFilters,
+  ListingGeo,
+  ListingRanking,
+} from '@/api/listings/infrastructure/listings.query';
 import { convertDbLocation } from '@/utils/locationUtil';
 
 interface RawPageRow {
@@ -93,8 +93,8 @@ function slicePage<T>(
 }
 
 @Injectable()
-export class DrizzleRoommateRequestsRepository
-  implements IRoommateRequestsRepository
+export class DrizzleListingsRepository
+  implements IListingsRepository
 {
   constructor(
     @Inject('DRIZZLE_DB')
@@ -103,7 +103,7 @@ export class DrizzleRoommateRequestsRepository
 
   private priceEurExpression(
     amount: number,
-    currency: RoommateRequestCurrency,
+    currency: ListingCurrency,
   ): SQL {
     return sql`${amount} * (
       SELECT eur_rate
@@ -112,11 +112,11 @@ export class DrizzleRoommateRequestsRepository
     )`;
   }
 
-  async createRoommateRequest(
-    request: CreateRoommateRequestModel,
-  ): Promise<RoommateRequest> {
+  async createListing(
+    request: CreateListingModel,
+  ): Promise<Listing> {
     const [createdRequest] = await this.db
-      .insert(roommateRequests)
+      .insert(listings)
       .values({
         propertyId: request.propertyId,
         createdBy: request.createdBy,
@@ -136,18 +136,18 @@ export class DrizzleRoommateRequestsRepository
       .returning();
 
     if (!createdRequest) {
-      throw new Error('Failed to create roommate request');
+      throw new Error('Failed to create listing');
     }
 
     return createdRequest;
   }
 
-  async updateRoommateRequest(
+  async updateListing(
     id: string,
-    request: UpdateRoommateRequestModel,
-  ): Promise<RoommateRequest | undefined> {
+    request: UpdateListingModel,
+  ): Promise<Listing | undefined> {
     const [updatedRequest] = await this.db
-      .update(roommateRequests)
+      .update(listings)
       .set({
         title: request.title,
         description: request.description,
@@ -163,17 +163,17 @@ export class DrizzleRoommateRequestsRepository
         preferredGender: request.preferredGender,
         updatedAt: new Date(),
       })
-      .where(eq(roommateRequests.id, id))
+      .where(eq(listings.id, id))
       .returning();
 
     return updatedRequest;
   }
 
-  async updateRoommateRequestStatus(
+  async updateListingStatus(
     id: string,
-    updates: UpdateRoommateRequestStatusModel,
-  ): Promise<RoommateRequest | undefined> {
-    const set: Partial<typeof roommateRequests.$inferInsert> = {
+    updates: UpdateListingStatusModel,
+  ): Promise<Listing | undefined> {
+    const set: Partial<typeof listings.$inferInsert> = {
       status: updates.status,
       updatedAt: new Date(),
     };
@@ -189,24 +189,24 @@ export class DrizzleRoommateRequestsRepository
     }
 
     const [updatedRequest] = await this.db
-      .update(roommateRequests)
+      .update(listings)
       .set(set)
-      .where(eq(roommateRequests.id, id))
+      .where(eq(listings.id, id))
       .returning();
 
     return updatedRequest;
   }
 
-  async getRoommateRequestById(id: string): Promise<RoommateRequest | undefined> {
-    return this.db.query.roommateRequests.findFirst({
+  async getListingById(id: string): Promise<Listing | undefined> {
+    return this.db.query.listings.findFirst({
       where: requests => eq(requests.id, id),
     });
   }
 
-  async getRoommateRequestDetail(
+  async getListingDetail(
     id: string,
-  ): Promise<RoommateRequestDetail | undefined> {
-    const request = await this.getRoommateRequestById(id);
+  ): Promise<ListingDetail | undefined> {
+    const request = await this.getListingById(id);
 
     if (!request) {
       return undefined;
@@ -228,11 +228,11 @@ export class DrizzleRoommateRequestsRepository
     };
   }
 
-  async getUserRoommateRequestDetail(
+  async getUserListingDetail(
     userId: string,
-    roommateRequestId: string,
-  ): Promise<UserRoommateRequestDetail | undefined> {
-    const request = await this.getRoommateRequestById(roommateRequestId);
+    listingId: string,
+  ): Promise<UserListingDetail | undefined> {
+    const request = await this.getListingById(listingId);
 
     if (!request || request.createdBy !== userId) {
       return undefined;
@@ -246,7 +246,7 @@ export class DrizzleRoommateRequestsRepository
     }
 
     const applications = await this.getApplicationsWithApplicants(
-      roommateRequestId,
+      listingId,
     );
 
     return {
@@ -260,12 +260,12 @@ export class DrizzleRoommateRequestsRepository
   }
 
   private async getApplicationsWithApplicants(
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<RoommateApplicationWithApplicant[]> {
     const rows = await this.db
       .select({
         id: roommateApplications.id,
-        roommateRequestId: roommateApplications.roommateRequestId,
+        listingId: roommateApplications.listingId,
         applicantId: roommateApplications.applicantId,
         note: roommateApplications.note,
         status: roommateApplications.status,
@@ -278,7 +278,7 @@ export class DrizzleRoommateRequestsRepository
       .from(roommateApplications)
       .innerJoin(users, eq(users.id, roommateApplications.applicantId))
       .leftJoin(userSettings, eq(userSettings.userId, users.id))
-      .where(eq(roommateApplications.roommateRequestId, roommateRequestId))
+      .where(eq(roommateApplications.listingId, listingId))
       .orderBy(
         desc(roommateApplications.createdAt),
         desc(roommateApplications.id),
@@ -286,7 +286,7 @@ export class DrizzleRoommateRequestsRepository
 
     return rows.map(row => ({
       id: row.id,
-      roommateRequestId: row.roommateRequestId,
+      listingId: row.listingId,
       applicantId: row.applicantId,
       note: row.note,
       status: row.status,
@@ -303,7 +303,7 @@ export class DrizzleRoommateRequestsRepository
 
   private async getOwnerProfile(
     userId: string,
-  ): Promise<RoommateRequestOwnerProfile | undefined> {
+  ): Promise<ListingOwnerProfile | undefined> {
     const rows = await this.db
       .select({
         fullName: users.fullName,
@@ -330,7 +330,7 @@ export class DrizzleRoommateRequestsRepository
 
   private async getPropertyDetail(
     propertyId: string,
-  ): Promise<RoommateRequestPropertyDetail | undefined> {
+  ): Promise<ListingPropertyDetail | undefined> {
     const propertyRows = await this.db
       .select({
         id: properties.id,
@@ -422,35 +422,35 @@ export class DrizzleRoommateRequestsRepository
     };
   }
 
-  async getRoommateRequests(
-    params: GetRoommateRequestsParams,
-  ): Promise<RoommateRequestsPage> {
+  async getListings(
+    params: GetListingsParams,
+  ): Promise<ListingsPage> {
     const { limit, cursor, lat, lng, sortBy } = params;
     const hasLocation = lat !== undefined && lng !== undefined;
     const hasRanking = sortBy !== undefined && sortBy.length > 0;
 
-    const where = RoommateRequestFilters.buildWhere(params);
+    const where = ListingFilters.buildWhere(params);
     const distanceToUser = nullable(
       hasLocation,
-      RoommateRequestGeo.distanceToUser(lat, lng),
+      ListingGeo.distanceToUser(lat, lng),
     );
     const distanceToCenter = nullable(
       hasRanking,
-      RoommateRequestGeo.distanceToCityCenter(),
+      ListingGeo.distanceToCityCenter(),
     );
     const distanceToNearestTransit = nullable(
       hasRanking,
-      RoommateRequestGeo.distanceToNearestTransit(),
+      ListingGeo.distanceToNearestTransit(),
     );
-    const minPrice = nullable(hasRanking, RoommateRequestRanking.minPrice());
-    const maxPrice = nullable(hasRanking, RoommateRequestRanking.maxPrice());
+    const minPrice = nullable(hasRanking, ListingRanking.minPrice());
+    const maxPrice = nullable(hasRanking, ListingRanking.maxPrice());
     const score = nullable(
       hasRanking,
-      RoommateRequestRanking.buildScoreExpression(
-        RoommateRequestRanking.buildCriteria(sortBy ?? [], hasLocation),
+      ListingRanking.buildScoreExpression(
+        ListingRanking.buildCriteria(sortBy ?? [], hasLocation),
       ),
     );
-    const orderBy = RoommateRequestRanking.buildOrderBy(hasRanking, hasLocation);
+    const orderBy = ListingRanking.buildOrderBy(hasRanking, hasLocation);
 
     const offset = cursor ? decodeOffsetCursor(cursor) : 0;
 
@@ -481,7 +481,7 @@ export class DrizzleRoommateRequestsRepository
             ${distanceToNearestTransit} AS "distanceToNearestTransit",
             ${minPrice} AS "minPrice",
             ${maxPrice} AS "maxPrice"
-          FROM core.roommate_requests rr
+          FROM core.listings rr
           JOIN core.properties p ON p.id = rr.property_id
           LEFT JOIN core.property_images ti ON ti.property_id = p.id AND ti.title = true
           ${where}
@@ -504,10 +504,10 @@ export class DrizzleRoommateRequestsRepository
     };
   }
 
-  async getRoommateRequestsPageByOwner(
+  async getListingsPageByOwner(
     ownerId: string,
-    params: GetUserRoommateRequestsParams,
-  ): Promise<UserRoommateRequestsPage> {
+    params: GetUserListingsParams,
+  ): Promise<UserListingsPage> {
     const { limit, cursor, status } = params;
 
     const conditions = [sql`rr.created_by = ${ownerId}`];
@@ -541,9 +541,9 @@ export class DrizzleRoommateRequestsRepository
         (
           SELECT COUNT(*)::int
           FROM core.roommate_applications ra
-          WHERE ra.roommate_request_id = rr.id AND ra.status = 'PENDING'
+          WHERE ra.listing_id = rr.id AND ra.status = 'PENDING'
         ) AS "pendingApplicationsCount"
-      FROM core.roommate_requests rr
+      FROM core.listings rr
       JOIN core.properties p ON p.id = rr.property_id
       LEFT JOIN core.property_images ti ON ti.property_id = p.id AND ti.title = true
       ${where}
@@ -564,7 +564,7 @@ export class DrizzleRoommateRequestsRepository
     return { items, nextCursor };
   }
 
-  private toListItem(row: RawPageRow): RoommateRequestListItem {
+  private toListItem(row: RawPageRow): ListingListItem {
     const location = convertDbLocation(row.location);
     return {
       id: row.rrId,
@@ -572,7 +572,7 @@ export class DrizzleRoommateRequestsRepository
       maxRoommates: row.maxRoommates,
       currentRoommates: row.currentRoommates,
       priceAmount: row.priceAmount,
-      priceCurrency: row.priceCurrency as RoommateRequestCurrency,
+      priceCurrency: row.priceCurrency as ListingCurrency,
       property: {
         id: row.propertyId,
         country: row.country,
@@ -587,10 +587,10 @@ export class DrizzleRoommateRequestsRepository
     };
   }
 
-  private toUserListItem(row: RawUserPageRow): UserRoommateRequestListItem {
+  private toUserListItem(row: RawUserPageRow): UserListingListItem {
     return {
       ...this.toListItem(row),
-      status: row.status as RoommateRequestStatus,
+      status: row.status as ListingStatus,
       pendingApplicationsCount: row.pendingApplicationsCount,
     };
   }

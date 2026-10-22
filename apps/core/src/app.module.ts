@@ -26,11 +26,11 @@ import { EquipmentController } from '@/api/equipment/equipment.controller';
 import { EquipmentService } from '@/api/equipment/equipment.service';
 import { EQUIPMENT_REPOSITORY } from '@/api/equipment/domain/interface/equipment.repository';
 import { DrizzleEquipmentRepository } from '@/api/equipment/infrastructure/drizzle-equipment.repository';
-import { RoommateRequestsController } from '@/api/roommateRequests/roommateRequests.controller';
-import { UserRoommateRequestsController } from '@/api/roommateRequests/userRoommateRequests.controller';
-import { RoommateRequestsService } from '@/api/roommateRequests/roommateRequests.service';
-import { ROOMMATE_REQUESTS_REPOSITORY } from '@/api/roommateRequests/domain/interface/roommateRequests.repository';
-import { DrizzleRoommateRequestsRepository } from '@/api/roommateRequests/infrastructure/drizzle-roommateRequests.repository';
+import { ListingsController } from '@/api/listings/listings.controller';
+import { UserListingsController } from '@/api/listings/userListings.controller';
+import { ListingsService } from '@/api/listings/listings.service';
+import { LISTINGS_REPOSITORY } from '@/api/listings/domain/interface/listings.repository';
+import { DrizzleListingsRepository } from '@/api/listings/infrastructure/drizzle-listings.repository';
 import { RoommateApplicationsController } from '@/api/roommateApplications/roommateApplications.controller';
 import { RoommateApplicationsService } from '@/api/roommateApplications/roommateApplications.service';
 import { ROOMMATE_APPLICATIONS_REPOSITORY } from '@/api/roommateApplications/domain/interface/roommateApplications.repository';
@@ -72,8 +72,8 @@ import { DrizzleFavouritesRepository } from '@/api/favourites/infrastructure/dri
     UserSettingsController,
     PropertiesController,
     EquipmentController,
-    RoommateRequestsController,
-    UserRoommateRequestsController,
+    ListingsController,
+    UserListingsController,
     RoommateApplicationsController,
     EquipmentTypesController,
     PropertyImagesController,
@@ -87,7 +87,7 @@ import { DrizzleFavouritesRepository } from '@/api/favourites/infrastructure/dri
     UserSettingsService,
     PropertiesService,
     EquipmentService,
-    RoommateRequestsService,
+    ListingsService,
     RoommateApplicationsService,
     EquipmentTypesService,
     PropertyImagesService,
@@ -124,8 +124,8 @@ import { DrizzleFavouritesRepository } from '@/api/favourites/infrastructure/dri
       useClass: DrizzleEquipmentRepository,
     },
     {
-      provide: ROOMMATE_REQUESTS_REPOSITORY,
-      useClass: DrizzleRoommateRequestsRepository,
+      provide: LISTINGS_REPOSITORY,
+      useClass: DrizzleListingsRepository,
     },
     {
       provide: ROOMMATE_APPLICATIONS_REPOSITORY,

@@ -7,12 +7,12 @@ import type {
 export interface IChatRepository {
   findActiveConversation(
     sub: string,
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<ChatConversation | null>;
   findConversationById(id: string): Promise<ChatConversation | null>;
   startConversation(
     sub: string,
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<ChatConversation>;
   addMessage(
     conversationId: string,

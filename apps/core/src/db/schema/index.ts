@@ -3,7 +3,7 @@ export * from './properties.schema';
 export * from './propertyImages.schema';
 export * from './propertyEquipments.schema';
 export * from './roommateApplications.schema';
-export * from './roommateRequests.schema';
+export * from './listings.schema';
 export * from './propertyRooms.schema';
 export * from './userSettings.schema';
 export * from './users.schema';

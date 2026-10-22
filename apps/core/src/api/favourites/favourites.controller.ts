@@ -29,7 +29,7 @@ export class FavouritesController {
 
   @Get()
   @UseGuards(GoogleTokenGuard)
-  @ApiOperation({ summary: "Get the authenticated user's favourite roommate requests" })
+  @ApiOperation({ summary: "Get the authenticated user's favourite listings" })
   async getFavourites(
     @Req() request: Request,
     @Query() query: GetFavouritesQueryDto,
@@ -42,28 +42,28 @@ export class FavouritesController {
 
   @Post()
   @UseGuards(GoogleTokenGuard)
-  @ApiOperation({ summary: 'Add a roommate request to favourites' })
+  @ApiOperation({ summary: 'Add a listing to favourites' })
   async createFavourite(
     @Req() request: Request,
     @Body() data: CreateFavouriteDtoRequest,
   ): Promise<FavouriteDtoResponse> {
     return this.favouritesService.create(
       request.user!.userId,
-      data.roommateRequestId,
+      data.listingId,
     );
   }
 
-  @Delete(':roommateRequestId')
+  @Delete(':listingId')
   @UseGuards(GoogleTokenGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Remove a roommate request from favourites' })
+  @ApiOperation({ summary: 'Remove a listing from favourites' })
   async deleteFavourite(
     @Req() request: Request,
     @Param() params: FavouriteParamsDto,
   ): Promise<void> {
     await this.favouritesService.delete(
       request.user!.userId,
-      params.roommateRequestId,
+      params.listingId,
     );
   }
 }

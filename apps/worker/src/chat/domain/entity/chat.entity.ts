@@ -3,7 +3,7 @@ export type MessageRole = 'USER' | 'AGENT';
 
 export interface ChatConversation {
   id: string;
-  roommateRequestId: string;
+  listingId: string;
   sub: string;
   status: ConversationStatus;
   createdAt: Date;

@@ -32,7 +32,7 @@ export class RoommateApplicationsController {
 
   @Post()
   @UseGuards(GoogleTokenGuard)
-  @ApiOperation({ summary: 'Apply for a roommate request' })
+  @ApiOperation({ summary: 'Apply for a listing' })
   async createRoommateApplication(
     @Req() request: Request,
     @Body() data: CreateRoommateApplicationDtoRequest,
@@ -71,10 +71,10 @@ export class RoommateApplicationsController {
     );
   }
 
-  @Get(':roommateRequestId')
+  @Get(':listingId')
   @UseGuards(GoogleTokenGuard)
   @ApiOperation({
-    summary: 'Get all roommate applications for a roommate request',
+    summary: 'Get all roommate applications for a listing',
   })
   async getRoommateApplicationsForRequest(
     @Req() request: Request,
@@ -82,7 +82,7 @@ export class RoommateApplicationsController {
   ): Promise<RoommateApplicationWithApplicantDtoResponse[]> {
     return this.roommateApplicationsService.getRoommateApplicationsForRequest(
       request.user!.userId,
-      params.roommateRequestId,
+      params.listingId,
     );
   }
 }

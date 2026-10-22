@@ -29,6 +29,13 @@
       "when": 1791112239688,
       "tag": "0003_smooth_albert_cleary",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792678210975,
+      "tag": "0004_rename_roommate_requests_to_listings",
+      "breakpoints": true
     }
   ]
 }

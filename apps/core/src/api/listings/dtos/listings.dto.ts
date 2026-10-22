@@ -6,8 +6,8 @@ import {
 } from '@/api/roommateApplications/dtos/roommateApplications.dto';
 import z from 'zod';
 
-export const roommateRequestCurrencySchema = z.enum(['EUR', 'CZK', 'USD']);
-export const roommateRequestStatusSchema = z.enum([
+export const listingCurrencySchema = z.enum(['EUR', 'CZK', 'USD']);
+export const listingStatusSchema = z.enum([
   'ACTIVE',
   'RESERVED',
   'CLOSED',
@@ -16,13 +16,13 @@ export const roommateRequestStatusSchema = z.enum([
 
 export const roommatePreferredGenderSchema = z.enum(['MALE', 'FEMALE', 'ALL']);
 
-export const createRoommateRequestDtoRequestSchema = z
+export const createListingDtoRequestSchema = z
   .object({
     propertyId: z.uuid(),
     title: z.string().min(1),
     description: z.string().min(1),
     priceAmount: z.number().int().positive(),
-    priceCurrency: roommateRequestCurrencySchema,
+    priceCurrency: listingCurrencySchema,
     idealMoveInDate: z.string().min(1).optional(),
     maxRoommates: z.number().int().positive(),
     currentRoommates: z.number().int().nonnegative(),
@@ -33,12 +33,12 @@ export const createRoommateRequestDtoRequestSchema = z
     path: ['currentRoommates'],
   });
 
-export const updateRoommateRequestDtoRequestSchema = z
+export const updateListingDtoRequestSchema = z
   .object({
     title: z.string().min(1),
     description: z.string().min(1),
     priceAmount: z.number().int().positive(),
-    priceCurrency: roommateRequestCurrencySchema,
+    priceCurrency: listingCurrencySchema,
     idealMoveInDate: z.string().min(1).optional(),
     maxRoommates: z.number().int().positive(),
     currentRoommates: z.number().int().nonnegative(),
@@ -49,35 +49,35 @@ export const updateRoommateRequestDtoRequestSchema = z
     path: ['currentRoommates'],
   });
 
-export const roommateRequestDtoResponseSchema = z.object({
+export const listingDtoResponseSchema = z.object({
   id: z.string(),
   propertyId: z.string(),
   createdBy: z.string(),
   title: z.string(),
   description: z.string(),
   priceAmount: z.number().int(),
-  priceCurrency: roommateRequestCurrencySchema,
+  priceCurrency: listingCurrencySchema,
   idealMoveInDate: z.string().nullable(),
   maxRoommates: z.number().int(),
   currentRoommates: z.number().int(),
-  status: roommateRequestStatusSchema,
+  status: listingStatusSchema,
   preferredGender: roommatePreferredGenderSchema,
   createdAt: z.date(),
   updatedAt: z.date(),
   closedAt: z.date().nullable(),
 });
 
-export class CreateRoommateRequestDtoRequest extends createZodDto(
-  createRoommateRequestDtoRequestSchema,
+export class CreateListingDtoRequest extends createZodDto(
+  createListingDtoRequestSchema,
 ) {}
 
-export class UpdateRoommateRequestDtoRequest extends createZodDto(
-  updateRoommateRequestDtoRequestSchema,
+export class UpdateListingDtoRequest extends createZodDto(
+  updateListingDtoRequestSchema,
 ) {}
 
-export const updateRoommateRequestStatusDtoRequestSchema = z
+export const updateListingStatusDtoRequestSchema = z
   .object({
-    status: roommateRequestStatusSchema,
+    status: listingStatusSchema,
     maxRoommates: z.number().int().positive().optional(),
     currentRoommates: z.number().int().nonnegative().optional(),
   })
@@ -102,21 +102,21 @@ export const updateRoommateRequestStatusDtoRequestSchema = z
     }
   });
 
-export class UpdateRoommateRequestStatusDtoRequest extends createZodDto(
-  updateRoommateRequestStatusDtoRequestSchema,
+export class UpdateListingStatusDtoRequest extends createZodDto(
+  updateListingStatusDtoRequestSchema,
 ) {}
 
-export class RoommateRequestDtoResponse extends createZodDto(
-  roommateRequestDtoResponseSchema,
+export class ListingDtoResponse extends createZodDto(
+  listingDtoResponseSchema,
 ) {}
 
-export const roommateRequestOwnerResponseSchema = z.object({
+export const listingOwnerResponseSchema = z.object({
   fullName: z.string(),
   phoneNumber: z.string().nullable().optional(),
   profileUrl: z.string().nullable().optional(),
 });
 
-export const roommateRequestPropertyImageResponseSchema = z.object({
+export const listingPropertyImageResponseSchema = z.object({
   id: z.string(),
   propertyId: z.string(),
   imageUrl: z.string(),
@@ -125,17 +125,17 @@ export const roommateRequestPropertyImageResponseSchema = z.object({
   updatedAt: z.date(),
 });
 
-export const roommateRequestPropertyRoomResponseSchema = z.object({
+export const listingPropertyRoomResponseSchema = z.object({
   roomType: z.nativeEnum(roomTypeEnum),
   count: z.number().int(),
 });
 
-export const roommateRequestPropertyEquipmentResponseSchema = z.object({
+export const listingPropertyEquipmentResponseSchema = z.object({
   equipmentType: z.string(),
   count: z.number().int(),
 });
 
-export const roommateRequestPropertyDetailResponseSchema = z.object({
+export const listingPropertyDetailResponseSchema = z.object({
   id: z.string(),
   ownerId: z.string(),
   description: z.string(),
@@ -150,51 +150,51 @@ export const roommateRequestPropertyDetailResponseSchema = z.object({
   lng: z.number(),
   createdAt: z.date(),
   updatedAt: z.date(),
-  rooms: z.array(roommateRequestPropertyRoomResponseSchema),
-  equipment: z.array(roommateRequestPropertyEquipmentResponseSchema),
-  images: z.array(roommateRequestPropertyImageResponseSchema),
+  rooms: z.array(listingPropertyRoomResponseSchema),
+  equipment: z.array(listingPropertyEquipmentResponseSchema),
+  images: z.array(listingPropertyImageResponseSchema),
 });
 
-export const roommateRequestDetailDtoResponseSchema =
-  roommateRequestDtoResponseSchema.extend({
-    owner: roommateRequestOwnerResponseSchema,
-    property: roommateRequestPropertyDetailResponseSchema,
+export const listingDetailDtoResponseSchema =
+  listingDtoResponseSchema.extend({
+    owner: listingOwnerResponseSchema,
+    property: listingPropertyDetailResponseSchema,
     canApply: z.boolean(),
     application: roommateApplicationDtoResponseSchema.optional(),
     favourite: z.boolean(),
   });
 
-export class RoommateRequestDetailDtoResponse extends createZodDto(
-  roommateRequestDetailDtoResponseSchema,
+export class ListingDetailDtoResponse extends createZodDto(
+  listingDetailDtoResponseSchema,
 ) {}
 
-export const userRoommateRequestDetailDtoResponseSchema =
-  roommateRequestDetailDtoResponseSchema.extend({
+export const userListingDetailDtoResponseSchema =
+  listingDetailDtoResponseSchema.extend({
     applications: z.array(roommateApplicationWithApplicantResponseSchema),
   });
 
-export class UserRoommateRequestDetailDtoResponse extends createZodDto(
-  userRoommateRequestDetailDtoResponseSchema,
+export class UserListingDetailDtoResponse extends createZodDto(
+  userListingDetailDtoResponseSchema,
 ) {}
 
-export const userRoommateRequestDetailParamsSchema = z.object({
+export const userListingDetailParamsSchema = z.object({
   userId: z.uuid(),
-  roommateRequestId: z.uuid(),
+  listingId: z.uuid(),
 });
 
-export class UserRoommateRequestDetailParamsDto extends createZodDto(
-  userRoommateRequestDetailParamsSchema,
+export class UserListingDetailParamsDto extends createZodDto(
+  userListingDetailParamsSchema,
 ) {}
 
-export const roommateRequestParamsSchema = z.object({
-  roommateRequestId: z.uuid(),
+export const listingParamsSchema = z.object({
+  listingId: z.uuid(),
 });
 
-export class RoommateRequestParamsDto extends createZodDto(
-  roommateRequestParamsSchema,
+export class ListingParamsDto extends createZodDto(
+  listingParamsSchema,
 ) {}
 
-export const roommateRequestSortBySchema = z.enum([
+export const listingSortBySchema = z.enum([
   'PRICE',
   'DISTANCE_TRANSIT',
   'DISTANCE_CITY_CENTER',
@@ -227,10 +227,10 @@ const querySortByArray = z.preprocess(
       : Array.isArray(value)
         ? value
         : [value],
-  z.array(roommateRequestSortBySchema).optional(),
+  z.array(listingSortBySchema).optional(),
 );
 
-export const getRoommateRequestsQuerySchema = z.object({
+export const getListingsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   cursor: z.string().min(1).optional(),
   lat: z.coerce.number().min(-90).max(90).optional(),
@@ -243,24 +243,24 @@ export const getRoommateRequestsQuerySchema = z.object({
   preferredGender: roommatePreferredGenderSchema.optional(),
 });
 
-export class GetRoommateRequestsQueryDto extends createZodDto(
-  getRoommateRequestsQuerySchema,
+export class GetListingsQueryDto extends createZodDto(
+  getListingsQuerySchema,
 ) {}
 
-export const userRoommateRequestParamsSchema = z.object({
+export const userListingParamsSchema = z.object({
   userId: z.uuid(),
 });
 
-export class UserRoommateRequestParamsDto extends createZodDto(
-  userRoommateRequestParamsSchema,
+export class UserListingParamsDto extends createZodDto(
+  userListingParamsSchema,
 ) {}
 
-export const getUserRoommateRequestsQuerySchema = z.object({
+export const getUserListingsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   cursor: z.string().min(1).optional(),
-  status: roommateRequestStatusSchema.optional(),
+  status: listingStatusSchema.optional(),
 });
 
-export class GetUserRoommateRequestsQueryDto extends createZodDto(
-  getUserRoommateRequestsQuerySchema,
+export class GetUserListingsQueryDto extends createZodDto(
+  getUserListingsQuerySchema,
 ) {}

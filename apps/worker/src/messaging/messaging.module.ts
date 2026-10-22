@@ -4,16 +4,16 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { EVENTS_EXCHANGE } from '@homie/events';
 import { AiModule } from '@/ai/ai.module';
 import { PropertyInsightsModule } from '@/property-insights/property-insights.module';
-import { RoommateRequestsModule } from '@/roommate-requests/roommate-requests.module';
+import { ListingsModule } from '@/listings/listings.module';
 import { EquipmentTypeConsumer } from './equipment-type.consumer';
-import { RoommateRequestConsumer } from './roommate-request.consumer';
+import { ListingConsumer } from './listing.consumer';
 import { EventPublisher } from './event.publisher';
 import { EVENTS_CLIENT } from './messaging.constants';
 
 @Module({
   imports: [
     AiModule,
-    RoommateRequestsModule,
+    ListingsModule,
     PropertyInsightsModule,
     ClientsModule.registerAsync([
       {
@@ -32,7 +32,7 @@ import { EVENTS_CLIENT } from './messaging.constants';
       },
     ]),
   ],
-  controllers: [EquipmentTypeConsumer, RoommateRequestConsumer],
+  controllers: [EquipmentTypeConsumer, ListingConsumer],
   providers: [EventPublisher],
   exports: [EventPublisher],
 })

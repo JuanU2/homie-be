@@ -5,8 +5,8 @@ import { users } from './users.schema';
 
 export const currencyEnum = core.enum('currency_enum', ['EUR', 'CZK', 'USD']);
 
-export const roommateRequestStatusEnum = core.enum(
-  'roommate_request_status_enum',
+export const listingStatusEnum = core.enum(
+  'listing_status_enum',
   ['ACTIVE', 'RESERVED', 'CLOSED', 'EXPIRED'],
 );
 
@@ -16,7 +16,7 @@ export const preferredGenderEnum = core.enum('preferred_gender_enum', [
   'ALL',
 ]);
 
-export const roommateRequests = core.table('roommate_requests', {
+export const listings = core.table('listings', {
   id: uuid('id').defaultRandom().primaryKey(),
   propertyId: uuid('property_id')
     .references(() => properties.id, { onDelete: 'cascade' })
@@ -32,7 +32,7 @@ export const roommateRequests = core.table('roommate_requests', {
   idealMoveInDate: date('ideal_move_in_date'),
   maxRoommates: integer('max_roommates').notNull(),
   currentRoommates: integer('current_roommates').notNull(),
-  status: roommateRequestStatusEnum('status').default('ACTIVE').notNull(),
+  status: listingStatusEnum('status').default('ACTIVE').notNull(),
   preferredGender: preferredGenderEnum('preferred_gender')
     .default('ALL')
     .notNull(),

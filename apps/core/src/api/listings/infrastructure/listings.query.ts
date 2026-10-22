@@ -1,18 +1,18 @@
 import { sql, type SQL } from 'drizzle-orm';
-import type { GetRoommateRequestsParams } from '@/api/roommateRequests/domain/entity/roommateRequest';
+import type { GetListingsParams } from '@/api/listings/domain/entity/listing';
 import {
   RANKING_CRITERION_CONFIG,
   type RankingCriterion,
   type RankingCriterionConfig,
-} from '@/api/roommateRequests/domain/ranking';
+} from '@/api/listings/domain/ranking';
 
 /** Returns `expression` when `active` is true, otherwise `NULL::float8`. */
 export function nullable(active: boolean, expression: SQL): SQL {
   return active ? expression : sql`NULL::float8`;
 }
 
-export class RoommateRequestFilters {
-  static buildWhere(params: GetRoommateRequestsParams): SQL {
+export class ListingFilters {
+  static buildWhere(params: GetListingsParams): SQL {
     const conditions: SQL[] = [
       sql`rr.status = 'ACTIVE'`,
       ...this.buildConditions(params),
@@ -20,7 +20,7 @@ export class RoommateRequestFilters {
     return sql`WHERE ${sql.join(conditions, sql` AND `)}`;
   }
 
-  private static buildConditions(params: GetRoommateRequestsParams): SQL[] {
+  private static buildConditions(params: GetListingsParams): SQL[] {
     const conditions: SQL[] = [];
     const { priceFrom, priceTo, equipment, rooms, preferredGender } = params;
 
@@ -66,7 +66,7 @@ export class RoommateRequestFilters {
   }
 }
 
-export class RoommateRequestGeo {
+export class ListingGeo {
   static distanceToUser(lat: number | undefined, lng: number | undefined): SQL {
     return this.distanceFromPropertyTo(sql`${lng}`, sql`${lat}`);
   }
@@ -98,7 +98,7 @@ export class RoommateRequestGeo {
   }
 }
 
-export class RoommateRequestRanking {
+export class ListingRanking {
   static minPrice(): SQL {
     return sql`MIN(rr.price_eur) OVER ()`;
   }

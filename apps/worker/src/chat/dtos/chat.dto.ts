@@ -2,7 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
 export const sendMessageBodySchema = z.object({
-  roommateRequestId: z.uuid(),
+  listingId: z.uuid(),
   conversationId: z.uuid().optional(),
   content: z.string().min(1),
 });
@@ -10,7 +10,7 @@ export const sendMessageBodySchema = z.object({
 export class SendMessageBodyDto extends createZodDto(sendMessageBodySchema) {}
 
 export const conversationParamsSchema = z.object({
-  roommateRequestId: z.uuid(),
+  listingId: z.uuid(),
 });
 
 export class ConversationParamsDto extends createZodDto(

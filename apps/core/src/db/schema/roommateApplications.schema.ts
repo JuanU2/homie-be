@@ -1,6 +1,6 @@
 import { text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { core } from './core';
-import { roommateRequests } from './roommateRequests.schema';
+import { listings } from './listings.schema';
 import { users } from './users.schema';
 
 export const roommateApplicationStatusEnum = core.enum(
@@ -10,8 +10,8 @@ export const roommateApplicationStatusEnum = core.enum(
 
 export const roommateApplications = core.table('roommate_applications', {
   id: uuid('id').defaultRandom().primaryKey(),
-  roommateRequestId: uuid('roommate_request_id')
-    .references(() => roommateRequests.id, { onDelete: 'cascade' })
+  listingId: uuid('listing_id')
+    .references(() => listings.id, { onDelete: 'cascade' })
     .notNull(),
   applicantId: uuid('applicant_id')
     .references(() => users.id, { onDelete: 'cascade' })

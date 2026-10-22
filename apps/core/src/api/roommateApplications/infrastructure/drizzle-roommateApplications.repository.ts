@@ -3,7 +3,7 @@ import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
   roommateApplications,
-  roommateRequests,
+  listings,
   userSettings,
   users,
 } from '@/db/schema/index';
@@ -24,7 +24,7 @@ interface RawApplicationPageRow {
   status: string;
   note: string | null;
   createdAt: string;
-  roommateRequestId: string;
+  listingId: string;
   propertyId: string;
   title: string;
   titleImageId: string | null;
@@ -56,7 +56,7 @@ export class DrizzleRoommateApplicationsRepository
     const [created] = await this.db
       .insert(roommateApplications)
       .values({
-        roommateRequestId: model.roommateRequestId,
+        listingId: model.listingId,
         applicantId: model.applicantId,
         note: model.note ?? null,
       })
@@ -79,12 +79,12 @@ export class DrizzleRoommateApplicationsRepository
 
   async getLatestActiveApplication(
     applicantId: string,
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<RoommateApplication | undefined> {
     return this.db.query.roommateApplications.findFirst({
       where: and(
         eq(roommateApplications.applicantId, applicantId),
-        eq(roommateApplications.roommateRequestId, roommateRequestId),
+        eq(roommateApplications.listingId, listingId),
         inArray(roommateApplications.status, ['PENDING', 'ACCEPTED'] as const),
       ),
       orderBy: desc(roommateApplications.updatedAt),
@@ -106,7 +106,7 @@ export class DrizzleRoommateApplicationsRepository
 
   async acceptRoommateApplication(
     id: string,
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<RoommateApplication | undefined> {
     return this.db.transaction(async tx => {
       const [updated] = await tx
@@ -120,27 +120,27 @@ export class DrizzleRoommateApplicationsRepository
       }
 
       const [request] = await tx
-        .update(roommateRequests)
+        .update(listings)
         .set({
-          currentRoommates: sql`${roommateRequests.currentRoommates} + 1`,
+          currentRoommates: sql`${listings.currentRoommates} + 1`,
           updatedAt: new Date(),
         })
         .where(
           and(
-            eq(roommateRequests.id, roommateRequestId),
-            sql`${roommateRequests.currentRoommates} < ${roommateRequests.maxRoommates}`,
+            eq(listings.id, listingId),
+            sql`${listings.currentRoommates} < ${listings.maxRoommates}`,
           ),
         )
         .returning({
-          currentRoommates: roommateRequests.currentRoommates,
-          maxRoommates: roommateRequests.maxRoommates,
+          currentRoommates: listings.currentRoommates,
+          maxRoommates: listings.maxRoommates,
         });
 
       if (request && request.currentRoommates === request.maxRoommates) {
         await tx
-          .update(roommateRequests)
+          .update(listings)
           .set({ status: 'CLOSED', closedAt: new Date(), updatedAt: new Date() })
-          .where(eq(roommateRequests.id, roommateRequestId));
+          .where(eq(listings.id, listingId));
       }
 
       return updated;
@@ -169,12 +169,12 @@ export class DrizzleRoommateApplicationsRepository
         ra.status AS "status",
         ra.note AS "note",
         ra.created_at AS "createdAt",
-        ra.roommate_request_id AS "roommateRequestId",
+        ra.listing_id AS "listingId",
         rr.property_id AS "propertyId",
         rr.title AS "title",
         ti.id AS "titleImageId"
       FROM core.roommate_applications ra
-      JOIN core.roommate_requests rr ON rr.id = ra.roommate_request_id
+      JOIN core.listings rr ON rr.id = ra.listing_id
       LEFT JOIN core.property_images ti ON ti.property_id = rr.property_id AND ti.title = true
       ${where}
       ORDER BY ra.created_at DESC, ra.id DESC
@@ -197,7 +197,7 @@ export class DrizzleRoommateApplicationsRepository
   private toListItem(row: RawApplicationPageRow): RoommateApplicationListItem {
     return {
       id: row.id,
-      roommateRequestId: row.roommateRequestId,
+      listingId: row.listingId,
       propertyId: row.propertyId,
       status: row.status as RoommateApplicationStatus,
       note: row.note,
@@ -208,12 +208,12 @@ export class DrizzleRoommateApplicationsRepository
   }
 
   async getRoommateApplicationsForRequest(
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<RoommateApplicationWithApplicant[]> {
     const rows = await this.db
       .select({
         id: roommateApplications.id,
-        roommateRequestId: roommateApplications.roommateRequestId,
+        listingId: roommateApplications.listingId,
         applicantId: roommateApplications.applicantId,
         note: roommateApplications.note,
         status: roommateApplications.status,
@@ -226,7 +226,7 @@ export class DrizzleRoommateApplicationsRepository
       .from(roommateApplications)
       .innerJoin(users, eq(users.id, roommateApplications.applicantId))
       .leftJoin(userSettings, eq(userSettings.userId, users.id))
-      .where(eq(roommateApplications.roommateRequestId, roommateRequestId))
+      .where(eq(roommateApplications.listingId, listingId))
       .orderBy(
         desc(roommateApplications.createdAt),
         desc(roommateApplications.id),
@@ -234,7 +234,7 @@ export class DrizzleRoommateApplicationsRepository
 
     return rows.map(row => ({
       id: row.id,
-      roommateRequestId: row.roommateRequestId,
+      listingId: row.listingId,
       applicantId: row.applicantId,
       note: row.note,
       status: row.status,

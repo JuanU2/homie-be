@@ -8,13 +8,13 @@ export const roommateApplicationStatusSchema = z.enum([
 ]);
 
 export const createRoommateApplicationDtoRequestSchema = z.object({
-  roommateRequestId: z.uuid(),
+  listingId: z.uuid(),
   note: z.string().optional(),
 });
 
 export const roommateApplicationDtoResponseSchema = z.object({
   id: z.string(),
-  roommateRequestId: z.string(),
+  listingId: z.string(),
   applicantId: z.string(),
   note: z.string().nullable(),
   status: roommateApplicationStatusSchema,
@@ -58,7 +58,7 @@ export const roommateApplicationApplicantResponseSchema = z.object({
 
 export const roommateApplicationWithApplicantResponseSchema = z.object({
   id: z.string(),
-  roommateRequestId: z.string(),
+  listingId: z.string(),
   applicantId: z.string(),
   note: z.string().nullable(),
   status: roommateApplicationStatusSchema,
@@ -71,7 +71,7 @@ export class RoommateApplicationWithApplicantDtoResponse extends createZodDto(
 ) {}
 
 export const roommateApplicationParamsSchema = z.object({
-  roommateRequestId: z.uuid(),
+  listingId: z.uuid(),
 });
 
 export class RoommateApplicationParamsDto extends createZodDto(

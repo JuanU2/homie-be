@@ -8,9 +8,9 @@ import type {
 } from '@/api/favourites/domain/entity/favourite';
 import type { IFavouritesRepository } from '@/api/favourites/domain/interface/favourites.repository';
 import type {
-  RoommateRequestCurrency,
-  RoommateRequestListItem,
-} from '@/api/roommateRequests/domain/entity/roommateRequest';
+  ListingCurrency,
+  ListingListItem,
+} from '@/api/listings/domain/entity/listing';
 import { favourites } from '@/db/schema/index';
 import * as schema from '@/db/schema/index';
 import { convertDbLocation } from '@/utils/locationUtil';
@@ -60,10 +60,10 @@ export class DrizzleFavouritesRepository implements IFavouritesRepository {
     private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async create(userId: string, roommateRequestId: string): Promise<Favourite> {
+  async create(userId: string, listingId: string): Promise<Favourite> {
     const [created] = await this.db
       .insert(favourites)
-      .values({ userId, roommateRequestId })
+      .values({ userId, listingId })
       .onConflictDoNothing()
       .returning();
 
@@ -74,7 +74,7 @@ export class DrizzleFavouritesRepository implements IFavouritesRepository {
     const existing = await this.db.query.favourites.findFirst({
       where: and(
         eq(favourites.userId, userId),
-        eq(favourites.roommateRequestId, roommateRequestId),
+        eq(favourites.listingId, listingId),
       ),
     });
 
@@ -85,25 +85,25 @@ export class DrizzleFavouritesRepository implements IFavouritesRepository {
     return existing;
   }
 
-  async delete(userId: string, roommateRequestId: string): Promise<void> {
+  async delete(userId: string, listingId: string): Promise<void> {
     await this.db
       .delete(favourites)
       .where(
         and(
           eq(favourites.userId, userId),
-          eq(favourites.roommateRequestId, roommateRequestId),
+          eq(favourites.listingId, listingId),
         ),
       );
   }
 
-  async exists(userId: string, roommateRequestId: string): Promise<boolean> {
+  async exists(userId: string, listingId: string): Promise<boolean> {
     const rows = await this.db
       .select({ id: favourites.id })
       .from(favourites)
       .where(
         and(
           eq(favourites.userId, userId),
-          eq(favourites.roommateRequestId, roommateRequestId),
+          eq(favourites.listingId, listingId),
         ),
       )
       .limit(1);
@@ -143,7 +143,7 @@ export class DrizzleFavouritesRepository implements IFavouritesRepository {
         p.location AS "location",
         ti.id AS "titleImageId"
       FROM core.favourites f
-      JOIN core.roommate_requests rr ON rr.id = f.roommate_request_id
+      JOIN core.listings rr ON rr.id = f.listing_id
       JOIN core.properties p ON p.id = rr.property_id
       LEFT JOIN core.property_images ti ON ti.property_id = p.id AND ti.title = true
       ${where}
@@ -165,7 +165,7 @@ export class DrizzleFavouritesRepository implements IFavouritesRepository {
     return { items, nextCursor };
   }
 
-  private toListItem(row: RawFavouritePageRow): RoommateRequestListItem {
+  private toListItem(row: RawFavouritePageRow): ListingListItem {
     const location = convertDbLocation(row.location);
     return {
       id: row.rrId,
@@ -173,7 +173,7 @@ export class DrizzleFavouritesRepository implements IFavouritesRepository {
       maxRoommates: row.maxRoommates,
       currentRoommates: row.currentRoommates,
       priceAmount: row.priceAmount,
-      priceCurrency: row.priceCurrency as RoommateRequestCurrency,
+      priceCurrency: row.priceCurrency as ListingCurrency,
       property: {
         id: row.propertyId,
         country: row.country,

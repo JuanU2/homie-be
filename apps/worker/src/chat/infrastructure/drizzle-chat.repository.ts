@@ -16,7 +16,7 @@ type MessageRow = typeof messages.$inferSelect;
 function toConversation(row: ConversationRow): ChatConversation {
   return {
     id: row.id,
-    roommateRequestId: row.roommateRequestId,
+    listingId: row.listingId,
     sub: row.sub,
     status: row.status as ChatConversation['status'],
     createdAt: row.createdAt,
@@ -42,7 +42,7 @@ export class DrizzleChatRepository implements IChatRepository {
 
   async findActiveConversation(
     sub: string,
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<ChatConversation | null> {
     const [row] = await this.db
       .select()
@@ -50,7 +50,7 @@ export class DrizzleChatRepository implements IChatRepository {
       .where(
         and(
           eq(conversations.sub, sub),
-          eq(conversations.roommateRequestId, roommateRequestId),
+          eq(conversations.listingId, listingId),
           eq(conversations.status, 'ACTIVE'),
         ),
       )
@@ -71,7 +71,7 @@ export class DrizzleChatRepository implements IChatRepository {
 
   async startConversation(
     sub: string,
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<ChatConversation> {
     return this.db.transaction(async (tx) => {
       await tx
@@ -80,14 +80,14 @@ export class DrizzleChatRepository implements IChatRepository {
         .where(
           and(
             eq(conversations.sub, sub),
-            eq(conversations.roommateRequestId, roommateRequestId),
+            eq(conversations.listingId, listingId),
             eq(conversations.status, 'ACTIVE'),
           ),
         );
 
       const [row] = await tx
         .insert(conversations)
-        .values({ roommateRequestId, sub })
+        .values({ listingId, sub })
         .returning();
 
       return toConversation(row);

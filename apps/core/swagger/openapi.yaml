@@ -368,30 +368,30 @@ paths:
         '401':
           description: Unauthorized
 
-  /roommate-requests:
+  /listings:
     post:
-      summary: Create roommate request
+      summary: Create listing
       tags:
-        - Roommate Requests
+        - Listings
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateRoommateRequestRequest'
+              $ref: '#/components/schemas/CreateListingRequest'
       responses:
         '201':
-          description: Roommate request created
+          description: Listing created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoommateRequestResponse'
+                $ref: '#/components/schemas/ListingResponse'
         '401':
           description: Unauthorized
     get:
-      summary: Get paginated roommate requests
+      summary: Get paginated listings
       tags:
-        - Roommate Requests
+        - Listings
       parameters:
         - name: limit
           in: query
@@ -464,23 +464,23 @@ paths:
             default: ALL
       responses:
         '200':
-          description: Paginated list of roommate requests
+          description: Paginated list of listings
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoommateRequestListResponse'
+                $ref: '#/components/schemas/ListingListResponse'
 
-  /roommate-requests/{roommateRequestId}:
+  /listings/{listingId}:
     get:
-      summary: Get roommate request detail by id
-      description: Returns a single roommate request together with its owner's contact details and the full property.
+      summary: Get listing detail by id
+      description: Returns a single listing together with its owner's contact details and the full property.
       tags:
-        - Roommate Requests
+        - Listings
       security:
         - bearerAuth: []
         - {}
       parameters:
-        - name: roommateRequestId
+        - name: listingId
           in: path
           required: true
           schema:
@@ -488,19 +488,19 @@ paths:
             format: uuid
       responses:
         '200':
-          description: Roommate request found
+          description: Listing found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoommateRequestDetailResponse'
+                $ref: '#/components/schemas/ListingDetailResponse'
         '404':
-          description: Roommate request not found
+          description: Listing not found
     put:
-      summary: Update roommate request
+      summary: Update listing
       tags:
-        - Roommate Requests
+        - Listings
       parameters:
-        - name: roommateRequestId
+        - name: listingId
           in: path
           required: true
           schema:
@@ -511,28 +511,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateRoommateRequestRequest'
+              $ref: '#/components/schemas/UpdateListingRequest'
       responses:
         '200':
-          description: Roommate request updated
+          description: Listing updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoommateRequestResponse'
+                $ref: '#/components/schemas/ListingResponse'
         '401':
           description: Unauthorized
         '403':
           description: Forbidden
         '404':
-          description: Roommate request not found
+          description: Listing not found
 
-  /roommate-requests/{roommateRequestId}/status:
+  /listings/{listingId}/status:
     put:
-      summary: Update roommate request status
+      summary: Update listing status
       tags:
-        - Roommate Requests
+        - Listings
       parameters:
-        - name: roommateRequestId
+        - name: listingId
           in: path
           required: true
           schema:
@@ -543,14 +543,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateRoommateRequestStatusRequest'
+              $ref: '#/components/schemas/UpdateListingStatusRequest'
       responses:
         '200':
-          description: Roommate request status updated
+          description: Listing status updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoommateRequestResponse'
+                $ref: '#/components/schemas/ListingResponse'
         '400':
           description: Invalid status transition
         '401':
@@ -558,13 +558,13 @@ paths:
         '403':
           description: Forbidden
         '404':
-          description: Roommate request not found
+          description: Listing not found
 
-  /users/{userId}/roommate-requests:
+  /users/{userId}/listings:
     get:
-      summary: Get the user's own roommate requests
+      summary: Get the user's own listings
       tags:
-        - Roommate Requests
+        - Listings
       parameters:
         - name: userId
           in: path
@@ -589,25 +589,25 @@ paths:
           in: query
           required: false
           schema:
-            $ref: '#/components/schemas/RoommateRequestStatus'
+            $ref: '#/components/schemas/ListingStatus'
       responses:
         '200':
-          description: Paginated list of the user's own roommate requests
+          description: Paginated list of the user's own listings
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserRoommateRequestsPage'
+                $ref: '#/components/schemas/UserListingsPage'
         '401':
           description: Unauthorized
         '403':
           description: Forbidden
 
-  /users/{userId}/roommate-requests/{roommateRequestId}:
+  /users/{userId}/listings/{listingId}:
     get:
-      summary: Get the user's own roommate request detail with applications
-      description: Returns the roommate request (with owner and property) together with all of its roommate applications and each applicant's contact details. Only the request owner can view it.
+      summary: Get the user's own listing detail with applications
+      description: Returns the listing (with owner and property) together with all of its roommate applications and each applicant's contact details. Only the listing owner can view it.
       tags:
-        - Roommate Requests
+        - Listings
       parameters:
         - name: userId
           in: path
@@ -615,7 +615,7 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: roommateRequestId
+        - name: listingId
           in: path
           required: true
           schema:
@@ -623,21 +623,21 @@ paths:
             format: uuid
       responses:
         '200':
-          description: Roommate request found
+          description: Listing found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserRoommateRequestDetailResponse'
+                $ref: '#/components/schemas/UserListingDetailResponse'
         '401':
           description: Unauthorized
         '403':
           description: Forbidden
         '404':
-          description: Roommate request not found
+          description: Listing not found
 
   /favourites:
     get:
-      summary: Get the authenticated user's favourite roommate requests
+      summary: Get the authenticated user's favourite listings
       tags:
         - Favourites
       parameters:
@@ -656,15 +656,15 @@ paths:
             type: string
       responses:
         '200':
-          description: Paginated list of favourite roommate requests
+          description: Paginated list of favourite listings
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoommateRequestListResponse'
+                $ref: '#/components/schemas/ListingListResponse'
         '401':
           description: Unauthorized
     post:
-      summary: Add a roommate request to favourites
+      summary: Add a listing to favourites
       tags:
         - Favourites
       requestBody:
@@ -683,15 +683,15 @@ paths:
         '401':
           description: Unauthorized
         '404':
-          description: Roommate request not found
+          description: Listing not found
 
-  /favourites/{roommateRequestId}:
+  /favourites/{listingId}:
     delete:
-      summary: Remove a roommate request from favourites
+      summary: Remove a listing from favourites
       tags:
         - Favourites
       parameters:
-        - name: roommateRequestId
+        - name: listingId
           in: path
           required: true
           schema:
@@ -705,7 +705,7 @@ paths:
 
   /roommate-applications:
     post:
-      summary: Apply for a roommate request
+      summary: Apply for a listing
       tags:
         - Roommate Applications
       requestBody:
@@ -722,11 +722,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/RoommateApplicationResponse'
         '400':
-          description: Roommate request is closed
+          description: Listing is closed
         '401':
           description: Unauthorized
         '404':
-          description: Roommate request not found
+          description: Listing not found
 
     get:
       summary: Get the user's own roommate applications
@@ -762,14 +762,14 @@ paths:
         '401':
           description: Unauthorized
 
-  /roommate-applications/{roommateRequestId}:
+  /roommate-applications/{listingId}:
     get:
-      summary: Get all roommate applications for a roommate request
-      description: Returns all roommate applications for a roommate request together with each applicant's contact details. Only the owner of the roommate request can view it.
+      summary: Get all roommate applications for a listing
+      description: Returns all roommate applications for a listing together with each applicant's contact details. Only the owner of the listing can view it.
       tags:
         - Roommate Applications
       parameters:
-        - name: roommateRequestId
+        - name: listingId
           in: path
           required: true
           schema:
@@ -789,12 +789,12 @@ paths:
         '403':
           description: Forbidden
         '404':
-          description: Roommate request not found
+          description: Listing not found
 
   /roommate-applications/{roommateApplicationId}:
     put:
       summary: Update a roommate application status
-      description: Updates the status of a roommate application. Only the owner of the roommate request can update it. Sends a push notification to the applicant.
+      description: Updates the status of a roommate application. Only the owner of the listing can update it. Sends a push notification to the applicant.
       tags:
         - Roommate Applications
       parameters:
@@ -822,7 +822,7 @@ paths:
         '403':
           description: Forbidden
         '404':
-          description: Roommate application or roommate request not found
+          description: Roommate application or listing not found
 
   /device-tokens:
     post:
@@ -879,7 +879,7 @@ components:
         - CZK
         - USD
 
-    RoommateRequestStatus:
+    ListingStatus:
       type: string
       enum:
         - ACTIVE
@@ -1263,10 +1263,10 @@ components:
       required:
         - name
 
-    # Roommate Request Schemas
-    CreateRoommateRequestRequest:
+    # Listing Schemas
+    CreateListingRequest:
       allOf:
-        - $ref: '#/components/schemas/UpdateRoommateRequestRequest'
+        - $ref: '#/components/schemas/UpdateListingRequest'
         - type: object
           properties:
             propertyId:
@@ -1275,7 +1275,7 @@ components:
           required:
             - propertyId
 
-    UpdateRoommateRequestRequest:
+    UpdateListingRequest:
       type: object
       properties:
         title:
@@ -1307,11 +1307,11 @@ components:
         - currentRoommates
         - preferredGender
 
-    UpdateRoommateRequestStatusRequest:
+    UpdateListingStatusRequest:
       type: object
       properties:
         status:
-          $ref: '#/components/schemas/RoommateRequestStatus'
+          $ref: '#/components/schemas/ListingStatus'
         maxRoommates:
           type: integer
           minimum: 1
@@ -1321,7 +1321,7 @@ components:
       required:
         - status
 
-    RoommateRequestResponse:
+    ListingResponse:
       type: object
       properties:
         id:
@@ -1350,7 +1350,7 @@ components:
         currentRoommates:
           type: integer
         status:
-          $ref: '#/components/schemas/RoommateRequestStatus'
+          $ref: '#/components/schemas/ListingStatus'
         preferredGender:
           $ref: '#/components/schemas/PreferredGender'
         createdAt:
@@ -1378,8 +1378,8 @@ components:
         - createdAt
         - updatedAt
 
-    RoommateRequestOwner:
-      description: Owner (creator) of the roommate request and its property.
+    ListingOwner:
+      description: Owner (creator) of the listing and its property.
       type: object
       properties:
         fullName:
@@ -1393,38 +1393,38 @@ components:
       required:
         - fullName
 
-    RoommateRequestDetailResponse:
-      description: A roommate request together with its owner's contact details and the full property.
+    ListingDetailResponse:
+      description: A listing together with its owner's contact details and the full property.
       allOf:
-        - $ref: '#/components/schemas/RoommateRequestResponse'
+        - $ref: '#/components/schemas/ListingResponse'
         - type: object
           properties:
             owner:
-              $ref: '#/components/schemas/RoommateRequestOwner'
+              $ref: '#/components/schemas/ListingOwner'
             property:
               $ref: '#/components/schemas/PropertyDetailResponse'
             canApply:
               type: boolean
-              description: Whether the authenticated user can currently apply to this roommate request.
+              description: Whether the authenticated user can currently apply to this listing.
             application:
               $ref: '#/components/schemas/RoommateApplicationResponse'
               description: The authenticated user's pending or accepted application, if one exists.
             favourite:
               type: boolean
-              description: Whether the authenticated user has favourited this roommate request.
+              description: Whether the authenticated user has favourited this listing.
           required:
             - owner
             - property
             - canApply
             - favourite
 
-    RoommateRequestListResponse:
+    ListingListResponse:
       type: object
       properties:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/RoommateRequestListItem'
+            $ref: '#/components/schemas/ListingListItem'
         nextCursor:
           type: string
           nullable: true
@@ -1432,7 +1432,7 @@ components:
         - items
         - nextCursor
 
-    RoommateRequestListItem:
+    ListingListItem:
       type: object
       properties:
         id:
@@ -1449,7 +1449,7 @@ components:
         priceCurrency:
           $ref: '#/components/schemas/CurrencyEnum'
         property:
-          $ref: '#/components/schemas/RoommateRequestPropertySummary'
+          $ref: '#/components/schemas/ListingPropertySummary'
       required:
         - id
         - title
@@ -1459,7 +1459,7 @@ components:
         - priceCurrency
         - property
 
-    RoommateRequestPropertySummary:
+    ListingPropertySummary:
       type: object
       properties:
         id:
@@ -1494,26 +1494,26 @@ components:
         - lng
         - titleImageId
 
-    UserRoommateRequestListItem:
+    UserListingListItem:
       allOf:
-        - $ref: '#/components/schemas/RoommateRequestListItem'
+        - $ref: '#/components/schemas/ListingListItem'
         - type: object
           properties:
             status:
-              $ref: '#/components/schemas/RoommateRequestStatus'
+              $ref: '#/components/schemas/ListingStatus'
             pendingApplicationsCount:
               type: integer
           required:
             - status
             - pendingApplicationsCount
 
-    UserRoommateRequestsPage:
+    UserListingsPage:
       type: object
       properties:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/UserRoommateRequestListItem'
+            $ref: '#/components/schemas/UserListingListItem'
         nextCursor:
           type: string
           nullable: true
@@ -1525,13 +1525,13 @@ components:
     CreateRoommateApplicationRequest:
       type: object
       properties:
-        roommateRequestId:
+        listingId:
           type: string
           format: uuid
         note:
           type: string
       required:
-        - roommateRequestId
+        - listingId
 
     UpdateRoommateApplicationRequest:
       type: object
@@ -1540,7 +1540,7 @@ components:
           $ref: '#/components/schemas/RoommateApplicationStatus'
         incrementCurrentRoommates:
           type: boolean
-          description: When accepting, also increment the roommate request's currentRoommates by 1.
+          description: When accepting, also increment the listing's currentRoommates by 1.
       required:
         - status
 
@@ -1550,7 +1550,7 @@ components:
         id:
           type: string
           format: uuid
-        roommateRequestId:
+        listingId:
           type: string
           format: uuid
         applicantId:
@@ -1566,7 +1566,7 @@ components:
           format: date-time
       required:
         - id
-        - roommateRequestId
+        - listingId
         - applicantId
         - status
         - createdAt
@@ -1577,7 +1577,7 @@ components:
         id:
           type: string
           format: uuid
-        roommateRequestId:
+        listingId:
           type: string
           format: uuid
         propertyId:
@@ -1599,7 +1599,7 @@ components:
           nullable: true
       required:
         - id
-        - roommateRequestId
+        - listingId
         - propertyId
         - status
         - createdAt
@@ -1619,7 +1619,7 @@ components:
         - items
         - nextCursor
 
-    # User Roommate Request Detail Schemas
+    # User Listing Detail Schemas
     RoommateApplicationApplicant:
       type: object
       properties:
@@ -1648,7 +1648,7 @@ components:
         id:
           type: string
           format: uuid
-        roommateRequestId:
+        listingId:
           type: string
           format: uuid
         applicantId:
@@ -1666,16 +1666,16 @@ components:
           $ref: '#/components/schemas/RoommateApplicationApplicant'
       required:
         - id
-        - roommateRequestId
+        - listingId
         - applicantId
         - status
         - createdAt
         - applicant
 
-    UserRoommateRequestDetailResponse:
-      description: A roommate request (with owner and property) together with its roommate applications and each applicant's contact details.
+    UserListingDetailResponse:
+      description: A listing (with owner and property) together with its roommate applications and each applicant's contact details.
       allOf:
-        - $ref: '#/components/schemas/RoommateRequestDetailResponse'
+        - $ref: '#/components/schemas/ListingDetailResponse'
         - type: object
           properties:
             applications:
@@ -1720,11 +1720,11 @@ components:
     CreateFavouriteRequest:
       type: object
       properties:
-        roommateRequestId:
+        listingId:
           type: string
           format: uuid
       required:
-        - roommateRequestId
+        - listingId
 
     FavouriteResponse:
       type: object
@@ -1732,7 +1732,7 @@ components:
         id:
           type: string
           format: uuid
-        roommateRequestId:
+        listingId:
           type: string
           format: uuid
         userId:
@@ -1743,6 +1743,6 @@ components:
           format: date-time
       required:
         - id
-        - roommateRequestId
+        - listingId
         - userId
         - createdAt

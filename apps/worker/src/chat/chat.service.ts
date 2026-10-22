@@ -11,9 +11,9 @@ import {
   type IAiApiService,
 } from '@/ai/domain/interface/ai-api.service';
 import {
-  ROOMMATE_REQUESTS_REPOSITORY,
-  type IRoommateRequestsRepository,
-} from '@/roommate-requests/domain/interface/roommate-requests.repository';
+  LISTINGS_REPOSITORY,
+  type IListingsRepository,
+} from '@/listings/domain/interface/listings.repository';
 import type { ChatMessage } from './domain/entity/chat.entity';
 import {
   CHAT_REPOSITORY,
@@ -35,19 +35,19 @@ export class ChatService {
     @Inject(AI_API_SERVICE) private readonly aiApi: IAiApiService,
     @Inject(CHAT_REPOSITORY)
     private readonly chatRepository: IChatRepository,
-    @Inject(ROOMMATE_REQUESTS_REPOSITORY)
-    private readonly roommateRequestsRepository: IRoommateRequestsRepository,
+    @Inject(LISTINGS_REPOSITORY)
+    private readonly listingsRepository: IListingsRepository,
   ) {}
 
   async sendMessage(
     sub: string,
     dto: SendMessageBodyDto,
   ): Promise<SendMessageResponse> {
-    const roommateRequest = await this.roommateRequestsRepository.findById(
-      dto.roommateRequestId,
+    const listing = await this.listingsRepository.findById(
+      dto.listingId,
     );
-    if (!roommateRequest) {
-      throw new NotFoundException('Roommate request not found');
+    if (!listing) {
+      throw new NotFoundException('Listing not found');
     }
 
     let conversationId: string;
@@ -67,16 +67,16 @@ export class ChatService {
       if (conversation.status !== 'ACTIVE') {
         throw new ConflictException('Conversation is not active');
       }
-      if (conversation.roommateRequestId !== dto.roommateRequestId) {
+      if (conversation.listingId !== dto.listingId) {
         throw new BadRequestException(
-          'Conversation does not match the roommate request',
+          'Conversation does not match the listing',
         );
       }
       conversationId = conversation.id;
     } else {
       const conversation = await this.chatRepository.startConversation(
         sub,
-        dto.roommateRequestId,
+        dto.listingId,
       );
       conversationId = conversation.id;
     }
@@ -92,7 +92,7 @@ export class ChatService {
       RECENT_USER_MESSAGE_LIMIT,
     );
     const prompt = buildChatPrompt({
-      roommateRequest,
+      listing,
       userMessages: recentUserMessages.map((m) => m.content.text),
     });
 
@@ -113,15 +113,15 @@ export class ChatService {
 
   async getActiveConversation(
     sub: string,
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<GetConversationResponse> {
     const conversation = await this.chatRepository.findActiveConversation(
       sub,
-      roommateRequestId,
+      listingId,
     );
     if (!conversation) {
       throw new NotFoundException(
-        'No active conversation for this roommate request',
+        'No active conversation for this listing',
       );
     }
 

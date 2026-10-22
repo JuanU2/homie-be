@@ -9,34 +9,34 @@ import {
   type IFavouritesRepository,
 } from '@/api/favourites/domain/interface/favourites.repository';
 import {
-  type IRoommateRequestsRepository,
-  ROOMMATE_REQUESTS_REPOSITORY,
-} from '@/api/roommateRequests/domain/interface/roommateRequests.repository';
+  type IListingsRepository,
+  LISTINGS_REPOSITORY,
+} from '@/api/listings/domain/interface/listings.repository';
 
 @Injectable()
 export class FavouritesService {
   constructor(
     @Inject(FAVOURITES_REPOSITORY)
     private readonly favouritesRepository: IFavouritesRepository,
-    @Inject(ROOMMATE_REQUESTS_REPOSITORY)
-    private readonly roommateRequestsRepository: IRoommateRequestsRepository,
+    @Inject(LISTINGS_REPOSITORY)
+    private readonly listingsRepository: IListingsRepository,
   ) {}
 
-  async create(userId: string, roommateRequestId: string): Promise<Favourite> {
+  async create(userId: string, listingId: string): Promise<Favourite> {
     const request =
-      await this.roommateRequestsRepository.getRoommateRequestById(
-        roommateRequestId,
+      await this.listingsRepository.getListingById(
+        listingId,
       );
 
     if (!request) {
-      throw new NotFoundException('Roommate request not found');
+      throw new NotFoundException('Listing not found');
     }
 
-    return this.favouritesRepository.create(userId, roommateRequestId);
+    return this.favouritesRepository.create(userId, listingId);
   }
 
-  async delete(userId: string, roommateRequestId: string): Promise<void> {
-    await this.favouritesRepository.delete(userId, roommateRequestId);
+  async delete(userId: string, listingId: string): Promise<void> {
+    await this.favouritesRepository.delete(userId, listingId);
   }
 
   async getFavourites(

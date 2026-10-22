@@ -5,9 +5,9 @@ import {
 } from '@/api/favourites/domain/entity/favourite';
 
 export interface IFavouritesRepository {
-  create(userId: string, roommateRequestId: string): Promise<Favourite>;
-  delete(userId: string, roommateRequestId: string): Promise<void>;
-  exists(userId: string, roommateRequestId: string): Promise<boolean>;
+  create(userId: string, listingId: string): Promise<Favourite>;
+  delete(userId: string, listingId: string): Promise<void>;
+  exists(userId: string, listingId: string): Promise<boolean>;
   getFavouritesPage(
     userId: string,
     params: GetFavouritesParams,

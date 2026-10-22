@@ -2,7 +2,7 @@ export type RoommateApplicationStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
 
 export interface RoommateApplication {
   id: string;
-  roommateRequestId: string;
+  listingId: string;
   applicantId: string;
   note: string | null;
   status: RoommateApplicationStatus;
@@ -11,14 +11,14 @@ export interface RoommateApplication {
 }
 
 export interface CreateRoommateApplicationModel {
-  roommateRequestId: string;
+  listingId: string;
   applicantId: string;
   note?: string;
 }
 
 export interface RoommateApplicationListItem {
   id: string;
-  roommateRequestId: string;
+  listingId: string;
   propertyId: string;
   status: RoommateApplicationStatus;
   note: string | null;
@@ -48,7 +48,7 @@ export interface RoommateApplicationApplicant {
 
 export interface RoommateApplicationWithApplicant {
   id: string;
-  roommateRequestId: string;
+  listingId: string;
   applicantId: string;
   note: string | null;
   status: RoommateApplicationStatus;

@@ -1,15 +1,15 @@
-import type { RoommateRequestBlob } from '@homie/events';
+import type { ListingBlob } from '@homie/events';
 
 export interface ChatPromptOptions {
-  roommateRequest: RoommateRequestBlob;
+  listing: ListingBlob;
   userMessages: string[];
 }
 
 export function buildChatPrompt({
-  roommateRequest,
+  listing,
   userMessages,
 }: ChatPromptOptions): string {
-  const p = roommateRequest;
+  const p = listing;
   const property = p.property;
 
   const details = [

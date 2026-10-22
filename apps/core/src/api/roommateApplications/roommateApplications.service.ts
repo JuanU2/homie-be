@@ -10,9 +10,9 @@ import {
   ROOMMATE_APPLICATIONS_REPOSITORY,
 } from '@/api/roommateApplications/domain/interface/roommateApplications.repository';
 import {
-  type IRoommateRequestsRepository,
-  ROOMMATE_REQUESTS_REPOSITORY,
-} from '@/api/roommateRequests/domain/interface/roommateRequests.repository';
+  type IListingsRepository,
+  LISTINGS_REPOSITORY,
+} from '@/api/listings/domain/interface/listings.repository';
 import {
   CreateRoommateApplicationDtoRequest,
   RoommateApplicationDtoResponse,
@@ -25,7 +25,7 @@ import {
   RoommateApplication,
   RoommateApplicationsPage,
 } from '@/api/roommateApplications/domain/entity/roommateApplication';
-import type { RoommateRequest } from '@/api/roommateRequests/domain/entity/roommateRequest';
+import type { Listing } from '@/api/listings/domain/entity/listing';
 import { DeviceTokensService } from '@/api/deviceTokens/deviceTokens.service';
 import { PushService } from '@/push/push.service';
 import z from 'zod';
@@ -35,8 +35,8 @@ export class RoommateApplicationsService {
   constructor(
     @Inject(ROOMMATE_APPLICATIONS_REPOSITORY)
     private readonly roommateApplicationsRepository: IRoommateApplicationsRepository,
-    @Inject(ROOMMATE_REQUESTS_REPOSITORY)
-    private readonly roommateRequestsRepository: IRoommateRequestsRepository,
+    @Inject(LISTINGS_REPOSITORY)
+    private readonly listingsRepository: IListingsRepository,
     private readonly deviceTokensService: DeviceTokensService,
     private readonly pushService: PushService,
   ) {}
@@ -45,53 +45,53 @@ export class RoommateApplicationsService {
     applicantId: string,
     data: CreateRoommateApplicationDtoRequest,
   ): Promise<RoommateApplicationDtoResponse> {
-    const roommateRequest =
-      await this.roommateRequestsRepository.getRoommateRequestById(
-        data.roommateRequestId,
+    const listing =
+      await this.listingsRepository.getListingById(
+        data.listingId,
       );
 
-    if (!roommateRequest) {
-      throw new NotFoundException('Roommate request not found');
+    if (!listing) {
+      throw new NotFoundException('Listing not found');
     }
 
-    if (roommateRequest.status === 'CLOSED') {
+    if (listing.status === 'CLOSED') {
       throw new BadRequestException(
-        'Cannot apply to a closed roommate request',
+        'Cannot apply to a closed listing',
       );
     }
 
-    const { canApply } = await this.canApplyToRoommateRequest(
+    const { canApply } = await this.canApplyToListing(
       applicantId,
-      roommateRequest,
+      listing,
     );
 
     if (!canApply) {
-      if (roommateRequest.createdBy === applicantId) {
+      if (listing.createdBy === applicantId) {
         throw new BadRequestException(
-          'You cannot apply to your own roommate request',
+          'You cannot apply to your own listing',
         );
       }
       throw new BadRequestException(
-        'You already have a pending or accepted application for this roommate request',
+        'You already have a pending or accepted application for this listing',
       );
     }
 
     const application =
       await this.roommateApplicationsRepository.createRoommateApplication({
-        roommateRequestId: data.roommateRequestId,
+        listingId: data.listingId,
         applicantId,
         note: data.note,
       });
 
     const tokens = await this.deviceTokensService.getTokens(
-      roommateRequest.createdBy,
+      listing.createdBy,
     );
     await this.pushService.send(tokens, {
       title: 'New roommate application',
-      body: `Someone applied to "${roommateRequest.title}"`,
+      body: `Someone applied to "${listing.title}"`,
       data: {
         type: 'new_application',
-        roommateRequestId: roommateRequest.id,
+        listingId: listing.id,
         applicationId: application.id,
       },
     });
@@ -99,22 +99,22 @@ export class RoommateApplicationsService {
     return application;
   }
 
-  async canApplyToRoommateRequest(
+  async canApplyToListing(
     userId: string,
-    roommateRequest: RoommateRequest,
+    listing: Listing,
   ): Promise<{ canApply: boolean; application?: RoommateApplication }> {
-    if (roommateRequest.createdBy === userId) {
+    if (listing.createdBy === userId) {
       return { canApply: false };
     }
 
-    if (roommateRequest.status === 'CLOSED') {
+    if (listing.status === 'CLOSED') {
       return { canApply: false };
     }
 
     const application =
       await this.roommateApplicationsRepository.getLatestActiveApplication(
         userId,
-        roommateRequest.id,
+        listing.id,
       );
 
     if (!application) {
@@ -145,18 +145,18 @@ export class RoommateApplicationsService {
       throw new NotFoundException('Roommate application not found');
     }
 
-    const roommateRequest =
-      await this.roommateRequestsRepository.getRoommateRequestById(
-        application.roommateRequestId,
+    const listing =
+      await this.listingsRepository.getListingById(
+        application.listingId,
       );
 
-    if (!roommateRequest) {
-      throw new NotFoundException('Roommate request not found');
+    if (!listing) {
+      throw new NotFoundException('Listing not found');
     }
 
-    if (roommateRequest.createdBy !== userId) {
+    if (listing.createdBy !== userId) {
       throw new ForbiddenException(
-        'You can only update applications for your own roommate request',
+        'You can only update applications for your own listing',
       );
     }
 
@@ -168,7 +168,7 @@ export class RoommateApplicationsService {
     const updated = shouldIncrement
       ? await this.roommateApplicationsRepository.acceptRoommateApplication(
           roommateApplicationId,
-          application.roommateRequestId,
+          application.listingId,
         )
       : await this.roommateApplicationsRepository.updateRoommateApplicationStatus(
           roommateApplicationId,
@@ -184,10 +184,10 @@ export class RoommateApplicationsService {
     );
     await this.pushService.send(tokens, {
       title: 'Roommate application updated',
-      body: `Your application to "${roommateRequest.title}" was ${data.status.toLowerCase()}`,
+      body: `Your application to "${listing.title}" was ${data.status.toLowerCase()}`,
       data: {
         type: 'application_status_changed',
-        roommateRequestId: roommateRequest.id,
+        listingId: listing.id,
         applicationId: application.id,
         status: data.status,
       },
@@ -208,26 +208,26 @@ export class RoommateApplicationsService {
 
   async getRoommateApplicationsForRequest(
     userId: string,
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<RoommateApplicationWithApplicantDtoResponse[]> {
-    const roommateRequest =
-      await this.roommateRequestsRepository.getRoommateRequestById(
-        roommateRequestId,
+    const listing =
+      await this.listingsRepository.getListingById(
+        listingId,
       );
 
-    if (!roommateRequest) {
-      throw new NotFoundException('Roommate request not found');
+    if (!listing) {
+      throw new NotFoundException('Listing not found');
     }
 
-    if (roommateRequest.createdBy !== userId) {
+    if (listing.createdBy !== userId) {
       throw new ForbiddenException(
-        'You can only view applications for your own roommate request',
+        'You can only view applications for your own listing',
       );
     }
 
     const applications =
       await this.roommateApplicationsRepository.getRoommateApplicationsForRequest(
-        roommateRequestId,
+        listingId,
       );
 
     return z

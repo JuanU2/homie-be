@@ -16,7 +16,7 @@ export interface IRoommateApplicationsRepository {
   ): Promise<RoommateApplication | undefined>;
   getLatestActiveApplication(
     applicantId: string,
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<RoommateApplication | undefined>;
   updateRoommateApplicationStatus(
     id: string,
@@ -24,14 +24,14 @@ export interface IRoommateApplicationsRepository {
   ): Promise<RoommateApplication | undefined>;
   acceptRoommateApplication(
     id: string,
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<RoommateApplication | undefined>;
   getRoommateApplicationsPage(
     applicantId: string,
     params: GetRoommateApplicationsParams,
   ): Promise<RoommateApplicationsPage>;
   getRoommateApplicationsForRequest(
-    roommateRequestId: string,
+    listingId: string,
   ): Promise<RoommateApplicationWithApplicant[]>;
 }
 

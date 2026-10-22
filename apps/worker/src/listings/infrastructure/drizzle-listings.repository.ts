@@ -4,28 +4,28 @@ import { type NodePgDatabase } from '@homie/db';
 import type {
   PropertyData,
   PropertyUpdatedPayload,
-  RoommateRequestBlob,
+  ListingBlob,
 } from '@homie/events';
-import { roommateRequests } from '@/database/schema/index';
+import { listings } from '@/database/schema/index';
 import * as schema from '@/database/schema/index';
-import { IRoommateRequestsRepository } from '../domain/interface/roommate-requests.repository';
+import { IListingsRepository } from '../domain/interface/listings.repository';
 
 @Injectable()
-export class DrizzleRoommateRequestsRepository implements IRoommateRequestsRepository {
+export class DrizzleListingsRepository implements IListingsRepository {
   constructor(
     @Inject('DRIZZLE_DB') private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async upsert(data: RoommateRequestBlob): Promise<void> {
+  async upsert(data: ListingBlob): Promise<void> {
     await this.db
-      .insert(roommateRequests)
+      .insert(listings)
       .values({
-        roommateRequestId: data.id,
+        listingId: data.id,
         propertyId: data.propertyId,
         data,
       })
       .onConflictDoUpdate({
-        target: roommateRequests.roommateRequestId,
+        target: listings.listingId,
         set: { propertyId: data.propertyId, data },
       });
   }
@@ -36,45 +36,45 @@ export class DrizzleRoommateRequestsRepository implements IRoommateRequestsRepos
   ): Promise<void> {
     const rows = await this.db
       .select()
-      .from(roommateRequests)
-      .where(eq(roommateRequests.propertyId, propertyId));
+      .from(listings)
+      .where(eq(listings.propertyId, propertyId));
 
     for (const row of rows) {
-      const data = row.data as RoommateRequestBlob;
+      const data = row.data as ListingBlob;
       data.property = { ...data.property, ...property };
 
       await this.db
-        .update(roommateRequests)
+        .update(listings)
         .set({ data })
-        .where(eq(roommateRequests.roommateRequestId, row.roommateRequestId));
+        .where(eq(listings.listingId, row.listingId));
     }
   }
 
   async getProperty(propertyId: string): Promise<PropertyData | null> {
     const [row] = await this.db
       .select()
-      .from(roommateRequests)
-      .where(eq(roommateRequests.propertyId, propertyId))
+      .from(listings)
+      .where(eq(listings.propertyId, propertyId))
       .limit(1);
 
     if (!row) {
       return null;
     }
 
-    return (row.data as RoommateRequestBlob).property;
+    return (row.data as ListingBlob).property;
   }
 
-  async findById(id: string): Promise<RoommateRequestBlob | null> {
+  async findById(id: string): Promise<ListingBlob | null> {
     const [row] = await this.db
       .select()
-      .from(roommateRequests)
-      .where(eq(roommateRequests.roommateRequestId, id))
+      .from(listings)
+      .where(eq(listings.listingId, id))
       .limit(1);
 
     if (!row) {
       return null;
     }
 
-    return row.data as RoommateRequestBlob;
+    return row.data as ListingBlob;
   }
 }

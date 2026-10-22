@@ -49,7 +49,7 @@ async function seed() {
   // Backfill the normalized EUR price for any rows created before price_eur
   // was introduced.
   await db.execute(sql`
-    UPDATE core.roommate_requests rr
+    UPDATE core.listings rr
     SET price_eur = rr.price_amount * er.eur_rate
     FROM core.exchange_rates er
     WHERE er.currency::text = rr.price_currency::text

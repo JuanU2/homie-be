@@ -1,8 +1,8 @@
-import type { RoommateRequestsPage } from '@/api/roommateRequests/domain/entity/roommateRequest';
+import type { ListingsPage } from '@/api/listings/domain/entity/listing';
 
 export interface Favourite {
   id: string;
-  roommateRequestId: string;
+  listingId: string;
   userId: string;
   createdAt: Date;
 }
@@ -12,4 +12,4 @@ export interface GetFavouritesParams {
   cursor?: string;
 }
 
-export type FavouritesPage = RoommateRequestsPage;
+export type FavouritesPage = ListingsPage;

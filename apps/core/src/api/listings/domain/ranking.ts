@@ -1,9 +1,9 @@
-export type RoommateRequestSortBy =
+export type ListingSortBy =
   | 'PRICE'
   | 'DISTANCE_TRANSIT'
   | 'DISTANCE_CITY_CENTER';
 
-export type RankingCriterion = RoommateRequestSortBy | 'LOCATION';
+export type RankingCriterion = ListingSortBy | 'LOCATION';
 
 export interface RankingCriterionConfig {
   weight: number;

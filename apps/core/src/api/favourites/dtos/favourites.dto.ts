@@ -2,7 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 
 export const createFavouriteDtoRequestSchema = z.object({
-  roommateRequestId: z.uuid(),
+  listingId: z.uuid(),
 });
 
 export class CreateFavouriteDtoRequest extends createZodDto(
@@ -10,14 +10,14 @@ export class CreateFavouriteDtoRequest extends createZodDto(
 ) {}
 
 export const favouriteParamsSchema = z.object({
-  roommateRequestId: z.uuid(),
+  listingId: z.uuid(),
 });
 
 export class FavouriteParamsDto extends createZodDto(favouriteParamsSchema) {}
 
 export const favouriteDtoResponseSchema = z.object({
   id: z.string(),
-  roommateRequestId: z.string(),
+  listingId: z.string(),
   userId: z.string(),
   createdAt: z.date(),
 });
