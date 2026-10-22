@@ -13,8 +13,10 @@ import {
   GetRoommateApplicationsParams,
   RoommateApplication,
   RoommateApplicationListItem,
+  RoommateApplicationListItemWithApplicant,
   RoommateApplicationWithApplicant,
   RoommateApplicationsPage,
+  RoommateApplicationsWithApplicantPage,
   type RoommateApplicationStatus,
 } from '@/api/roommateApplications/domain/entity/roommateApplication';
 import { IRoommateApplicationsRepository } from '@/api/roommateApplications/domain/interface/roommateApplications.repository';
@@ -28,6 +30,22 @@ interface RawApplicationPageRow {
   propertyId: string;
   title: string;
   titleImageId: string | null;
+}
+
+interface RawApplicationWithApplicantPageRow {
+  id: string;
+  status: string;
+  note: string | null;
+  createdAt: string;
+  listingId: string;
+  propertyId: string;
+  title: string;
+  titleImageId: string | null;
+  applicantId: string;
+  fullName: string;
+  email: string;
+  profileUrl: string | null;
+  phoneNumber: string | null;
 }
 
 function encodeCursor(key: string, id: string): string {
@@ -204,6 +222,82 @@ export class DrizzleRoommateApplicationsRepository
       createdAt: new Date(row.createdAt),
       title: row.title,
       titleImageId: row.titleImageId,
+    };
+  }
+
+  async getRoommateApplicationsPageForOwner(
+    ownerId: string,
+    params: GetRoommateApplicationsParams,
+  ): Promise<RoommateApplicationsWithApplicantPage> {
+    const { limit, cursor, status } = params;
+
+    const conditions = [sql`rr.created_by = ${ownerId}`];
+    if (cursor) {
+      const { key, id } = decodeCursor(cursor);
+      conditions.push(sql`(ra.created_at, ra.id) < (${key}, ${id})`);
+    }
+    if (status) {
+      conditions.push(sql`ra.status = ${status}`);
+    }
+    const where = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
+
+    const result = await this.db.execute(sql`
+      SELECT
+        ra.id AS "id",
+        ra.status AS "status",
+        ra.note AS "note",
+        ra.created_at AS "createdAt",
+        ra.listing_id AS "listingId",
+        rr.property_id AS "propertyId",
+        rr.title AS "title",
+        ti.id AS "titleImageId",
+        u.id AS "applicantId",
+        u.full_name AS "fullName",
+        u.email AS "email",
+        u.image AS "profileUrl",
+        us.phone_number AS "phoneNumber"
+      FROM core.roommate_applications ra
+      JOIN core.listings rr ON rr.id = ra.listing_id
+      LEFT JOIN core.property_images ti ON ti.property_id = rr.property_id AND ti.title = true
+      JOIN core.users u ON u.id = ra.applicant_id
+      LEFT JOIN core.user_settings us ON us.user_id = u.id
+      ${where}
+      ORDER BY ra.created_at DESC, ra.id DESC
+      LIMIT ${limit + 1}
+    `);
+
+    const rows = result.rows as unknown as RawApplicationWithApplicantPageRow[];
+
+    const items = rows.map(row => this.toListItemWithApplicant(row));
+
+    const hasNext = rows.length > limit;
+    const pageItems = hasNext ? items.slice(0, limit) : items;
+    const lastRow = hasNext ? rows[limit - 1] : undefined;
+    const nextCursor =
+      hasNext && lastRow ? encodeCursor(lastRow.createdAt, lastRow.id) : null;
+
+    return { items: pageItems, nextCursor };
+  }
+
+  private toListItemWithApplicant(
+    row: RawApplicationWithApplicantPageRow,
+  ): RoommateApplicationListItemWithApplicant {
+    return {
+      id: row.id,
+      listingId: row.listingId,
+      propertyId: row.propertyId,
+      status: row.status as RoommateApplicationStatus,
+      note: row.note,
+      createdAt: new Date(row.createdAt),
+      title: row.title,
+      titleImageId: row.titleImageId,
+      applicant: {
+        id: row.applicantId,
+        fullName: row.fullName,
+        email: row.email,
+        phoneNumber: row.phoneNumber,
+        profileUrl: row.profileUrl,
+      },
     };
   }
 

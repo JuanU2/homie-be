@@ -5,6 +5,7 @@ import {
   RoommateApplicationStatus,
   RoommateApplicationWithApplicant,
   RoommateApplicationsPage,
+  RoommateApplicationsWithApplicantPage,
 } from '@/api/roommateApplications/domain/entity/roommateApplication';
 
 export interface IRoommateApplicationsRepository {
@@ -33,6 +34,10 @@ export interface IRoommateApplicationsRepository {
   getRoommateApplicationsForRequest(
     listingId: string,
   ): Promise<RoommateApplicationWithApplicant[]>;
+  getRoommateApplicationsPageForOwner(
+    ownerId: string,
+    params: GetRoommateApplicationsParams,
+  ): Promise<RoommateApplicationsWithApplicantPage>;
 }
 
 export const ROOMMATE_APPLICATIONS_REPOSITORY = Symbol(

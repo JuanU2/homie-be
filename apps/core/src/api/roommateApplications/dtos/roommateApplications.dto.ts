@@ -85,3 +85,32 @@ export const roommateApplicationIdParamsSchema = z.object({
 export class RoommateApplicationIdParamsDto extends createZodDto(
   roommateApplicationIdParamsSchema,
 ) {}
+
+export const roommateApplicationListItemWithApplicantResponseSchema = z.object({
+  id: z.string(),
+  listingId: z.string(),
+  propertyId: z.string(),
+  status: roommateApplicationStatusSchema,
+  note: z.string().nullable(),
+  createdAt: z.date(),
+  title: z.string(),
+  titleImageId: z.string().nullable(),
+  applicant: roommateApplicationApplicantResponseSchema,
+});
+
+export const roommateApplicationsWithApplicantPageResponseSchema = z.object({
+  items: z.array(roommateApplicationListItemWithApplicantResponseSchema),
+  nextCursor: z.string().nullable(),
+});
+
+export class RoommateApplicationsWithApplicantPageDtoResponse extends createZodDto(
+  roommateApplicationsWithApplicantPageResponseSchema,
+) {}
+
+export const userRoommateApplicationsParamsSchema = z.object({
+  userId: z.uuid(),
+});
+
+export class UserRoommateApplicationsParamsDto extends createZodDto(
+  userRoommateApplicationsParamsSchema,
+) {}

@@ -55,3 +55,13 @@ export interface RoommateApplicationWithApplicant {
   createdAt: Date;
   applicant: RoommateApplicationApplicant;
 }
+
+export interface RoommateApplicationListItemWithApplicant
+  extends RoommateApplicationListItem {
+  applicant: RoommateApplicationApplicant;
+}
+
+export interface RoommateApplicationsWithApplicantPage {
+  items: RoommateApplicationListItemWithApplicant[];
+  nextCursor: string | null;
+}

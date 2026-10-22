@@ -32,6 +32,7 @@ import { ListingsService } from '@/api/listings/listings.service';
 import { LISTINGS_REPOSITORY } from '@/api/listings/domain/interface/listings.repository';
 import { DrizzleListingsRepository } from '@/api/listings/infrastructure/drizzle-listings.repository';
 import { RoommateApplicationsController } from '@/api/roommateApplications/roommateApplications.controller';
+import { UserRoommateApplicationsController } from '@/api/roommateApplications/userRoommateApplications.controller';
 import { RoommateApplicationsService } from '@/api/roommateApplications/roommateApplications.service';
 import { ROOMMATE_APPLICATIONS_REPOSITORY } from '@/api/roommateApplications/domain/interface/roommateApplications.repository';
 import { DrizzleRoommateApplicationsRepository } from '@/api/roommateApplications/infrastructure/drizzle-roommateApplications.repository';
@@ -75,6 +76,7 @@ import { DrizzleFavouritesRepository } from '@/api/favourites/infrastructure/dri
     ListingsController,
     UserListingsController,
     RoommateApplicationsController,
+    UserRoommateApplicationsController,
     EquipmentTypesController,
     PropertyImagesController,
     DeviceTokensController,

@@ -635,6 +635,49 @@ paths:
         '404':
           description: Listing not found
 
+  /users/{userId}/listing-applications:
+    get:
+      summary: Get all applications for the user's own listings
+      description: Returns the paginated list of roommate applications for every listing the user owns, optionally filtered by status, together with each applicant's contact details.
+      tags:
+        - Listings
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/RoommateApplicationStatus'
+      responses:
+        '200':
+          description: Paginated list of applications for the user's own listings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoommateApplicationsWithApplicantPage'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
   /favourites:
     get:
       summary: Get the authenticated user's favourite listings
@@ -1671,6 +1714,57 @@ components:
         - status
         - createdAt
         - applicant
+
+    RoommateApplicationListItemWithApplicant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        listingId:
+          type: string
+          format: uuid
+        propertyId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/RoommateApplicationStatus'
+        note:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        title:
+          type: string
+        titleImageId:
+          type: string
+          format: uuid
+          nullable: true
+        applicant:
+          $ref: '#/components/schemas/RoommateApplicationApplicant'
+      required:
+        - id
+        - listingId
+        - propertyId
+        - status
+        - createdAt
+        - title
+        - applicant
+
+    RoommateApplicationsWithApplicantPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoommateApplicationListItemWithApplicant'
+        nextCursor:
+          type: string
+          nullable: true
+      required:
+        - items
+        - nextCursor
 
     UserListingDetailResponse:
       description: A listing (with owner and property) together with its roommate applications and each applicant's contact details.

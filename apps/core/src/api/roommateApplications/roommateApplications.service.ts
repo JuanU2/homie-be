@@ -18,6 +18,8 @@ import {
   RoommateApplicationDtoResponse,
   RoommateApplicationWithApplicantDtoResponse,
   roommateApplicationWithApplicantResponseSchema,
+  RoommateApplicationsWithApplicantPageDtoResponse,
+  roommateApplicationsWithApplicantPageResponseSchema,
   UpdateRoommateApplicationDtoRequest,
 } from '@/api/roommateApplications/dtos/roommateApplications.dto';
 import {
@@ -233,5 +235,18 @@ export class RoommateApplicationsService {
     return z
       .array(roommateApplicationWithApplicantResponseSchema)
       .parse(applications);
+  }
+
+  async getRoommateApplicationsForOwner(
+    ownerId: string,
+    params: GetRoommateApplicationsParams,
+  ): Promise<RoommateApplicationsWithApplicantPageDtoResponse> {
+    const page =
+      await this.roommateApplicationsRepository.getRoommateApplicationsPageForOwner(
+        ownerId,
+        params,
+      );
+
+    return roommateApplicationsWithApplicantPageResponseSchema.parse(page);
   }
 }
