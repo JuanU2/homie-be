@@ -18,6 +18,8 @@ import {
   RoommateApplicationDtoResponse,
   RoommateApplicationWithApplicantDtoResponse,
   roommateApplicationWithApplicantResponseSchema,
+  RoommateApplicationsCountDtoResponse,
+  roommateApplicationsCountResponseSchema,
   RoommateApplicationsWithApplicantPageDtoResponse,
   roommateApplicationsWithApplicantPageResponseSchema,
   UpdateRoommateApplicationDtoRequest,
@@ -26,6 +28,7 @@ import {
   GetRoommateApplicationsParams,
   RoommateApplication,
   RoommateApplicationsPage,
+  RoommateApplicationStatus,
 } from '@/api/roommateApplications/domain/entity/roommateApplication';
 import type { Listing } from '@/api/listings/domain/entity/listing';
 import { DeviceTokensService } from '@/api/deviceTokens/deviceTokens.service';
@@ -248,5 +251,18 @@ export class RoommateApplicationsService {
       );
 
     return roommateApplicationsWithApplicantPageResponseSchema.parse(page);
+  }
+
+  async countRoommateApplicationsForOwner(
+    ownerId: string,
+    status?: RoommateApplicationStatus,
+  ): Promise<RoommateApplicationsCountDtoResponse> {
+    const count =
+      await this.roommateApplicationsRepository.countRoommateApplicationsForOwner(
+        ownerId,
+        status,
+      );
+
+    return roommateApplicationsCountResponseSchema.parse({ count });
   }
 }

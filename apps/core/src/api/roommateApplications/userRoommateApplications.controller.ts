@@ -11,7 +11,9 @@ import { ApiOperation } from '@nestjs/swagger';
 import { GoogleTokenGuard } from '@/api/auth/google-token.guard';
 import { type Request } from 'express';
 import {
+  CountRoommateApplicationsQueryDto,
   GetRoommateApplicationsQueryDto,
+  RoommateApplicationsCountDtoResponse,
   RoommateApplicationsWithApplicantPageDtoResponse,
   UserRoommateApplicationsParamsDto,
 } from '@/api/roommateApplications/dtos/roommateApplications.dto';
@@ -42,6 +44,28 @@ export class UserRoommateApplicationsController {
     return this.roommateApplicationsService.getRoommateApplicationsForOwner(
       params.userId,
       { limit: query.limit, cursor: query.cursor, status: query.status },
+    );
+  }
+
+  @Get(':userId/listing-applications/count')
+  @UseGuards(GoogleTokenGuard)
+  @ApiOperation({
+    summary: "Get the count of applications for the user's own listings",
+  })
+  async getUserListingApplicationsCount(
+    @Req() request: Request,
+    @Param() params: UserRoommateApplicationsParamsDto,
+    @Query() query: CountRoommateApplicationsQueryDto,
+  ): Promise<RoommateApplicationsCountDtoResponse> {
+    if (request.user!.userId !== params.userId) {
+      throw new ForbiddenException(
+        'You can only view applications for your own listings',
+      );
+    }
+
+    return this.roommateApplicationsService.countRoommateApplicationsForOwner(
+      params.userId,
+      query.status,
     );
   }
 }

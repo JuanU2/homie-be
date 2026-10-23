@@ -301,6 +301,27 @@ export class DrizzleRoommateApplicationsRepository
     };
   }
 
+  async countRoommateApplicationsForOwner(
+    ownerId: string,
+    status?: RoommateApplicationStatus,
+  ): Promise<number> {
+    const conditions = [sql`rr.created_by = ${ownerId}`];
+    if (status) {
+      conditions.push(sql`ra.status = ${status}`);
+    }
+    const where = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
+
+    const result = await this.db.execute(sql`
+      SELECT COUNT(*)::int AS "count"
+      FROM core.roommate_applications ra
+      JOIN core.listings rr ON rr.id = ra.listing_id
+      ${where}
+    `);
+
+    const row = result.rows[0] as { count: number } | undefined;
+    return row?.count ?? 0;
+  }
+
   async getRoommateApplicationsForRequest(
     listingId: string,
   ): Promise<RoommateApplicationWithApplicant[]> {

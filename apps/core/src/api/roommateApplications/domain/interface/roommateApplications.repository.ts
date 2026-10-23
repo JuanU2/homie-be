@@ -38,6 +38,10 @@ export interface IRoommateApplicationsRepository {
     ownerId: string,
     params: GetRoommateApplicationsParams,
   ): Promise<RoommateApplicationsWithApplicantPage>;
+  countRoommateApplicationsForOwner(
+    ownerId: string,
+    status?: RoommateApplicationStatus,
+  ): Promise<number>;
 }
 
 export const ROOMMATE_APPLICATIONS_REPOSITORY = Symbol(

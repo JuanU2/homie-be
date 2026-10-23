@@ -114,3 +114,19 @@ export const userRoommateApplicationsParamsSchema = z.object({
 export class UserRoommateApplicationsParamsDto extends createZodDto(
   userRoommateApplicationsParamsSchema,
 ) {}
+
+export const countRoommateApplicationsQuerySchema = z.object({
+  status: roommateApplicationStatusSchema.optional(),
+});
+
+export class CountRoommateApplicationsQueryDto extends createZodDto(
+  countRoommateApplicationsQuerySchema,
+) {}
+
+export const roommateApplicationsCountResponseSchema = z.object({
+  count: z.number().int().nonnegative(),
+});
+
+export class RoommateApplicationsCountDtoResponse extends createZodDto(
+  roommateApplicationsCountResponseSchema,
+) {}
