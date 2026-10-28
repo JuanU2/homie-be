@@ -1,4 +1,10 @@
-export type RoommateApplicationStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
+export type RoommateApplicationStatus =
+  | 'PENDING'
+  | 'VIEWING_OFFERED'
+  | 'VIEWING_CONFIRMED'
+  | 'VIEWING_DECLINED'
+  | 'ACCEPTED'
+  | 'REJECTED';
 
 export interface RoommateApplication {
   id: string;
@@ -6,6 +12,8 @@ export interface RoommateApplication {
   applicantId: string;
   note: string | null;
   status: RoommateApplicationStatus;
+  viewingOptions: Date[] | null;
+  viewingChosenAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,6 +30,8 @@ export interface RoommateApplicationListItem {
   propertyId: string;
   status: RoommateApplicationStatus;
   note: string | null;
+  viewingOptions: Date[] | null;
+  viewingChosenAt: Date | null;
   createdAt: Date;
   title: string;
   titleImageId: string | null;
@@ -52,6 +62,8 @@ export interface RoommateApplicationWithApplicant {
   applicantId: string;
   note: string | null;
   status: RoommateApplicationStatus;
+  viewingOptions: Date[] | null;
+  viewingChosenAt: Date | null;
   createdAt: Date;
   applicant: RoommateApplicationApplicant;
 }

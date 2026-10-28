@@ -971,6 +971,9 @@ components:
       type: string
       enum:
         - PENDING
+        - VIEWING_OFFERED
+        - VIEWING_CONFIRMED
+        - VIEWING_DECLINED
         - ACCEPTED
         - REJECTED
 
@@ -1638,6 +1641,16 @@ components:
         incrementCurrentRoommates:
           type: boolean
           description: When accepting, also increment the listing's currentRoommates by 1.
+        dateTimes:
+          type: array
+          description: 1-3 proposed viewing times, required when status is VIEWING_OFFERED.
+          items:
+            type: string
+            format: date-time
+        dateTime:
+          type: string
+          format: date-time
+          description: The chosen viewing time, required when status is VIEWING_CONFIRMED.
       required:
         - status
 
@@ -1658,6 +1671,16 @@ components:
           nullable: true
         status:
           $ref: '#/components/schemas/RoommateApplicationStatus'
+        viewingOptions:
+          type: array
+          nullable: true
+          items:
+            type: string
+            format: date-time
+        viewingChosenAt:
+          type: string
+          format: date-time
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -1684,6 +1707,16 @@ components:
           $ref: '#/components/schemas/RoommateApplicationStatus'
         note:
           type: string
+          nullable: true
+        viewingOptions:
+          type: array
+          nullable: true
+          items:
+            type: string
+            format: date-time
+        viewingChosenAt:
+          type: string
+          format: date-time
           nullable: true
         createdAt:
           type: string
@@ -1756,6 +1789,16 @@ components:
           nullable: true
         status:
           $ref: '#/components/schemas/RoommateApplicationStatus'
+        viewingOptions:
+          type: array
+          nullable: true
+          items:
+            type: string
+            format: date-time
+        viewingChosenAt:
+          type: string
+          format: date-time
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -1785,6 +1828,16 @@ components:
           $ref: '#/components/schemas/RoommateApplicationStatus'
         note:
           type: string
+          nullable: true
+        viewingOptions:
+          type: array
+          nullable: true
+          items:
+            type: string
+            format: date-time
+        viewingChosenAt:
+          type: string
+          format: date-time
           nullable: true
         createdAt:
           type: string

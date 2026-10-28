@@ -58,7 +58,7 @@ export class RoommateApplicationsController {
 
   @Put(':roommateApplicationId')
   @UseGuards(GoogleTokenGuard)
-  @ApiOperation({ summary: 'Update a roommate application status' })
+  @ApiOperation({ summary: 'Update a roommate application status or viewing' })
   async updateRoommateApplicationStatus(
     @Req() request: Request,
     @Param() params: RoommateApplicationIdParamsDto,

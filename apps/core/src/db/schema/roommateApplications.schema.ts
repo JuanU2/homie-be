@@ -5,7 +5,14 @@ import { users } from './users.schema';
 
 export const roommateApplicationStatusEnum = core.enum(
   'roommate_application_status_enum',
-  ['PENDING', 'ACCEPTED', 'REJECTED'],
+  [
+    'PENDING',
+    'VIEWING_OFFERED',
+    'VIEWING_CONFIRMED',
+    'VIEWING_DECLINED',
+    'ACCEPTED',
+    'REJECTED',
+  ],
 );
 
 export const roommateApplications = core.table('roommate_applications', {
@@ -18,6 +25,10 @@ export const roommateApplications = core.table('roommate_applications', {
     .notNull(),
   status: roommateApplicationStatusEnum('status').default('PENDING').notNull(),
   note: text('note'),
+  viewingOptions: timestamp('viewing_options', {
+    withTimezone: true,
+  }).array(),
+  viewingChosenAt: timestamp('viewing_chosen_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),

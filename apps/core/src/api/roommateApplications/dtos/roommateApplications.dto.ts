@@ -3,6 +3,9 @@ import z from 'zod';
 
 export const roommateApplicationStatusSchema = z.enum([
   'PENDING',
+  'VIEWING_OFFERED',
+  'VIEWING_CONFIRMED',
+  'VIEWING_DECLINED',
   'ACCEPTED',
   'REJECTED',
 ]);
@@ -18,12 +21,16 @@ export const roommateApplicationDtoResponseSchema = z.object({
   applicantId: z.string(),
   note: z.string().nullable(),
   status: roommateApplicationStatusSchema,
+  viewingOptions: z.array(z.date()).nullable(),
+  viewingChosenAt: z.date().nullable(),
   createdAt: z.date(),
 });
 
 export const updateRoommateApplicationDtoRequestSchema = z.object({
   status: roommateApplicationStatusSchema,
   incrementCurrentRoommates: z.boolean().optional(),
+  dateTimes: z.array(z.iso.datetime()).min(1).max(3).optional(),
+  dateTime: z.iso.datetime().optional(),
 });
 
 export class CreateRoommateApplicationDtoRequest extends createZodDto(
@@ -62,6 +69,8 @@ export const roommateApplicationWithApplicantResponseSchema = z.object({
   applicantId: z.string(),
   note: z.string().nullable(),
   status: roommateApplicationStatusSchema,
+  viewingOptions: z.array(z.date()).nullable(),
+  viewingChosenAt: z.date().nullable(),
   createdAt: z.date(),
   applicant: roommateApplicationApplicantResponseSchema,
 });
@@ -92,6 +101,8 @@ export const roommateApplicationListItemWithApplicantResponseSchema = z.object({
   propertyId: z.string(),
   status: roommateApplicationStatusSchema,
   note: z.string().nullable(),
+  viewingOptions: z.array(z.date()).nullable(),
+  viewingChosenAt: z.date().nullable(),
   createdAt: z.date(),
   title: z.string(),
   titleImageId: z.string().nullable(),

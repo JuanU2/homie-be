@@ -23,6 +23,14 @@ export interface IRoommateApplicationsRepository {
     id: string,
     status: RoommateApplicationStatus,
   ): Promise<RoommateApplication | undefined>;
+  updateViewingState(
+    id: string,
+    data: {
+      status: RoommateApplicationStatus;
+      viewingOptions: Date[] | null;
+      viewingChosenAt: Date | null;
+    },
+  ): Promise<RoommateApplication | undefined>;
   acceptRoommateApplication(
     id: string,
     listingId: string,

@@ -269,6 +269,8 @@ export class DrizzleListingsRepository
         applicantId: roommateApplications.applicantId,
         note: roommateApplications.note,
         status: roommateApplications.status,
+        viewingOptions: roommateApplications.viewingOptions,
+        viewingChosenAt: roommateApplications.viewingChosenAt,
         createdAt: roommateApplications.createdAt,
         fullName: users.fullName,
         email: users.email,
@@ -290,6 +292,8 @@ export class DrizzleListingsRepository
       applicantId: row.applicantId,
       note: row.note,
       status: row.status,
+      viewingOptions: row.viewingOptions,
+      viewingChosenAt: row.viewingChosenAt,
       createdAt: row.createdAt,
       applicant: {
         id: row.applicantId,

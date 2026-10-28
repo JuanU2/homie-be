@@ -25,6 +25,8 @@ interface RawApplicationPageRow {
   id: string;
   status: string;
   note: string | null;
+  viewingOptions: unknown[] | null;
+  viewingChosenAt: string | null;
   createdAt: string;
   listingId: string;
   propertyId: string;
@@ -36,6 +38,8 @@ interface RawApplicationWithApplicantPageRow {
   id: string;
   status: string;
   note: string | null;
+  viewingOptions: unknown[] | null;
+  viewingChosenAt: string | null;
   createdAt: string;
   listingId: string;
   propertyId: string;
@@ -103,7 +107,13 @@ export class DrizzleRoommateApplicationsRepository
       where: and(
         eq(roommateApplications.applicantId, applicantId),
         eq(roommateApplications.listingId, listingId),
-        inArray(roommateApplications.status, ['PENDING', 'ACCEPTED'] as const),
+        inArray(roommateApplications.status, [
+          'PENDING',
+          'VIEWING_OFFERED',
+          'VIEWING_CONFIRMED',
+          'VIEWING_DECLINED',
+          'ACCEPTED',
+        ] as const),
       ),
       orderBy: desc(roommateApplications.updatedAt),
     });
@@ -116,6 +126,28 @@ export class DrizzleRoommateApplicationsRepository
     const [updated] = await this.db
       .update(roommateApplications)
       .set({ status, updatedAt: new Date() })
+      .where(eq(roommateApplications.id, id))
+      .returning();
+
+    return updated;
+  }
+
+  async updateViewingState(
+    id: string,
+    data: {
+      status: RoommateApplicationStatus;
+      viewingOptions: Date[] | null;
+      viewingChosenAt: Date | null;
+    },
+  ): Promise<RoommateApplication | undefined> {
+    const [updated] = await this.db
+      .update(roommateApplications)
+      .set({
+        status: data.status,
+        viewingOptions: data.viewingOptions,
+        viewingChosenAt: data.viewingChosenAt,
+        updatedAt: new Date(),
+      })
       .where(eq(roommateApplications.id, id))
       .returning();
 
@@ -176,7 +208,9 @@ export class DrizzleRoommateApplicationsRepository
       const { key, id } = decodeCursor(cursor);
       conditions.push(sql`(ra.created_at, ra.id) < (${key}, ${id})`);
     }
-    if (status) {
+    if (status === 'PENDING') {
+      conditions.push(sql`ra.status IN ('PENDING', 'VIEWING_OFFERED', 'VIEWING_CONFIRMED', 'VIEWING_DECLINED')`);
+    } else if (status) {
       conditions.push(sql`ra.status = ${status}`);
     }
     const where = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
@@ -186,6 +220,8 @@ export class DrizzleRoommateApplicationsRepository
         ra.id AS "id",
         ra.status AS "status",
         ra.note AS "note",
+        ra.viewing_options AS "viewingOptions",
+        ra.viewing_chosen_at AS "viewingChosenAt",
         ra.created_at AS "createdAt",
         ra.listing_id AS "listingId",
         rr.property_id AS "propertyId",
@@ -219,10 +255,18 @@ export class DrizzleRoommateApplicationsRepository
       propertyId: row.propertyId,
       status: row.status as RoommateApplicationStatus,
       note: row.note,
+      viewingOptions: this.toDates(row.viewingOptions),
+      viewingChosenAt: row.viewingChosenAt
+        ? new Date(row.viewingChosenAt)
+        : null,
       createdAt: new Date(row.createdAt),
       title: row.title,
       titleImageId: row.titleImageId,
     };
+  }
+
+  private toDates(values: unknown[] | null): Date[] | null {
+    return values?.map(value => new Date(value as string)) ?? null;
   }
 
   async getRoommateApplicationsPageForOwner(
@@ -236,7 +280,9 @@ export class DrizzleRoommateApplicationsRepository
       const { key, id } = decodeCursor(cursor);
       conditions.push(sql`(ra.created_at, ra.id) < (${key}, ${id})`);
     }
-    if (status) {
+    if (status === 'PENDING') {
+      conditions.push(sql`ra.status IN ('PENDING', 'VIEWING_OFFERED', 'VIEWING_CONFIRMED', 'VIEWING_DECLINED')`);
+    } else if (status) {
       conditions.push(sql`ra.status = ${status}`);
     }
     const where = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
@@ -246,6 +292,8 @@ export class DrizzleRoommateApplicationsRepository
         ra.id AS "id",
         ra.status AS "status",
         ra.note AS "note",
+        ra.viewing_options AS "viewingOptions",
+        ra.viewing_chosen_at AS "viewingChosenAt",
         ra.created_at AS "createdAt",
         ra.listing_id AS "listingId",
         rr.property_id AS "propertyId",
@@ -288,6 +336,10 @@ export class DrizzleRoommateApplicationsRepository
       propertyId: row.propertyId,
       status: row.status as RoommateApplicationStatus,
       note: row.note,
+      viewingOptions: this.toDates(row.viewingOptions),
+      viewingChosenAt: row.viewingChosenAt
+        ? new Date(row.viewingChosenAt)
+        : null,
       createdAt: new Date(row.createdAt),
       title: row.title,
       titleImageId: row.titleImageId,
@@ -306,7 +358,9 @@ export class DrizzleRoommateApplicationsRepository
     status?: RoommateApplicationStatus,
   ): Promise<number> {
     const conditions = [sql`rr.created_by = ${ownerId}`];
-    if (status) {
+    if (status === 'PENDING') {
+      conditions.push(sql`ra.status IN ('PENDING', 'VIEWING_OFFERED', 'VIEWING_CONFIRMED', 'VIEWING_DECLINED')`);
+    } else if (status) {
       conditions.push(sql`ra.status = ${status}`);
     }
     const where = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
@@ -332,6 +386,8 @@ export class DrizzleRoommateApplicationsRepository
         applicantId: roommateApplications.applicantId,
         note: roommateApplications.note,
         status: roommateApplications.status,
+        viewingOptions: roommateApplications.viewingOptions,
+        viewingChosenAt: roommateApplications.viewingChosenAt,
         createdAt: roommateApplications.createdAt,
         fullName: users.fullName,
         email: users.email,
@@ -353,6 +409,8 @@ export class DrizzleRoommateApplicationsRepository
       applicantId: row.applicantId,
       note: row.note,
       status: row.status,
+      viewingOptions: row.viewingOptions,
+      viewingChosenAt: row.viewingChosenAt,
       createdAt: row.createdAt,
       applicant: {
         id: row.applicantId,

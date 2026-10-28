@@ -43,6 +43,13 @@
       "when": 1792678210973,
       "tag": "0005_rename_roommate_requests_to_listings",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793197101240,
+      "tag": "0006_white_ben_parker",
+      "breakpoints": true
     }
   ]
 }
