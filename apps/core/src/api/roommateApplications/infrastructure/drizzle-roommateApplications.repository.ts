@@ -220,7 +220,7 @@ export class DrizzleRoommateApplicationsRepository
         ra.id AS "id",
         ra.status AS "status",
         ra.note AS "note",
-        ra.viewing_options AS "viewingOptions",
+        to_json(ra.viewing_options) AS "viewingOptions",
         ra.viewing_chosen_at AS "viewingChosenAt",
         ra.created_at AS "createdAt",
         ra.listing_id AS "listingId",
@@ -265,8 +265,12 @@ export class DrizzleRoommateApplicationsRepository
     };
   }
 
-  private toDates(values: unknown[] | null): Date[] | null {
-    return values?.map(value => new Date(value as string)) ?? null;
+  private toDates(values: unknown): Date[] | null {
+    if (values == null) return null;
+    const list = Array.isArray(values)
+      ? values
+      : (JSON.parse(values as string) as unknown[]);
+    return list.map(value => new Date(value as string));
   }
 
   async getRoommateApplicationsPageForOwner(
@@ -292,7 +296,7 @@ export class DrizzleRoommateApplicationsRepository
         ra.id AS "id",
         ra.status AS "status",
         ra.note AS "note",
-        ra.viewing_options AS "viewingOptions",
+        to_json(ra.viewing_options) AS "viewingOptions",
         ra.viewing_chosen_at AS "viewingChosenAt",
         ra.created_at AS "createdAt",
         ra.listing_id AS "listingId",
