@@ -733,7 +733,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListingListResponse'
+                $ref: '#/components/schemas/FavouritesPage'
         '401':
           description: Unauthorized
     post:
@@ -1531,6 +1531,30 @@ components:
         - priceAmount
         - priceCurrency
         - property
+
+    FavouritesPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FavouriteListItem'
+        nextCursor:
+          type: string
+          nullable: true
+      required:
+        - items
+        - nextCursor
+
+    FavouriteListItem:
+      allOf:
+        - $ref: '#/components/schemas/ListingListItem'
+        - type: object
+          properties:
+            status:
+              $ref: '#/components/schemas/ListingStatus'
+          required:
+            - status
 
     ListingPropertySummary:
       type: object

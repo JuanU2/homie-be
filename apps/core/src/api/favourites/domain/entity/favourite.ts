@@ -1,4 +1,7 @@
-import type { ListingsPage } from '@/api/listings/domain/entity/listing';
+import type {
+  ListingListItem,
+  ListingStatus,
+} from '@/api/listings/domain/entity/listing';
 
 export interface Favourite {
   id: string;
@@ -12,4 +15,11 @@ export interface GetFavouritesParams {
   cursor?: string;
 }
 
-export type FavouritesPage = ListingsPage;
+export interface FavouriteListItem extends ListingListItem {
+  status: ListingStatus;
+}
+
+export interface FavouritesPage {
+  items: FavouriteListItem[];
+  nextCursor: string | null;
+}

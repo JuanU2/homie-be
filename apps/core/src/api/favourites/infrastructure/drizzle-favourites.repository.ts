@@ -3,13 +3,14 @@ import { and, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type {
   Favourite,
+  FavouriteListItem,
   FavouritesPage,
   GetFavouritesParams,
 } from '@/api/favourites/domain/entity/favourite';
 import type { IFavouritesRepository } from '@/api/favourites/domain/interface/favourites.repository';
 import type {
   ListingCurrency,
-  ListingListItem,
+  ListingStatus,
 } from '@/api/listings/domain/entity/listing';
 import { favourites } from '@/db/schema/index';
 import * as schema from '@/db/schema/index';
@@ -23,6 +24,7 @@ interface RawFavouritePageRow {
   currentRoommates: number;
   priceAmount: number;
   priceCurrency: string;
+  status: string;
   title: string;
   propertyId: string;
   country: string;
@@ -133,6 +135,7 @@ export class DrizzleFavouritesRepository implements IFavouritesRepository {
         rr.current_roommates AS "currentRoommates",
         rr.price_amount AS "priceAmount",
         rr.price_currency AS "priceCurrency",
+        rr.status AS "status",
         rr.title AS "title",
         p.id AS "propertyId",
         p.country AS "country",
@@ -165,7 +168,7 @@ export class DrizzleFavouritesRepository implements IFavouritesRepository {
     return { items, nextCursor };
   }
 
-  private toListItem(row: RawFavouritePageRow): ListingListItem {
+  private toListItem(row: RawFavouritePageRow): FavouriteListItem {
     const location = convertDbLocation(row.location);
     return {
       id: row.rrId,
@@ -174,6 +177,7 @@ export class DrizzleFavouritesRepository implements IFavouritesRepository {
       currentRoommates: row.currentRoommates,
       priceAmount: row.priceAmount,
       priceCurrency: row.priceCurrency as ListingCurrency,
+      status: row.status as ListingStatus,
       property: {
         id: row.propertyId,
         country: row.country,
