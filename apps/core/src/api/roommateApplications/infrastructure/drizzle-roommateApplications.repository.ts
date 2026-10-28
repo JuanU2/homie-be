@@ -4,6 +4,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
   roommateApplications,
   listings,
+  properties,
   userSettings,
   users,
 } from '@/db/schema/index';
@@ -32,6 +33,10 @@ interface RawApplicationPageRow {
   propertyId: string;
   title: string;
   titleImageId: string | null;
+  country: string;
+  city: string;
+  street: string;
+  streetNumber: string;
 }
 
 interface RawApplicationWithApplicantPageRow {
@@ -45,6 +50,10 @@ interface RawApplicationWithApplicantPageRow {
   propertyId: string;
   title: string;
   titleImageId: string | null;
+  country: string;
+  city: string;
+  street: string;
+  streetNumber: string;
   applicantId: string;
   fullName: string;
   email: string;
@@ -226,9 +235,14 @@ export class DrizzleRoommateApplicationsRepository
         ra.listing_id AS "listingId",
         rr.property_id AS "propertyId",
         rr.title AS "title",
-        ti.id AS "titleImageId"
+        ti.id AS "titleImageId",
+        p.country AS "country",
+        p.city AS "city",
+        p.street AS "street",
+        p.street_number AS "streetNumber"
       FROM core.roommate_applications ra
       JOIN core.listings rr ON rr.id = ra.listing_id
+      JOIN core.properties p ON p.id = rr.property_id
       LEFT JOIN core.property_images ti ON ti.property_id = rr.property_id AND ti.title = true
       ${where}
       ORDER BY ra.created_at DESC, ra.id DESC
@@ -262,6 +276,10 @@ export class DrizzleRoommateApplicationsRepository
       createdAt: new Date(row.createdAt),
       title: row.title,
       titleImageId: row.titleImageId,
+      country: row.country,
+      city: row.city,
+      street: row.street,
+      streetNumber: row.streetNumber,
     };
   }
 
@@ -303,6 +321,10 @@ export class DrizzleRoommateApplicationsRepository
         rr.property_id AS "propertyId",
         rr.title AS "title",
         ti.id AS "titleImageId",
+        p.country AS "country",
+        p.city AS "city",
+        p.street AS "street",
+        p.street_number AS "streetNumber",
         u.id AS "applicantId",
         u.full_name AS "fullName",
         u.email AS "email",
@@ -310,6 +332,7 @@ export class DrizzleRoommateApplicationsRepository
         us.phone_number AS "phoneNumber"
       FROM core.roommate_applications ra
       JOIN core.listings rr ON rr.id = ra.listing_id
+      JOIN core.properties p ON p.id = rr.property_id
       LEFT JOIN core.property_images ti ON ti.property_id = rr.property_id AND ti.title = true
       JOIN core.users u ON u.id = ra.applicant_id
       LEFT JOIN core.user_settings us ON us.user_id = u.id
@@ -347,6 +370,10 @@ export class DrizzleRoommateApplicationsRepository
       createdAt: new Date(row.createdAt),
       title: row.title,
       titleImageId: row.titleImageId,
+      country: row.country,
+      city: row.city,
+      street: row.street,
+      streetNumber: row.streetNumber,
       applicant: {
         id: row.applicantId,
         fullName: row.fullName,
@@ -393,6 +420,10 @@ export class DrizzleRoommateApplicationsRepository
         viewingOptions: roommateApplications.viewingOptions,
         viewingChosenAt: roommateApplications.viewingChosenAt,
         createdAt: roommateApplications.createdAt,
+        country: properties.country,
+        city: properties.city,
+        street: properties.street,
+        streetNumber: properties.streetNumber,
         fullName: users.fullName,
         email: users.email,
         profileUrl: users.image,
@@ -400,6 +431,8 @@ export class DrizzleRoommateApplicationsRepository
       })
       .from(roommateApplications)
       .innerJoin(users, eq(users.id, roommateApplications.applicantId))
+      .innerJoin(listings, eq(listings.id, roommateApplications.listingId))
+      .innerJoin(properties, eq(properties.id, listings.propertyId))
       .leftJoin(userSettings, eq(userSettings.userId, users.id))
       .where(eq(roommateApplications.listingId, listingId))
       .orderBy(
@@ -416,6 +449,10 @@ export class DrizzleRoommateApplicationsRepository
       viewingOptions: row.viewingOptions,
       viewingChosenAt: row.viewingChosenAt,
       createdAt: row.createdAt,
+      country: row.country,
+      city: row.city,
+      street: row.street,
+      streetNumber: row.streetNumber,
       applicant: {
         id: row.applicantId,
         fullName: row.fullName,

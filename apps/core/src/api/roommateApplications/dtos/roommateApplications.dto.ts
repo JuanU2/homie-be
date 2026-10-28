@@ -72,6 +72,10 @@ export const roommateApplicationWithApplicantResponseSchema = z.object({
   viewingOptions: z.array(z.date()).nullable(),
   viewingChosenAt: z.date().nullable(),
   createdAt: z.date(),
+  country: z.string(),
+  city: z.string(),
+  street: z.string(),
+  streetNumber: z.string(),
   applicant: roommateApplicationApplicantResponseSchema,
 });
 
@@ -106,6 +110,10 @@ export const roommateApplicationListItemWithApplicantResponseSchema = z.object({
   createdAt: z.date(),
   title: z.string(),
   titleImageId: z.string().nullable(),
+  country: z.string(),
+  city: z.string(),
+  street: z.string(),
+  streetNumber: z.string(),
   applicant: roommateApplicationApplicantResponseSchema,
 });
 

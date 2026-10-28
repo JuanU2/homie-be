@@ -35,6 +35,10 @@ export interface RoommateApplicationListItem {
   createdAt: Date;
   title: string;
   titleImageId: string | null;
+  country: string;
+  city: string;
+  street: string;
+  streetNumber: string;
 }
 
 export interface RoommateApplicationsPage {
@@ -65,6 +69,10 @@ export interface RoommateApplicationWithApplicant {
   viewingOptions: Date[] | null;
   viewingChosenAt: Date | null;
   createdAt: Date;
+  country: string;
+  city: string;
+  street: string;
+  streetNumber: string;
   applicant: RoommateApplicationApplicant;
 }
 

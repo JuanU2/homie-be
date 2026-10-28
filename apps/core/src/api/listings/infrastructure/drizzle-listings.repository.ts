@@ -272,6 +272,10 @@ export class DrizzleListingsRepository
         viewingOptions: roommateApplications.viewingOptions,
         viewingChosenAt: roommateApplications.viewingChosenAt,
         createdAt: roommateApplications.createdAt,
+        country: properties.country,
+        city: properties.city,
+        street: properties.street,
+        streetNumber: properties.streetNumber,
         fullName: users.fullName,
         email: users.email,
         profileUrl: users.image,
@@ -279,6 +283,8 @@ export class DrizzleListingsRepository
       })
       .from(roommateApplications)
       .innerJoin(users, eq(users.id, roommateApplications.applicantId))
+      .innerJoin(listings, eq(listings.id, roommateApplications.listingId))
+      .innerJoin(properties, eq(properties.id, listings.propertyId))
       .leftJoin(userSettings, eq(userSettings.userId, users.id))
       .where(eq(roommateApplications.listingId, listingId))
       .orderBy(
@@ -295,6 +301,10 @@ export class DrizzleListingsRepository
       viewingOptions: row.viewingOptions,
       viewingChosenAt: row.viewingChosenAt,
       createdAt: row.createdAt,
+      country: row.country,
+      city: row.city,
+      street: row.street,
+      streetNumber: row.streetNumber,
       applicant: {
         id: row.applicantId,
         fullName: row.fullName,

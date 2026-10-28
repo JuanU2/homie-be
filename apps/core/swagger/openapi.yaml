@@ -1727,6 +1727,14 @@ components:
           type: string
           format: uuid
           nullable: true
+        country:
+          type: string
+        city:
+          type: string
+        street:
+          type: string
+        streetNumber:
+          type: string
       required:
         - id
         - listingId
@@ -1734,6 +1742,10 @@ components:
         - status
         - createdAt
         - title
+        - country
+        - city
+        - street
+        - streetNumber
 
     RoommateApplicationListResponse:
       type: object
@@ -1802,6 +1814,14 @@ components:
         createdAt:
           type: string
           format: date-time
+        country:
+          type: string
+        city:
+          type: string
+        street:
+          type: string
+        streetNumber:
+          type: string
         applicant:
           $ref: '#/components/schemas/RoommateApplicationApplicant'
       required:
@@ -1810,6 +1830,10 @@ components:
         - applicantId
         - status
         - createdAt
+        - country
+        - city
+        - street
+        - streetNumber
         - applicant
 
     RoommateApplicationListItemWithApplicant:
@@ -1848,6 +1872,14 @@ components:
           type: string
           format: uuid
           nullable: true
+        country:
+          type: string
+        city:
+          type: string
+        street:
+          type: string
+        streetNumber:
+          type: string
         applicant:
           $ref: '#/components/schemas/RoommateApplicationApplicant'
       required:
@@ -1857,6 +1889,10 @@ components:
         - status
         - createdAt
         - title
+        - country
+        - city
+        - street
+        - streetNumber
         - applicant
 
     RoommateApplicationsWithApplicantPage:
