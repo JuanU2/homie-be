@@ -79,7 +79,7 @@ export class ListingsController {
   ): Promise<ListingsPage> {
     return this.listingsService.getListings({
       limit: query.limit,
-      cursor: query.cursor,
+      page: query.page,
       lat: query.lat,
       lng: query.lng,
       priceFrom: query.priceFrom,

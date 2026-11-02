@@ -232,7 +232,7 @@ const querySortByArray = z.preprocess(
 
 export const getListingsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
-  cursor: z.string().min(1).optional(),
+  page: z.coerce.number().int().min(0).default(0),
   lat: z.coerce.number().min(-90).max(90).optional(),
   lng: z.coerce.number().min(-180).max(180).optional(),
   priceFrom: z.coerce.number().int().nonnegative().optional(),

@@ -75,15 +75,6 @@ function decodeCursor(cursor: string): { key: string; id: string } {
   return { key: parsed.key, id: parsed.id };
 }
 
-function encodeOffsetCursor(offset: number): string {
-  return Buffer.from(String(offset)).toString('base64url');
-}
-
-function decodeOffsetCursor(cursor: string): number {
-  const offset = Number(Buffer.from(cursor, 'base64url').toString('utf8'));
-  return Number.isNaN(offset) ? 0 : offset;
-}
-
 function slicePage<T>(
   items: T[],
   limit: number,
@@ -439,7 +430,7 @@ export class DrizzleListingsRepository
   async getListings(
     params: GetListingsParams,
   ): Promise<ListingsPage> {
-    const { limit, cursor, lat, lng, sortBy } = params;
+    const { limit, page, lat, lng, sortBy } = params;
     const hasLocation = lat !== undefined && lng !== undefined;
     const hasRanking = sortBy !== undefined && sortBy.length > 0;
 
@@ -466,7 +457,7 @@ export class DrizzleListingsRepository
     );
     const orderBy = ListingRanking.buildOrderBy(hasRanking, hasLocation);
 
-    const offset = cursor ? decodeOffsetCursor(cursor) : 0;
+    const offset = page * limit;
 
     const result = await this.db.execute(sql`
       SELECT *
@@ -514,7 +505,7 @@ export class DrizzleListingsRepository
 
     return {
       items,
-      nextCursor: hasNext ? encodeOffsetCursor(offset + limit) : null,
+      nextPage: hasNext ? page + 1 : null,
     };
   }
 

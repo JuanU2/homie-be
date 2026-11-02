@@ -84,12 +84,12 @@ export interface ListingListItem {
 
 export interface ListingsPage {
   items: ListingListItem[];
-  nextCursor: string | null;
+  nextPage: number | null;
 }
 
 export interface GetListingsParams {
   limit: number;
-  cursor?: string;
+  page: number;
   lat?: number;
   lng?: number;
   priceFrom?: number;
