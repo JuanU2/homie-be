@@ -21,5 +21,5 @@ export const RANKING_CRITERION_CONFIG: Record<
   PRICE: { weight: 1 },
   DISTANCE_TRANSIT: { weight: 1, referenceMeters: 500 },
   DISTANCE_CITY_CENTER: { weight: 1, referenceMeters: 1000 },
-  LOCATION: { weight: 10, referenceMeters: 3000, referencePower: 3 },
+  LOCATION: { weight: 10, referenceMeters: 10000, referencePower: 3 },
 };
