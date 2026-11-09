@@ -23,7 +23,19 @@ function summarizeBody(body: unknown): unknown {
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.enableCors();
+  const corsOrigins = (
+    process.env.CORS_ORIGINS ??
+    'http://localhost:5000,http://localhost:3000,https://www.myhomie.sk'
+  )
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  app.enableCors({
+    origin: corsOrigins,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type, Authorization',
+  });
   app.useBodyParser('json', { limit: '25mb' });
 
   app.use((req: Request, res: Response, next: NextFunction) => {
