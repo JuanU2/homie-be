@@ -27,7 +27,7 @@ services:
       # disable push (the service then only logs a warning).
       - ./firebase-service-account.json:/app/firebase-service-account.json:ro
     ports:
-      - "3001:3001"
+      - "127.0.0.1:3001:3001"
     command: ["node", "apps/core/dist/main.js"]
 
   worker:
@@ -40,5 +40,5 @@ services:
     env_file:
       - ./apps/worker/.env
     ports:
-      - "3002:3002"
+      - "127.0.0.1:3002:3002"
     command: ["node", "apps/worker/dist/main.js"]
