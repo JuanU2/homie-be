@@ -36,6 +36,11 @@ async function bootstrap() {
     allowedHeaders: 'Content-Type, Authorization',
   });
 
+  // TEMPORARY: block all incoming requests (maintenance mode).
+  app.use((_req: Request, res: Response) => {
+    res.status(503).json({ message: 'Service temporarily unavailable' });
+  });
+
   app.use((req: Request, res: Response, next: NextFunction) => {
     const start = Date.now();
     res.on('finish', () => {
