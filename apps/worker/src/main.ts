@@ -55,14 +55,16 @@ async function bootstrap() {
     next();
   });
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('Homie Worker API')
-    .setDescription('AI (Google Gemini) property analysis API for the Homie app.')
-    .setVersion('1.0')
-    .addTag('api')
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api', app, document);
+  if (process.env.NODE_ENV !== 'production') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('Homie Worker API')
+      .setDescription('AI (Google Gemini) property analysis API for the Homie app.')
+      .setVersion('1.0')
+      .addTag('api')
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api', app, document);
+  }
 
   const config = app.get(ConfigService);
   const port = Number(config.get('WORKER_PORT') ?? process.env.PORT ?? 3002);
