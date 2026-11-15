@@ -51,8 +51,6 @@ paths:
     get:
       summary: Get AI-generated neighborhood insights for a property
       operationId: getPropertyInsights
-      security:
-        - bearerAuth: []
       tags:
         - AI
       parameters:

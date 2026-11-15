@@ -1,6 +1,5 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
-import { GoogleTokenGuard } from '@/auth/google-token.guard';
 import { PropertyInsightsService } from './property-insights.service';
 import {
   PropertyInsightsParamsDto,
@@ -14,7 +13,6 @@ export class PropertyInsightsController {
   ) {}
 
   @Get(':propertyId/insights')
-  @UseGuards(GoogleTokenGuard)
   @ApiOperation({ summary: 'Get property insights' })
   async getInsights(
     @Param() params: PropertyInsightsParamsDto,
