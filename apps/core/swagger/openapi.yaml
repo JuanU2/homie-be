@@ -1605,6 +1605,7 @@ components:
               $ref: '#/components/schemas/ListingStatus'
             pendingApplicationsCount:
               type: integer
+              description: Number of applications in a non-final state (i.e. not ACCEPTED or REJECTED).
           required:
             - status
             - pendingApplicationsCount

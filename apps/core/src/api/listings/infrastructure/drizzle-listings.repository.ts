@@ -546,7 +546,7 @@ export class DrizzleListingsRepository
         (
           SELECT COUNT(*)::int
           FROM core.roommate_applications ra
-          WHERE ra.listing_id = rr.id AND ra.status = 'PENDING'
+          WHERE ra.listing_id = rr.id AND ra.status NOT IN ('ACCEPTED', 'REJECTED')
         ) AS "pendingApplicationsCount"
       FROM core.listings rr
       JOIN core.properties p ON p.id = rr.property_id
